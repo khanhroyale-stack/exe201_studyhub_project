@@ -1,7 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const getLinkClass = (path: string) => {
+    return isActive(path)
+      ? "text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md"
+      : "text-on-surface-variant hover:text-primary transition-colors duration-150 font-body-md text-body-md";
+  };
+
   return (
     <header className="fixed top-0 w-full z-50 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center h-[72px] px-margin-desktop">
       <div className="flex items-center gap-12">
@@ -18,13 +33,13 @@ const Navbar: React.FC = () => {
           />
         </Link>
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md">
+          <Link to="/" className={getLinkClass('/')}>
             Trang chủ
           </Link>
-          <Link to="/classes" className="text-on-surface-variant hover:text-primary transition-colors duration-150 font-body-md text-body-md">
+          <Link to="/classes" className={getLinkClass('/classes')}>
             Tất cả lớp học
           </Link>
-          <Link to="/tutors" className="text-on-surface-variant hover:text-primary transition-colors duration-150 font-body-md text-body-md">
+          <Link to="/tutors" className={getLinkClass('/tutors')}>
             Gia sư
           </Link>
         </nav>

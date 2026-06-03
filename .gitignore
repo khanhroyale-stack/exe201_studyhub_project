@@ -1,0 +1,54 @@
+# ==========================================
+# 1. ROOT & COMMON CONFIGS
+# ==========================================
+.DS_Store
+Thumbs.db
+*.log
+*.local
+.env
+.env.*
+
+# Antigravity IDE / VS Code / JetBrains Settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+mcp-config.json.local
+
+# ==========================================
+# 2. BACKEND (studyhub-backend)
+# ==========================================
+studyhub-backend/target/
+studyhub-backend/build/
+studyhub-backend/.gradle/
+studyhub-backend/.mvn/
+studyhub-backend/out/
+
+# Compiled class files
+studyhub-backend/**/*.class
+
+# Log files
+studyhub-backend/*.log
+
+# Crash dumps
+studyhub-backend/*.hprof
+
+# ==========================================
+# 3. FRONTEND (studyhub-frontend)
+# ==========================================
+studyhub-frontend/node_modules/
+studyhub-frontend/dist/
+studyhub-frontend/build/
+studyhub-frontend/.local
+
+# TypeScript-specific
+studyhub-frontend/*.tsbuildinfo
+
+# Local env files (Chứa key bảo mật, không nên push lên git)
+studyhub-frontend/.env.local
+studyhub-frontend/.env.development.local
+studyhub-frontend/.env.test.local
+studyhub-frontend/.env.production.local

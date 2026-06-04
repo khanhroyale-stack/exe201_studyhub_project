@@ -1,45 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
-
-const mockClasses = [
-  {
-    id: 1,
-    title: "Ôn thi Đại học Toán Lý Anh",
-    description: "Cần tìm gia sư ôn thi khối A1 cho học sinh lớp 12 tại nhà. Yêu cầu có kinh nghiệm luyện thi...",
-    location: "Quận 1, TP. HCM",
-    locationType: "location_on",
-    price: "350.000đ/buổi",
-    schedule: "3 buổi/tuần (T2-4-6)",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuASsPYHLUK76qHBGC2Kh2tTDyxQCOiun2cE3J2ggWy_EHxGuDCjIF3dbcph8YmU3HGua_DVC_ZSbGnI5nOhTA0uCm7jm1FpXUKEK1SfOeMwGktcnEKW0B588v8LW9Larab88U0JmZswkug1jxlw93eORM2tcJGIHuBS8Zo-WRJFReA7cSAxJL6QdiHRUDpH01sQrXVSnEenK2T8ENxMig0ZEig7vtzsbdZLl5-Y3u82bZ5bHFx-egkrCZS5lu2lbUAxtg9sMttVXk7-"
-  },
-  {
-    id: 2,
-    title: "IELTS Speaking 1 kèm 1",
-    description: "Luyện Speaking cấp tốc đầu ra 7.0 cho sinh viên. Học qua Zoom linh hoạt thời gian...",
-    location: "Trực tuyến (Online)",
-    locationType: "computer",
-    price: "250.000đ/giờ",
-    schedule: "Thời gian linh hoạt",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAfLmZEzSUGSdU1piqw8qrUCRdFW2DhbzeP_iwre1Ry_Ei9_68aX7AlGY4i_gGX41KdP9pa4phE84ZVQJ1Xre6uxOT4uzghaDGDo3s16XI9WKvZirsJy6Ia_czkuoorRCfAf-LPuYkOCKtDErSxnLNBSAI9su6eKJh4Gsd7JvdforZzaLC7MmnkRjbFgSE2yewfgwW_yx8bT24Paw_jh3KwTWJ7hORJD_JaydX--ueSlZtB0215rWI059T6fkcnGQuNhNtTg_Z0xLa8"
-  },
-  {
-    id: 3,
-    title: "Phụ đạo Hóa lớp 10",
-    description: "Củng cố kiến thức cơ bản cho học sinh mất gốc. Dạy chậm, kỹ kiến thức SGK...",
-    location: "Hà Đông, Hà Nội",
-    locationType: "location_on",
-    price: "200.000đ/buổi",
-    schedule: "2 buổi/tuần",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBeJMTRHS5AFfTnkNaH0zjyUxUT3ObjXvyPpGe3qWKelGdYAOxLD6MJLoNQQR0Q6pDqYJo4D9pTjaZZakKykw0Abyao5ydkBiat6bQJL5vbzxAlVFZ2cDLDemPs2YYdarn9Qot6T8UKHlVfzVP6K9kySjUE5ANb2cbswT5a0WRLqOlqLaqqkqi5SpJaQogz94BznvHPrwyTdVRwaJLmsqAP_t-iH0xgVBVzs8GCailExAndK5c18DznIYDLDfrGToNpfsmI64aI08oe"
-  }
-];
+import { MOCK_CLASSES } from '../../constants/mockData';
 
 const Homepage: React.FC = () => {
+  // Display the first 3 classes on the homepage
+  const classesToShow = MOCK_CLASSES.slice(0, 3);
+
   return (
     <div className="bg-background text-on-background">
-      <Navbar />
       <main className="mt-[72px] min-h-screen">
         {/* Hero Section */}
         <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden py-20">
@@ -138,7 +106,7 @@ const Homepage: React.FC = () => {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mockClasses.map((cls) => (
+            {classesToShow.map((cls) => (
               <div key={cls.id} className="bg-white rounded-[32px] border border-outline-variant overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
                 <div className="relative h-56 overflow-hidden">
                   <img alt={cls.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={cls.image} />
@@ -185,14 +153,6 @@ const Homepage: React.FC = () => {
           </div>
         </section>
       </main>
-
-      {/* FAB */}
-      <button className="fixed bottom-10 right-10 w-16 h-16 bg-secondary text-on-secondary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group">
-        <span className="material-symbols-outlined text-3xl">chat</span>
-        <span className="absolute right-full mr-4 bg-on-surface text-surface px-4 py-2 rounded-xl text-xs font-bold opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none translate-x-2 group-hover:translate-x-0 shadow-lg">Hỗ trợ trực tuyến</span>
-      </button>
-
-      <Footer />
     </div>
   );
 };

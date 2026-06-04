@@ -1,54 +1,9 @@
 import React from 'react';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
-
-const mockTutors = [
-  {
-    id: 1,
-    name: "Nguyễn Thu Hà",
-    rating: "4.9 (42)",
-    title: "Sư phạm Toán - ĐH Sư Phạm HN",
-    description: "Chuyên luyện thi Đại học khối A, A1 với hơn 5 năm kinh nghiệm. Phương pháp dạy tư duy mới giúp học sinh nắm vững bản chất...",
-    tags: ["Toán học", "Luyện thi ĐH"],
-    price: "250k",
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAafkUxSEbecZeyzdQ4kmzN35u9l9kBfrGnMtR4KvGn5aE3AkkyKzCmopwLDJyt6vA5xFII7gr2d9puRHlHHXS0mNxWtvWou3c__njVrEXam9r1Q9B9Ws-IDgX6CwJ-zsGG2ug5k-9tSq43nFcfGW_30tLtFkCrrNblJ95WNtZXVDb1IIvpSqbvj24grKEXWt2lj3-o5JpQb6JVmZ2MY3zTQ_fKY_x77NPa8fLMboBFlvvE6SwvxYkdz1uY8OCxlUKqXwLlWWdPVInB"
-  },
-  {
-    id: 2,
-    name: "Trần Minh Hoàng",
-    rating: "5.0 (28)",
-    title: "IELTS 8.5 - ĐH Ngoại Thương",
-    description: "Chuyên luyện thi IELTS Speaking & Writing. Cam kết đầu ra 6.5+ cho học sinh mất gốc. Lộ trình học cá nhân hóa...",
-    tags: ["Tiếng Anh", "IELTS"],
-    price: "400k",
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuB9KPzsinuY3j52v2JxakeiWFDQmXeT12pHJPK441U8QGMNT3kIZ7X_g7hFt7_51HsGK1tYhqDcofz8iS4PDlaZ217KsZYhhbrjXQz_8oJMzXPKOmVkmrPZt7h2GuQWI3L8mmGfBrziDCxVtKbqJFev69rngZHPFOPWYVEbDMXzZ8i4nhWh0Az7vssahwoyBUuUoiyUz_2Rxolt8m2cBW7_XafR5NDrN9IJQ37_HTDLLcWQS5tj6f7kFPN65DWvg1PlUI14h8Xu_qAm"
-  },
-  {
-    id: 3,
-    name: "Lê Kim Chi",
-    rating: "4.8 (19)",
-    title: "Thạc sĩ Vật lý - ĐHQG TP.HCM",
-    description: "Giải thích các hiện tượng vật lý khó hiểu một cách đơn giản nhất thông qua thực hành và ví dụ thực tế...",
-    tags: ["Vật lý", "Cấp 3"],
-    price: "300k",
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBV8ceA3IBB1SW9rwqVyHnsUFek92-Dl_UGarnIjDhlNa49vTbOdiAsGkFIAuj-gusBJGgZhd2-0rL3jXarbmhMnoSjeipy9H1dzuAmRO8ihfAcwxprldKK4LGxryB74_UQ0of4WJpnKny_K0MZrHS6Swco-g_UxEmlj3keYxukp695awsPFWR88tUppOrgyF3bsO5_Cfx0dk9K58vYcnNvNDb8IYMCQJdvH2VcLAGApN_huyd-n_r40zsqJgtxMSUnc6mLy5RNhcx2"
-  },
-  {
-    id: 4,
-    name: "Phạm Quốc Bảo",
-    rating: "4.7 (35)",
-    title: "Kỹ thuật phần mềm - ĐH Bách Khoa",
-    description: "Hướng dẫn lập trình từ cơ bản đến nâng cao (Python, C++, Java). Hỗ trợ làm đồ án và giải các bài tập chuyên sâu...",
-    tags: ["Tin học", "Lập trình"],
-    price: "350k",
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDclWBf8M216xLWZzkpawSUpVNZUoQ--zEcrmQ6M40eyqC6aK8-nQHspZmWXkiu1SHmqVwWfyVSQfuOisZh3svnQR22pQHw-xhuJr1GMm_R3UBzUBtvVLOaQYBYKtML2_fAgj9NrELWkPo7Y5uPvtq5WGvzZiSwOo4vyVW4KPv2dujxkRtceeORXE6baqCzKRaW-3DxUeGl2oxv3wtj5HQPZNb2W3k-Ekfjb7xVITdkjAuATjC_b7yuzofs0zO5YYCStJoWXfqbjMiU"
-  }
-];
+import { MOCK_TUTORS } from '../../constants/mockData';
 
 const TutorList: React.FC = () => {
   return (
     <div className="bg-background text-on-surface">
-      <Navbar />
       <main className="pt-[72px] min-h-screen">
         {/* Hero Section */}
         <section className="relative bg-primary py-16 px-margin-desktop overflow-hidden">
@@ -144,7 +99,7 @@ const TutorList: React.FC = () => {
           {/* Tutor Grid */}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-8">
-              <p className="font-body-md text-body-md">Tìm thấy <span className="font-bold text-primary">124</span> gia sư phù hợp</p>
+              <p className="font-body-md text-body-md">Tìm thấy <span className="font-bold text-primary">{MOCK_TUTORS.length}</span> gia sư phù hợp</p>
               <div className="flex items-center gap-2">
                 <span className="font-label-sm text-label-sm text-outline">Sắp xếp theo:</span>
                 <select className="bg-transparent border-none font-label-md text-on-surface focus:ring-0 cursor-pointer outline-none">
@@ -155,13 +110,15 @@ const TutorList: React.FC = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
-              {mockTutors.map((tutor) => (
+              {MOCK_TUTORS.map((tutor) => (
                 <div key={tutor.id} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 flex flex-col sm:flex-row gap-6 shadow-sm hover:shadow-md">
                   <div className="relative shrink-0">
                     <img alt="Tutor avatar" className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover" src={tutor.avatar} />
-                    <div className="absolute -bottom-2 -right-2 bg-green-500 text-white p-1 rounded-full border-4 border-surface-container-lowest">
-                      <span className="material-symbols-outlined text-[16px] block" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                    </div>
+                    {tutor.verified && (
+                      <div className="absolute -bottom-2 -right-2 bg-green-500 text-white p-1 rounded-full border-4 border-surface-container-lowest">
+                        <span className="material-symbols-outlined text-[16px] block" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-1">
@@ -207,7 +164,6 @@ const TutorList: React.FC = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

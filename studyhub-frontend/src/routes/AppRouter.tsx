@@ -10,6 +10,16 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import TutorDetail from '../pages/Tutor/TutorDetail';
 
+import ParentLayout from '../components/Parent/ParentLayout';
+import ParentHome from '../pages/Parent/ParentHome';
+import ParentDashboard from '../pages/Parent/ParentDashboard';
+import PostManagement from '../pages/Parent/PostManagement';
+import CreatePost from '../pages/Parent/CreatePost';
+import ApplicantReview from '../pages/Parent/ApplicantReview';
+import ClassManagement from '../pages/Parent/ClassManagement';
+import FeedbackList from '../pages/Parent/FeedbackList';
+import CreateFeedback from '../pages/Parent/CreateFeedback';
+
 const AppRouter: React.FC = () => {
   return (
     <Routes>
@@ -21,6 +31,17 @@ const AppRouter: React.FC = () => {
         <Route path="tutors/:id" element={<TutorDetail />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+      </Route>
+
+      <Route path="/parent" element={<ParentLayout />}>
+        <Route index element={<ParentHome />} />
+        <Route path="dashboard" element={<ParentDashboard />} />
+        <Route path="posts" element={<PostManagement />} />
+        <Route path="create-post" element={<CreatePost />} />
+        <Route path="applicants" element={<ApplicantReview />} />
+        <Route path="classes" element={<ClassManagement />} />
+        <Route path="feedback" element={<FeedbackList />} />
+        <Route path="create-feedback" element={<CreateFeedback />} />
       </Route>
     </Routes>
   );

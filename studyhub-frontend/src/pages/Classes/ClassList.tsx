@@ -5,10 +5,16 @@ import { MOCK_CLASSES } from '../../constants/mockData';
 const ClassList: React.FC = () => {
   return (
     <div className="bg-background text-on-surface">
-      <main className="pt-[72px] min-h-screen">
+      <main className="min-h-screen">
         {/* Hero Search Section */}
-        <section className="bg-primary pt-12 pb-16 px-margin-desktop text-center">
-          <div className="max-w-4xl mx-auto">
+        <section className="relative bg-primary pt-16 pb-20 px-margin-desktop text-center overflow-hidden">
+          {/* Animated Background */}
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <div className="absolute top-0 right-[-5%] w-[400px] h-[400px] rounded-full bg-white/10 blur-[80px] animate-float" />
+            <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-container/20 blur-[100px] animate-float-slow" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] opacity-50" />
+          </div>
+          <div className="relative z-10 max-w-4xl mx-auto">
             <h1 className="font-headline-xl text-headline-xl text-on-primary mb-6">Tìm kiếm lớp học phù hợp</h1>
             <div className="relative max-w-2xl mx-auto">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>

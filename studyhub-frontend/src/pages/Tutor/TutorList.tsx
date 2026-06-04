@@ -5,10 +5,15 @@ import { MOCK_TUTORS } from '../../constants/mockData';
 const TutorList: React.FC = () => {
   return (
     <div className="bg-background text-on-surface">
-      <main className="pt-[72px] min-h-screen">
+      <main className="min-h-screen">
         {/* Hero Section */}
-        <section className="relative bg-primary py-16 px-margin-desktop overflow-hidden">
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+        <section className="relative bg-primary pt-16 pb-20 px-margin-desktop overflow-hidden">
+          {/* Animated Background */}
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <div className="absolute top-0 right-[-5%] w-[400px] h-[400px] rounded-full bg-white/10 blur-[80px] animate-float" />
+            <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-container/20 blur-[100px] animate-float-slow" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] opacity-50" />
+          </div>
           <div className="relative z-10 max-w-[1440px] mx-auto text-center">
             <h1 className="font-headline-xl text-headline-xl text-on-primary mb-4">Bảng tin Gia Sư</h1>
             <p className="font-body-lg text-body-lg text-on-primary-container opacity-90 mb-10 max-w-2xl mx-auto">

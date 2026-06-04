@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { MOCK_TUTORS } from '../../constants/mockData';
 
 const TutorList: React.FC = () => {
@@ -140,7 +141,7 @@ const TutorList: React.FC = () => {
                         <span className="font-headline-sm text-primary">{tutor.price}</span>
                         <span className="font-body-sm text-outline">/giờ</span>
                       </div>
-                      <button className="px-5 py-2 border border-primary text-primary rounded-lg font-label-md hover:bg-primary hover:text-on-primary transition-all">Xem hồ sơ</button>
+                      <Link to={`/tutors/${tutor.id}`} className="px-5 py-2 border border-primary text-primary rounded-lg font-label-md hover:bg-primary hover:text-on-primary transition-all">Xem hồ sơ</Link>
                     </div>
                   </div>
                 </div>

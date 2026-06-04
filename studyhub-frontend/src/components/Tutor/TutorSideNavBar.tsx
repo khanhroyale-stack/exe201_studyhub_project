@@ -1,40 +1,43 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CURRENT_PARENT } from '../../constants/mockParentData';
+import { CURRENT_TUTOR } from '../../constants/mockTutorData';
 
 const navItems = [
-  { to: '/parent/dashboard', icon: 'dashboard', label: 'Dashboard' },
-  { to: '/parent/posts', icon: 'post_add', label: 'Quản lý bài đăng' },
-  { to: '/parent/applicants', icon: 'group', label: 'Duyệt ứng tuyển' },
-  { to: '/parent/classes', icon: 'school', label: 'Quản lý lớp học' },
-  { to: '/parent/feedback', icon: 'rate_review', label: 'Phản hồi & Đánh giá' },
-  { to: '/parent/messages', icon: 'chat', label: 'Tin nhắn' },
+  { to: '/tutor/dashboard', icon: 'dashboard', label: 'Bảng điều khiển' },
+  { to: '/tutor/create-post', icon: 'post_add', label: 'Đăng tin mới' },
+  { to: '/tutor/classes', icon: 'school', label: 'Quản lý lớp' },
+  { to: '/tutor/schedule', icon: 'calendar_month', label: 'Lịch dạy' },
+  { to: '/tutor/search-classes', icon: 'search', label: 'Tìm lớp' },
+  { to: '/tutor/offers', icon: 'mail', label: 'Lời mời dạy' },
+  { to: '/tutor/billing', icon: 'receipt_long', label: 'Thanh toán phí' },
+  { to: '/tutor/messages', icon: 'chat', label: 'Tin nhắn' },
+  { to: '/tutor/reviews', icon: 'star', label: 'Đánh giá' },
 ];
 
-const SideNavBar: React.FC = () => {
+const TutorSideNavBar: React.FC = () => {
   return (
     <aside className="fixed left-0 top-[72px] bottom-0 w-[280px] flex flex-col glass border-r border-white/20 z-30 animate-fade-in shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       {/* User Info Card */}
       <div className="px-5 py-5 border-b border-outline-variant">
         <div className="flex items-center gap-3">
           <img
-            src={CURRENT_PARENT.avatar}
+            src={CURRENT_TUTOR.avatar}
             alt="Avatar"
             className="w-10 h-10 rounded-full object-cover border-2 border-outline-variant shrink-0"
           />
           <div className="overflow-hidden">
-            <p className="font-semibold text-sm text-on-surface truncate">{CURRENT_PARENT.name}</p>
-            <p className="text-xs text-on-surface-variant">Phụ huynh học sinh</p>
+            <p className="font-semibold text-sm text-on-surface truncate">{CURRENT_TUTOR.name}</p>
+            <p className="text-xs text-on-surface-variant">Gia sư</p>
           </div>
         </div>
 
         {/* Quick stat */}
         <div className="mt-4 bg-primary-fixed/40 rounded-xl px-4 py-3 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-on-surface-variant">Lớp đang theo</p>
-            <p className="text-xl font-bold text-primary">0{CURRENT_PARENT.classesWaiting}</p>
+            <p className="text-xs font-medium text-on-surface-variant">Số giờ đã dạy</p>
+            <p className="text-xl font-bold text-primary">{CURRENT_TUTOR.taughtHours}h</p>
           </div>
-          <span className="material-symbols-outlined text-primary text-3xl">school</span>
+          <span className="material-symbols-outlined text-primary text-3xl">timer</span>
         </div>
       </div>
 
@@ -70,7 +73,7 @@ const SideNavBar: React.FC = () => {
       {/* Bottom: Settings */}
       <div className="px-3 py-4 border-t border-outline-variant">
         <NavLink
-          to="/parent/settings"
+          to="/tutor/settings"
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 text-sm font-medium ${
               isActive
@@ -96,4 +99,4 @@ const SideNavBar: React.FC = () => {
   );
 };
 
-export default SideNavBar;
+export default TutorSideNavBar;

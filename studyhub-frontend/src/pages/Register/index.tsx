@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Register: React.FC = () => {
   const [role, setRole] = useState<'student' | 'tutor'>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isLoggedIn, role: currentRole } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      if (currentRole === 'admin') navigate('/admin/dashboard');
+      else navigate('/');
+    }
+  }, [isLoggedIn, currentRole, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

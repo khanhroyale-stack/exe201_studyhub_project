@@ -51,7 +51,7 @@ const ClassList: React.FC = () => {
 
               {/* Học phí */}
               <div className="mb-8">
-                <h3 className="font-label-md text-label-md mb-4 uppercase tracking-wider text-outline">Học phí (vnđ/buổi)</h3>
+                <h3 className="font-label-md text-label-md mb-4 uppercase tracking-wider text-outline">Học phí (vnđ/ca)</h3>
                 <input className="w-full h-2 bg-surface-container-high rounded-full appearance-none cursor-pointer filter-range" max="1000000" min="50000" step="50000" type="range" defaultValue="500000" />
                 <div className="flex justify-between mt-3 font-body-sm text-on-surface-variant">
                   <span>50k</span>
@@ -126,7 +126,7 @@ const ClassList: React.FC = () => {
                     <div className="mt-auto flex items-center justify-between">
                       <div>
                         <span className="block text-outline font-label-sm uppercase tracking-wider">Học phí</span>
-                        <span className="font-headline-sm text-primary">{cls.price}<span className="text-body-sm font-normal text-on-surface-variant">/buổi</span></span>
+                        <span className="font-headline-sm text-primary">{cls.price}<span className="text-body-sm font-normal text-on-surface-variant">/ca</span></span>
                       </div>
                       <Link to={`/classes/${cls.id}`} className="bg-primary text-on-primary px-6 py-3 rounded-lg font-label-md hover:bg-primary-container transition-all active:scale-95 text-center">
                         Chi tiết lớp học

@@ -5,17 +5,29 @@ import { useAuth } from '../../context/AuthContext';
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'parent' | 'tutor' | 'admin'>('parent');
 
-  const { login } = useAuth();
+  const { login, isLoggedIn, role } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      if (role === 'admin') navigate('/admin/dashboard');
+      else navigate('/');
+    }
+  }, [isLoggedIn, role, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      login('parent'); // mock: đăng nhập với role phụ huynh
-      navigate('/');
+      login(selectedRole); // mock: đăng nhập với role đã chọn
+      if (selectedRole === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     }, 1200);
   };
 
@@ -98,6 +110,46 @@ const Login: React.FC = () => {
                     >
                       <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
                     </button>
+                  </div>
+                </div>
+
+                {/* Role Selection (Mock) */}
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface block">Đăng nhập với vai trò (Dùng để test)</label>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="role" 
+                        value="parent" 
+                        checked={selectedRole === 'parent'} 
+                        onChange={() => setSelectedRole('parent')} 
+                        className="text-primary focus:ring-primary"
+                      />
+                      <span className="text-body-sm">Phụ huynh</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="role" 
+                        value="tutor" 
+                        checked={selectedRole === 'tutor'} 
+                        onChange={() => setSelectedRole('tutor')}
+                        className="text-primary focus:ring-primary"
+                      />
+                      <span className="text-body-sm">Gia sư</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="role" 
+                        value="admin" 
+                        checked={selectedRole === 'admin'} 
+                        onChange={() => setSelectedRole('admin')}
+                        className="text-primary focus:ring-primary"
+                      />
+                      <span className="text-body-sm">Admin</span>
+                    </label>
                   </div>
                 </div>
 

@@ -108,10 +108,10 @@ const ClassDetail: React.FC = () => {
           <div className="lg:col-span-4 sticky top-[96px]">
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-6">
               <div>
-                <span className="text-on-surface-variant font-label-sm text-label-sm block mb-1">Học phí mỗi buổi</span>
+                <span className="text-on-surface-variant font-label-sm text-label-sm block mb-1">Học phí mỗi ca</span>
                 <div className="flex items-baseline gap-2">
                   <span className="font-headline-lg text-headline-lg text-primary">{currentClass.price}</span>
-                  <span className="text-on-surface-variant font-body-sm text-body-sm">/ buổi ({currentClass.duration || '120 phút'})</span>
+                  <span className="text-on-surface-variant font-body-sm text-body-sm">/ ca ({currentClass.duration || '120 phút'})</span>
                 </div>
               </div>
               <div className="space-y-4">
@@ -152,7 +152,7 @@ const ClassDetail: React.FC = () => {
               <div className="pt-4 border-t border-outline-variant space-y-3">
                 <div className="flex justify-between font-label-md text-label-md">
                   <span className="text-on-surface-variant">Lộ trình học</span>
-                  <span className="text-on-surface">{currentClass.totalSessions || '24 buổi'}</span>
+                  <span className="text-on-surface">{currentClass.totalSessions || '24 ca'}</span>
                 </div>
                 <div className="flex justify-between font-label-md text-label-md">
                   <span className="text-on-surface-variant">Tài liệu tặng kèm</span>
@@ -165,7 +165,7 @@ const ClassDetail: React.FC = () => {
                 <span className="material-symbols-outlined text-[18px]">info</span>
                 Chính sách bảo hành
               </h4>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">Hoàn trả học phí nếu học sinh không tiến bộ sau 1 tháng tham gia đầy đủ các buổi học.</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Hoàn trả học phí nếu học sinh không tiến bộ sau 1 tháng tham gia đầy đủ các ca học.</p>
             </div>
           </div>
         </div>

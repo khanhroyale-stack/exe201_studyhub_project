@@ -16,7 +16,7 @@ export const MOCK_CLASSES: ClassDto[] = [
     schedule: "Thứ 2 - Thứ 4 - Thứ 6",
     sessionTime: "18:30 - 20:30",
     duration: "120 phút",
-    totalSessions: "24 buổi",
+    totalSessions: "24 ca",
     maxStudents: 20,
     currentStudents: 15,
     tutorExperience: "8 năm kinh nghiệm",
@@ -26,7 +26,7 @@ export const MOCK_CLASSES: ClassDto[] = [
       "Có máy tính cầm tay (fx-580VNX hoặc tương đương).",
       "Tinh thần tự giác và hoàn thành bài tập về nhà đầy đủ."
     ],
-    description: "Khóa học này được thiết kế đặc biệt dành cho học sinh lớp 12 đang chuẩn bị cho kỳ thi Tốt nghiệp THPT và xét tuyển Đại học. Chúng tôi sẽ tập trung vào các chuyên đề trọng tâm bao gồm: Khảo sát hàm số, Nguyên hàm - Tích phân, Số phức và Hình học không gian Oxyz.\n\nMỗi buổi học sẽ kết hợp giữa lý thuyết cô đọng và thực hành giải các dạng đề thi minh họa của Bộ Giáo dục. Học sinh sẽ được tiếp cận với các phương pháp giải nhanh bằng máy tính cầm tay Casio và tư duy giải trắc nghiệm tối ưu."
+    description: "Khóa học này được thiết kế đặc biệt dành cho học sinh lớp 12 đang chuẩn bị cho kỳ thi Tốt nghiệp THPT và xét tuyển Đại học. Chúng tôi sẽ tập trung vào các chuyên đề trọng tâm bao gồm: Khảo sát hàm số, Nguyên hàm - Tích phân, Số phức và Hình học không gian Oxyz.\n\nMỗi ca học sẽ kết hợp giữa lý thuyết cô đọng và thực hành giải các dạng đề thi minh họa của Bộ Giáo dục. Học sinh sẽ được tiếp cận với các phương pháp giải nhanh bằng máy tính cầm tay Casio và tư duy giải trắc nghiệm tối ưu."
   },
   {
     id: 2,
@@ -42,7 +42,7 @@ export const MOCK_CLASSES: ClassDto[] = [
     schedule: "Thứ 3 - Thứ 5",
     sessionTime: "19:30 - 21:30",
     duration: "120 phút",
-    totalSessions: "16 buổi",
+    totalSessions: "16 ca",
     maxStudents: 10,
     currentStudents: 6,
     tutorExperience: "5 năm kinh nghiệm",
@@ -67,7 +67,7 @@ export const MOCK_CLASSES: ClassDto[] = [
     schedule: "Thứ Bảy - Chủ Nhật",
     sessionTime: "09:00 - 11:00",
     duration: "120 phút",
-    totalSessions: "32 buổi",
+    totalSessions: "32 ca",
     maxStudents: 8,
     currentStudents: 5,
     tutorExperience: "10 năm kinh nghiệm",
@@ -92,7 +92,7 @@ export const MOCK_CLASSES: ClassDto[] = [
     schedule: "Thứ 2 - Thứ 5",
     sessionTime: "20:00 - 22:00",
     duration: "120 phút",
-    totalSessions: "20 buổi",
+    totalSessions: "20 ca",
     maxStudents: 15,
     currentStudents: 11,
     tutorExperience: "4 năm kinh nghiệm",

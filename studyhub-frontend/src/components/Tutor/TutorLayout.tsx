@@ -2,13 +2,13 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../Navbar';
-import SideNavBar from './SideNavBar';
+import TutorSideNavBar from './TutorSideNavBar';
 import Footer from '../Footer';
 
-const ParentLayout: React.FC = () => {
+const TutorLayout: React.FC = () => {
   const { role, isLoggedIn } = useAuth();
 
-  if (!isLoggedIn || role !== 'parent') {
+  if (!isLoggedIn || role !== 'tutor') {
     return <Navigate to="/login" replace />;
   }
 
@@ -19,7 +19,7 @@ const ParentLayout: React.FC = () => {
 
       {/* Body: Sidebar + Content */}
       <div className="flex flex-1 pt-[72px]">
-        <SideNavBar />
+        <TutorSideNavBar />
 
         {/* Main Content Area — offset by sidebar width */}
         <main className="flex-1 ml-[280px] p-8 min-h-[calc(100vh-72px)]">
@@ -37,4 +37,4 @@ const ParentLayout: React.FC = () => {
   );
 };
 
-export default ParentLayout;
+export default TutorLayout;

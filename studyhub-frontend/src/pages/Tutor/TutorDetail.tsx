@@ -242,11 +242,11 @@ const TutorDetail: React.FC = () => {
                   <span className="text-body-sm font-body-sm">Dạy qua Google Meet / Zoom</span>
                 </div>
               </div>
-              <button className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary-container transition-all active:scale-[0.98]">
-                Đăng ký học
+              <button className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined">person_add</span> Mời dạy
               </button>
-              <button className="w-full border border-primary text-primary py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/10 transition-all">
-                Gửi tin nhắn
+              <button className="w-full border border-primary text-primary py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined">chat</span> Nhắn tin
               </button>
               <p className="text-center text-label-sm font-label-sm text-on-surface-variant px-4">
                 Tư vấn miễn phí lộ trình học tập và chọn lớp phù hợp.

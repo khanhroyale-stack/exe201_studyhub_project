@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CURRENT_PARENT } from '../constants/mockParentData';
+import { CURRENT_TUTOR } from '../constants/mockTutorData';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -46,7 +47,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 h-[72px] bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+    <header className="fixed top-0 left-0 w-full z-50 h-[72px] glass border-b border-white/20 shadow-sm transition-all duration-300">
       <div className="max-w-[1440px] mx-auto h-full px-6 md:px-8 flex items-center justify-between gap-8">
 
         {/* ── Left: Logo + Nav links ── */}
@@ -111,6 +112,32 @@ const Navbar: React.FC = () => {
                   Quản lý
                 </Link>
               )}
+              {role === 'tutor' && (
+                <Link
+                  to="/tutor/dashboard"
+                  className={`hidden md:flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all ${
+                    isActive('/tutor')
+                      ? 'bg-primary text-on-primary'
+                      : 'text-primary border border-primary hover:bg-primary-fixed/20'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">dashboard</span>
+                  Quản lý
+                </Link>
+              )}
+              {role === 'admin' && (
+                <Link
+                  to="/admin/dashboard"
+                  className={`hidden md:flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all ${
+                    isActive('/admin')
+                      ? 'bg-primary text-on-primary'
+                      : 'text-primary border border-primary hover:bg-primary-fixed/20'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                  Quản trị
+                </Link>
+              )}
 
               {/* Notification Bell */}
               <button
@@ -130,16 +157,24 @@ const Navbar: React.FC = () => {
                   aria-haspopup="true"
                 >
                   <div className="text-right hidden sm:block">
-                    <p className="text-xs font-semibold text-on-surface leading-none">{CURRENT_PARENT.name}</p>
+                    <p className="text-xs font-semibold text-on-surface leading-none">
+                      {role === 'admin' ? 'Quản trị viên' : role === 'parent' ? CURRENT_PARENT.name : CURRENT_TUTOR.name}
+                    </p>
                     <p className="text-[10px] text-on-surface-variant mt-0.5">
-                      {role === 'parent' ? 'Phụ huynh' : 'Gia sư'}
+                      {role === 'admin' ? 'Admin' : role === 'parent' ? 'Phụ huynh' : 'Gia sư'}
                     </p>
                   </div>
-                  <img
-                    src={CURRENT_PARENT.avatar}
-                    alt="Avatar"
-                    className="w-9 h-9 rounded-full object-cover border-2 border-outline-variant"
-                  />
+                  {role === 'admin' ? (
+                    <div className="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center border-2 border-outline-variant text-primary">
+                      <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={role === 'parent' ? CURRENT_PARENT.avatar : CURRENT_TUTOR.avatar}
+                      alt="Avatar"
+                      className="w-9 h-9 rounded-full object-cover border-2 border-outline-variant"
+                    />
+                  )}
                   <span
                     className={`material-symbols-outlined text-on-surface-variant text-[18px] transition-transform duration-200 ${
                       isDropdownOpen ? 'rotate-180' : ''
@@ -151,39 +186,57 @@ const Navbar: React.FC = () => {
 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white border border-outline-variant rounded-2xl shadow-xl overflow-hidden z-50">
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 glass border border-white/20 rounded-2xl shadow-xl overflow-hidden z-50 animate-fade-in">
                     {/* User info */}
                     <div className="px-4 py-3 bg-surface-container-low border-b border-outline-variant">
-                      <p className="text-sm font-semibold text-on-surface">{CURRENT_PARENT.name}</p>
-                      <p className="text-xs text-on-surface-variant truncate">{CURRENT_PARENT.email}</p>
+                      <p className="text-sm font-semibold text-on-surface">{role === 'admin' ? 'Quản trị viên' : role === 'parent' ? CURRENT_PARENT.name : CURRENT_TUTOR.name}</p>
+                      <p className="text-xs text-on-surface-variant truncate">{role === 'admin' ? 'admin@studyhub.com' : role === 'parent' ? CURRENT_PARENT.email : CURRENT_TUTOR.email}</p>
                     </div>
 
                     {/* Menu items */}
                     <div className="py-1.5">
-                      <Link
-                        to="/parent/dashboard"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <span className="material-symbols-outlined text-[18px] text-primary">dashboard</span>
-                        Dashboard
-                      </Link>
-                      <Link
-                        to="/parent/posts"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <span className="material-symbols-outlined text-[18px] text-primary">post_add</span>
-                        Bài đăng của tôi
-                      </Link>
-                      <Link
-                        to="/parent/settings"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <span className="material-symbols-outlined text-[18px] text-on-surface-variant">settings</span>
-                        Cài đặt tài khoản
-                      </Link>
+                      {role === 'admin' ? (
+                        <>
+                          <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-primary">dashboard</span>
+                            Tổng quan Admin
+                          </Link>
+                          <Link to="/admin/users" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-primary">manage_accounts</span>
+                            Quản lý người dùng
+                          </Link>
+                        </>
+                      ) : role === 'parent' ? (
+                        <>
+                          <Link to="/parent/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-primary">dashboard</span>
+                            Dashboard
+                          </Link>
+                          <Link to="/parent/posts" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-primary">post_add</span>
+                            Bài đăng của tôi
+                          </Link>
+                          <Link to="/parent/settings" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">settings</span>
+                            Cài đặt tài khoản
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link to="/tutor/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-primary">dashboard</span>
+                            Bảng điều khiển
+                          </Link>
+                          <Link to="/tutor/classes" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-primary">school</span>
+                            Quản lý lớp
+                          </Link>
+                          <Link to="/tutor/settings" className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">settings</span>
+                            Cài đặt tài khoản
+                          </Link>
+                        </>
+                      )}
                     </div>
 
                     {/* Logout */}
@@ -217,7 +270,7 @@ const Navbar: React.FC = () => {
 
       {/* ── Mobile Menu ── */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-outline-variant shadow-lg">
+        <div className="md:hidden glass border-t border-white/20 shadow-lg animate-fade-in">
           <nav className="flex flex-col px-6 py-4 gap-1">
             <Link to="/" className="flex items-center gap-3 py-3 text-sm font-medium text-on-surface border-b border-outline-variant/50">
               <span className="material-symbols-outlined text-[18px] text-primary">home</span>Trang chủ
@@ -230,9 +283,9 @@ const Navbar: React.FC = () => {
             </Link>
 
             {/* Mobile: Logged in */}
-            {isLoggedIn && role === 'parent' && (
+            {isLoggedIn && (
               <>
-                <Link to="/parent/dashboard" className="flex items-center gap-3 py-3 text-sm font-medium text-primary border-b border-outline-variant/50">
+                <Link to={role === 'admin' ? "/admin/dashboard" : role === 'parent' ? "/parent/dashboard" : "/tutor/dashboard"} className="flex items-center gap-3 py-3 text-sm font-medium text-primary border-b border-outline-variant/50">
                   <span className="material-symbols-outlined text-[18px]">dashboard</span>Dashboard quản lý
                 </Link>
                 <button

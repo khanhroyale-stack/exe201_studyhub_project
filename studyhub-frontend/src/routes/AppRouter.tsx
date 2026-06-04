@@ -19,6 +19,25 @@ import FeedbackList from '../pages/Parent/FeedbackList';
 import CreateFeedback from '../pages/Parent/CreateFeedback';
 import Settings from '../pages/Parent/Settings';
 
+import TutorLayout from '../components/Tutor/TutorLayout';
+import TutorDashboard from '../pages/TutorPortal/TutorDashboard';
+import TutorSearchClasses from '../pages/TutorPortal/TutorSearchClasses';
+import TutorApplyClass from '../pages/TutorPortal/TutorApplyClass';
+import TutorOffers from '../pages/TutorPortal/TutorOffers';
+import TutorBilling from '../pages/TutorPortal/TutorBilling';
+import Messages from '../pages/Shared/Messages';
+import TutorCreatePost from '../pages/TutorPortal/TutorCreatePost';
+import TutorClasses from '../pages/TutorPortal/TutorClasses';
+import TutorSchedule from '../pages/TutorPortal/TutorSchedule';
+import TutorReviews from '../pages/TutorPortal/TutorReviews';
+import TutorSettings from '../pages/TutorPortal/TutorSettings';
+
+import AdminLayout from '../components/Admin/AdminLayout';
+import AdminDashboard from '../pages/AdminPortal/AdminDashboard';
+import AdminUsers from '../pages/AdminPortal/AdminUsers';
+import AdminContent from '../pages/AdminPortal/AdminContent';
+import AdminReports from '../pages/AdminPortal/AdminReports';
+
 const AppRouter: React.FC = () => {
   return (
     <Routes>
@@ -45,8 +64,40 @@ const AppRouter: React.FC = () => {
         <Route path="feedback" element={<FeedbackList />} />
         <Route path="feedback/create" element={<CreateFeedback />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="messages" element={<Messages />} />
         {/* Catch-all redirect within /parent */}
         <Route path="*" element={<Navigate to="/parent" replace />} />
+      </Route>
+
+      {/* ── Tutor Dashboard Routes (shared Navbar + SideNavBar + Footer via TutorLayout) ── */}
+      <Route path="/tutor" element={<TutorLayout />}>
+        {/* Index → Redirect to Dashboard */}
+        <Route index element={<Navigate to="/tutor/dashboard" replace />} />
+        <Route path="dashboard" element={<TutorDashboard />} />
+        <Route path="search-classes" element={<TutorSearchClasses />} />
+        <Route path="apply-class" element={<TutorApplyClass />} />
+        <Route path="create-post" element={<TutorCreatePost />} />
+        <Route path="classes" element={<TutorClasses />} />
+        <Route path="schedule" element={<TutorSchedule />} />
+        <Route path="reviews" element={<TutorReviews />} />
+        <Route path="offers" element={<TutorOffers />} />
+        <Route path="billing" element={<TutorBilling />} />
+        <Route path="messages" element={<Messages />} />
+        <Route path="settings" element={<TutorSettings />} />
+        {/* Catch-all redirect within /tutor */}
+        <Route path="*" element={<Navigate to="/tutor" replace />} />
+      </Route>
+
+      {/* ── Admin Dashboard Routes (standalone AdminLayout) ── */}
+      <Route path="/admin" element={<AdminLayout />}>
+        {/* Index → Redirect to Dashboard */}
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="content" element={<AdminContent />} />
+        <Route path="reports" element={<AdminReports />} />
+        {/* Catch-all redirect within /admin */}
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
 
       {/* ── Global catch-all ── */}

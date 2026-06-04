@@ -45,7 +45,7 @@ export interface ClassSession {
   tutorName: string;
   tutorAvatar: string;
   schedule: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: 'TRIAL_WAITING' | 'TRIAL_PROGRESS' | 'OFFICIAL' | 'COMPLETED' | 'CANCELLED';
   nextSessionDate: string;
   progress: number;
 }

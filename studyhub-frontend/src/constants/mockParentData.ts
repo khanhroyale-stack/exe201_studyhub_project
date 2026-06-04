@@ -39,7 +39,7 @@ export const MOCK_JOB_POSTINGS: JobPosting[] = [
     postedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     status: 'PRIORITY',
     location: 'Học Online',
-    schedule: '3 buổi/tuần',
+    schedule: '3 ca/tuần',
     tutorGenderPreference: 'ANY',
     pricePerSession: 350000,
     applicantsCount: 3,
@@ -85,9 +85,29 @@ export const MOCK_CLASSES: ClassSession[] = [
     tutorName: 'Lê Thị Thanh',
     tutorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTcyLV-pbCBKDruyPCKCIM4TqRUMe6owsX04_nA7hfv7pkavDnwNb5qh6nKmjn0waHKwRaliXWc7bwcZdJjX7_KOXYpPyx3f7zcV2w3yuFYUc-oA2zb1MCSVTCrkgmFmt_dxPUpoQVOozyI2HLAtv-0s7NyjJK3tcu9VO8-oPwPb8OAGd_JWbWmzlUleayZJrT7fX4p9bgRArPDwTI_9mZHP6xMlK2uJzakJzfSY7-A8CCmnMoZTVWGOf3vVH2xyclpDoC7hf06Qcc',
     schedule: 'Thứ 2, Thứ 4 - 18:00',
-    status: 'IN_PROGRESS',
+    status: 'OFFICIAL',
     nextSessionDate: '2026-06-05T18:00:00Z',
     progress: 40
+  },
+  {
+    id: 'c2',
+    className: 'Tiếng Anh Giao tiếp - Lớp 7',
+    tutorName: 'Trần Minh Anh',
+    tutorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBK8lhUpNKWMGZdwWdGo_4FXgZVfv-aK31m5zmy7y8iz5aXDOxZWxztDZo4o_BOMqXLIurd0OH9J4k_1g8FSatf8iIppQSW74L8s3wRv2_kyTuBfODLMUlUytLQHza3mGMHWAxV95EG7cBn1ca0ax5WPK72RNEZscgIYi38t-j1-96iByOZpte1JuR9fgKm9nvJaalo1lQnCPtb5AInRo0G8wLhrQes8UdGrCGy8ZTy2QvbpLZWIIbP9T7vlO1lyoxURHsc97jRjRSd',
+    schedule: 'Thứ 3 - 19:00',
+    status: 'TRIAL_WAITING',
+    nextSessionDate: '2026-06-10T19:00:00Z',
+    progress: 0
+  },
+  {
+    id: 'c3',
+    className: 'Vật lý 12 - Luyện thi',
+    tutorName: 'Nguyễn Hoàng Nam',
+    tutorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv5jTZIiacbQcrXMyddJos4A_F0tTGTDrn6nQYU1bvfZBUECqSNuDfuSRVRk6CHmJdNEmn1FTzLeFAZ7AJORoMVX0wf-XoYRY7T-gnwLlIhXdGvNBZr696ICRcbjAXas20ZhL7v0-Xepxv7hnth1b-6nBnmGOrcwl93tKYtdUN7Bbz81fugRnDC3tlmvblwb7p9yOAxsDMGxy4JrMLkPnDaaTC22xHjLj99TuuQZ5M8fLDX3T6HnDx4xN-MFDXzPfIykkhst8bQnNX',
+    schedule: 'Thứ 5, Chủ Nhật - 20:00',
+    status: 'TRIAL_PROGRESS',
+    nextSessionDate: '2026-06-08T20:00:00Z',
+    progress: 10
   }
 ];
 
@@ -97,7 +117,7 @@ export const MOCK_FEEDBACKS: ParentFeedback[] = [
     classId: 'c1',
     tutorId: 't1',
     rating: 5,
-    comment: 'Gia sư rất nhiệt tình, bài giảng sinh động và dễ hiểu. Con tôi đã tiến bộ rõ rệt chỉ sau 5 buổi học. Rất hài lòng với chất lượng giảng dạy của thầy.',
+    comment: 'Gia sư rất nhiệt tình, bài giảng sinh động và dễ hiểu. Con tôi đã tiến bộ rõ rệt chỉ sau 5 ca học. Rất hài lòng với chất lượng giảng dạy của thầy.',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
   },
   {

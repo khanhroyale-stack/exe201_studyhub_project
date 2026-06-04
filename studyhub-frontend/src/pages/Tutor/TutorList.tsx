@@ -10,9 +10,9 @@ const TutorList: React.FC = () => {
         <section className="relative bg-primary py-16 px-margin-desktop overflow-hidden">
           <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
           <div className="relative z-10 max-w-[1440px] mx-auto text-center">
-            <h1 className="font-headline-xl text-headline-xl text-on-primary mb-4">Tìm Gia Sư Phù Hợp Nhất</h1>
+            <h1 className="font-headline-xl text-headline-xl text-on-primary mb-4">Bảng tin Gia Sư</h1>
             <p className="font-body-lg text-body-lg text-on-primary-container opacity-90 mb-10 max-w-2xl mx-auto">
-              Hơn 5000+ gia sư được xác thực từ các trường đại học hàng đầu, sẵn sàng đồng hành cùng bạn chinh phục mọi môn học.
+              Lướt chọn các bài đăng PR tự giới thiệu từ 5000+ gia sư được xác thực, sẵn sàng đồng hành cùng bạn.
             </p>
             <div className="max-w-3xl mx-auto bg-surface-container-lowest p-2 rounded-xl shadow-lg flex flex-col md:flex-row gap-2">
               <div className="flex-1 flex items-center px-4 border-r border-outline-variant md:border-r-0 lg:border-r">
@@ -123,8 +123,11 @@ const TutorList: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-headline-sm text-headline-sm text-on-surface">{tutor.name}</h3>
-                      <div className="flex items-center gap-1 bg-yellow-100 px-2 py-1 rounded text-yellow-800">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Tin PR</span>
+                        <h3 className="font-headline-sm text-headline-sm text-on-surface">{tutor.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-1 bg-yellow-100 px-2 py-1 rounded text-yellow-800 shrink-0">
                         <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                         <span className="font-label-sm">{tutor.rating}</span>
                       </div>

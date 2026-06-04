@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
-type Role = 'parent' | 'tutor' | null;
+type Role = 'parent' | 'tutor' | 'admin' | null;
 
 interface AuthContextType {
   isLoggedIn: boolean;

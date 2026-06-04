@@ -19,6 +19,7 @@ import ApplicantReview from '../pages/Parent/ApplicantReview';
 import ClassManagement from '../pages/Parent/ClassManagement';
 import FeedbackList from '../pages/Parent/FeedbackList';
 import CreateFeedback from '../pages/Parent/CreateFeedback';
+import Settings from '../pages/Parent/Settings';
 
 const AppRouter: React.FC = () => {
   return (
@@ -42,6 +43,7 @@ const AppRouter: React.FC = () => {
         <Route path="classes" element={<ClassManagement />} />
         <Route path="feedback" element={<FeedbackList />} />
         <Route path="create-feedback" element={<CreateFeedback />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );

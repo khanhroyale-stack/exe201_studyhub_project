@@ -83,7 +83,7 @@ const TopNavBar: React.FC = () => {
               </div>
               <button 
                 className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-[#f3f4f6] transition-colors"
-                onClick={() => { setIsDropdownOpen(false); /* Navigate to settings */ }}
+                onClick={() => { setIsDropdownOpen(false); navigate('/parent/settings'); }}
               >
                 <span className="material-symbols-outlined text-[20px] text-[#434654]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>settings</span>
                 <span className="text-sm font-medium text-[#191c1e]">Cài đặt</span>

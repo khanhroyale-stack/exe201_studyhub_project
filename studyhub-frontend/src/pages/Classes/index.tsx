@@ -1,10 +1,9 @@
-import Navbar from '../../components/Navbar';
+
 
 const Classes = () => {
   return (
     <div className="bg-background text-on-surface min-h-screen">
-      <Navbar />
-      <main className="pt-[72px] min-h-screen">
+      <main className="min-h-screen">
         {/* Hero Search Section */}
         <section className="bg-primary pt-12 pb-16 px-margin-desktop text-center">
           <div className="max-w-4xl mx-auto">
@@ -269,35 +268,6 @@ const Classes = () => {
           </div>
         </div>
       </main>
-      {/* Footer */}
-      <footer className="w-full py-12 bg-surface-container-low border-t border-outline-variant">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-margin-desktop max-w-[1440px] mx-auto gap-8">
-          <div className="flex flex-col gap-4">
-            <span className="font-label-md text-label-md font-bold text-on-surface uppercase tracking-widest">StudyHub</span>
-            <p className="text-body-sm text-on-surface-variant max-w-xs">Nền tảng kết nối gia sư và học sinh uy tín hàng đầu, giúp việc học trở nên dễ dàng và hiệu quả hơn.</p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant opacity-90">© 2024 StudyHub. All rights reserved.</p>
-          </div>
-          <div className="flex flex-wrap gap-x-12 gap-y-4">
-            <div className="flex flex-col gap-3">
-              <span className="font-label-md text-primary">Liên kết</span>
-              <a className="font-body-sm text-body-sm text-on-surface-variant hover:underline" href="#">Chính sách bảo mật</a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant hover:underline" href="#">Điều khoản sử dụng</a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant hover:underline" href="#">Liên hệ</a>
-            </div>
-            <div className="flex flex-col gap-3">
-              <span className="font-label-md text-primary">Theo dõi</span>
-              <div className="flex gap-4">
-                <a className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-primary-container hover:text-white transition-all" href="#">
-                  <span className="material-symbols-outlined">share</span>
-                </a>
-                <a className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-primary-container hover:text-white transition-all" href="#">
-                  <span className="material-symbols-outlined">mail</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

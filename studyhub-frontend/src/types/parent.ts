@@ -3,6 +3,7 @@ export interface Parent {
   name: string;
   email: string;
   phone: string;
+  address: string;
   avatar: string;
   budgetSpentThisMonth: number;
   classesWaiting: number;

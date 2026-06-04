@@ -26,7 +26,7 @@ const TopNavBar: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 w-full h-[72px] z-50 flex items-center justify-between px-8 bg-[#f8f9fb] dark:bg-[#e1e2e4] border-b border-[#c3c6d6] dark:border-[#737685]">
       <div className="flex items-center gap-10">
-        <Link to="/parent/home" className="font-headline-md text-headline-md font-bold text-[#003d9b] flex items-center gap-2">
+        <Link to="/parent" className="font-headline-md text-headline-md font-bold text-[#003d9b] flex items-center gap-2">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmX5r2ITtQMkHposhetc4Bygg8-0TRMYQbwFKkvHZAdcpV69m-8SVL5dZpqp_-Ry6FQJJe1DZOdDFk3rlZXP6hqllDPJ9JiVPrHnEU-wgHkKWELJjtGQR4hOXlGY0q948gN3a-spAAFS7-uumiJ83jH2wjZviXNTcpIDCpKgb_93OPO99m6SPZJ7xFGgFJjuceJ-hPiRccx9WeiPF4HGU1u8qXIrt5isqNX28TSgXx604IvPUF7p9KymiqLZbcPwOa6b-hesCUNG1D"
             alt="StudyHub Icon"
@@ -39,10 +39,10 @@ const TopNavBar: React.FC = () => {
           />
         </Link>
         <nav className="hidden md:flex items-center gap-8 h-full pt-1">
-          <Link to="/parent/home" className="font-semibold text-sm text-[#003d9b] border-b-2 border-[#003d9b] pb-1 h-full flex items-center">
+          <Link to="/parent" className="font-semibold text-sm text-[#003d9b] border-b-2 border-[#003d9b] pb-1 h-full flex items-center">
             Trang chủ
           </Link>
-          <Link to="/parent/classes" className="font-semibold text-sm text-[#434654] hover:text-[#003d9b] hover:bg-[#f3f4f6] px-2 transition-colors duration-150 flex items-center h-full">
+          <Link to="/classes" className="font-semibold text-sm text-[#434654] hover:text-[#003d9b] hover:bg-[#f3f4f6] px-2 transition-colors duration-150 flex items-center h-full">
             Tất cả lớp học
           </Link>
           <Link to="/tutors" className="font-semibold text-sm text-[#434654] hover:text-[#003d9b] hover:bg-[#f3f4f6] px-2 transition-colors duration-150 flex items-center h-full">

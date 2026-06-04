@@ -16,7 +16,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="bg-background min-h-screen text-on-surface">
-      <main className="pt-[72px] min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative">
+      <main className="min-h-[calc(100vh-72px)] flex flex-col items-center justify-center p-4 md:p-8 relative">
         {/* Background Decoration Elements */}
         <div className="fixed top-0 right-0 -z-10 w-1/3 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none"></div>
         <div className="fixed bottom-0 left-0 -z-10 w-1/4 h-1/3 bg-gradient-to-tr from-secondary/5 to-transparent pointer-events-none"></div>

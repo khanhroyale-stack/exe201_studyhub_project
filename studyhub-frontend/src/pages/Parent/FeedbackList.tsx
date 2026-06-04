@@ -36,7 +36,7 @@ const FeedbackList: React.FC = () => {
               </div>
               <button 
                 className="w-full bg-[#003d9b] text-white py-3 rounded-lg font-semibold text-sm hover:brightness-110 active:scale-95 transition-all"
-                onClick={() => navigate('/parent/create-feedback')}
+                onClick={() => navigate('/parent/feedback/create')}
               >
                 Đánh giá ngay
               </button>
@@ -59,7 +59,7 @@ const FeedbackList: React.FC = () => {
             </div>
             <button 
               className="w-full bg-[#003d9b] text-white py-3 rounded-lg font-semibold text-sm hover:brightness-110 active:scale-95 transition-all"
-              onClick={() => navigate('/parent/create-feedback')}
+              onClick={() => navigate('/parent/feedback/create')}
             >
               Đánh giá ngay
             </button>

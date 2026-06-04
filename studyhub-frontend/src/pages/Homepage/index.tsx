@@ -8,7 +8,7 @@ const Homepage: React.FC = () => {
 
   return (
     <div className="bg-background text-on-background">
-      <main className="mt-[72px] min-h-screen">
+      <main className="min-h-screen">
         {/* Hero Section */}
         <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden py-20">
           <div className="absolute inset-0 z-0">

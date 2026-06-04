@@ -15,7 +15,7 @@ const PostManagement: React.FC = () => {
           <h1 className="font-bold text-3xl text-[#191c1e]">Quản lý bài đăng</h1>
           <p className="font-normal text-base text-[#434654] mt-2">Theo dõi và quản lý các yêu cầu tìm gia sư của bạn.</p>
         </div>
-        <Link to="/parent/create-post" className="bg-[#003d9b] text-white px-6 py-3 rounded-lg font-semibold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-sm">
+        <Link to="/parent/posts/create" className="bg-[#003d9b] text-white px-6 py-3 rounded-lg font-semibold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-sm">
           <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>add</span>
           Tạo bài đăng mới
         </Link>

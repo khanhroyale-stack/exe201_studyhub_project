@@ -5,6 +5,7 @@ export const CURRENT_PARENT: Parent = {
   name: 'Tuấn',
   email: 'tuan@example.com',
   phone: '0901234567',
+  address: '123 Đường Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
   avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApLOch6r8WelzEKL27hCZ3JHgUEofD-Uf9GYP22XsH7WxUJpK5rcR7fwFB3rXkb2h189KePCbO6XxtHXKdezlzuQElqSx3tuXRq0kEK8XAj9MtdlBeEC_7jps0sh7fV1FZFBQw6czekQCfav5V-bamDLN3aRQeqcbwQ-6NVRtvsLcxU4lTMkXek7GUxVP1jcj2o5gzzefO0vQ3KGvnDObqKWhthZhQ2nz9Zgv4Ivnr9z9yQQKaxDMWmwJIsgsOvRNmH_IOxM_UrGwt',
   budgetSpentThisMonth: 4200000,
   classesWaiting: 2

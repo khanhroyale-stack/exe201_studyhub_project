@@ -10,7 +10,6 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 
 import ParentLayout from '../components/Parent/ParentLayout';
-import ParentHome from '../pages/Parent/ParentHome';
 import ParentDashboard from '../pages/Parent/ParentDashboard';
 import PostManagement from '../pages/Parent/PostManagement';
 import CreatePost from '../pages/Parent/CreatePost';
@@ -36,8 +35,8 @@ const AppRouter: React.FC = () => {
 
       {/* ── Parent Dashboard Routes (shared Navbar + SideNavBar + Footer via ParentLayout) ── */}
       <Route path="/parent" element={<ParentLayout />}>
-        {/* Index → Home landing page for logged-in parent */}
-        <Route index element={<ParentHome />} />
+        {/* Index → Redirect to Dashboard */}
+        <Route index element={<Navigate to="/parent/dashboard" replace />} />
         <Route path="dashboard" element={<ParentDashboard />} />
         <Route path="posts" element={<PostManagement />} />
         <Route path="posts/create" element={<CreatePost />} />

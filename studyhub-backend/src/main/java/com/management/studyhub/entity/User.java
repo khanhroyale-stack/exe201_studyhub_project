@@ -1,0 +1,28 @@
+package com.management.studyhub.entity;
+
+import com.management.studyhub.entity.enums.UserRole;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users") @Data
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role; // ADMIN, PARENT, TUTOR
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+}

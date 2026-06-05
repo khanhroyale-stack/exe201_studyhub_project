@@ -4,8 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import StudyHubLogo from '../../components/StudyHubLogo';
 
 const Register: React.FC = () => {
-  const [role, setRole] = useState<'student' | 'tutor'>('student');
+  const [roleSelect, setRoleSelect] = useState<'student' | 'tutor'>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   const { isLoggedIn, role: currentRole } = useAuth();
   const navigate = useNavigate();
 
@@ -27,168 +31,289 @@ const Register: React.FC = () => {
     }, 1500);
   };
 
+  const inputStyle = (field: string): React.CSSProperties => ({
+    width: '100%',
+    paddingLeft: '44px',
+    paddingRight: '16px',
+    paddingTop: '11px',
+    paddingBottom: '11px',
+    border: `2px solid ${focusedField === field ? '#1a3480' : '#e2e8f0'}`,
+    borderRadius: '10px',
+    background: focusedField === field ? '#f8faff' : '#f8fafc',
+    fontSize: '14px',
+    color: '#0f172a',
+    outline: 'none',
+    transition: 'all 0.2s ease',
+    boxSizing: 'border-box',
+  });
+
   return (
-    <div className="bg-background min-h-screen text-on-surface">
-      <main className="min-h-[calc(100vh-72px)] flex flex-col items-center justify-center p-4 md:p-8 relative">
-        {/* Background Decoration Elements */}
-        <div className="fixed top-0 right-0 -z-10 w-1/3 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none"></div>
-        <div className="fixed bottom-0 left-0 -z-10 w-1/4 h-1/3 bg-gradient-to-tr from-secondary/5 to-transparent pointer-events-none"></div>
-
-        {/* Auth Layout Wrapper */}
-        <div className="flex w-full max-w-[1200px] overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant mx-auto my-12">
-          {/* Left Side: Side Navigation */}
-          <aside className="hidden md:flex flex-col w-sidebar-width bg-surface-container-low border-r border-outline-variant py-8">
-            <div className="px-8 mb-10">
-              <StudyHubLogo iconSize={36} textSize="text-xl" showTagline />
-            </div>
-            <nav className="flex-1 space-y-1">
-              <Link to="/login" className="flex items-center gap-3 px-8 py-4 text-on-surface-variant font-medium hover:bg-surface-container transition-all duration-150 cursor-pointer active:scale-95 group">
-                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary">login</span>
-                <span className="font-label-md text-label-md">Login</span>
-              </Link>
-              <Link to="/register" className="flex items-center gap-3 px-8 py-4 border-l-4 border-primary text-primary font-bold bg-surface-container-high cursor-pointer active:scale-95">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person_add</span>
-                <span className="font-label-md text-label-md">Register</span>
-              </Link>
-            </nav>
-            <div className="px-8 mt-auto">
-              <div className="p-4 rounded-lg bg-primary-fixed text-on-primary-fixed-variant">
-                <p className="font-label-sm text-label-sm mb-1">Cần hỗ trợ?</p>
-                <p className="text-body-sm text-xs">Liên hệ đội ngũ chăm sóc khách hàng của chúng tôi.</p>
-              </div>
-            </div>
-          </aside>
-
-          {/* Right Side: Registration Form Canvas */}
-          <div className="flex-1 flex flex-col items-center justify-center py-12 px-6 md:px-12 bg-white">
-            <div className="w-full max-w-[480px]">
-              {/* Branding & Header */}
-              <div className="flex flex-col items-center mb-10 text-center">
-                <div className="mb-5">
-                  <StudyHubLogo iconSize={48} textSize="text-3xl" showTagline />
-                </div>
-                <h1 className="font-headline-md text-headline-md text-on-surface mb-2">Tạo tài khoản mới</h1>
-                <p className="text-body-md text-on-surface-variant">Tham gia cộng đồng học thuật StudyHub ngay hôm nay.</p>
-              </div>
-
-              {/* Registration Form */}
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* Role Selection Chips */}
-                <div className="space-y-3">
-                  <label className="font-label-md text-label-md text-on-surface block">Bạn tham gia với vai trò?</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label 
-                      className={`relative flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all hover:bg-surface-container-low group ${role === 'student' ? 'border-primary bg-primary-fixed/30' : 'border-outline-variant'}`}
-                    >
-                      <input 
-                        checked={role === 'student'} 
-                        onChange={() => setRole('student')}
-                        className="sr-only" 
-                        name="role" 
-                        type="radio" 
-                        value="student" 
-                      />
-                      <div className="flex flex-col items-center gap-2">
-                        <span className={`material-symbols-outlined text-primary ${role === 'student' ? 'font-bold' : ''}`} style={role === 'student' ? { fontVariationSettings: "'FILL' 1" } : {}}>school</span>
-                        <span className="font-label-md text-label-md">Học viên</span>
-                      </div>
-                    </label>
-                    <label 
-                      className={`relative flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all hover:bg-surface-container-low group ${role === 'tutor' ? 'border-primary bg-primary-fixed/30' : 'border-outline-variant'}`}
-                    >
-                      <input 
-                        checked={role === 'tutor'} 
-                        onChange={() => setRole('tutor')}
-                        className="sr-only" 
-                        name="role" 
-                        type="radio" 
-                        value="tutor" 
-                      />
-                      <div className="flex flex-col items-center gap-2">
-                        <span className={`material-symbols-outlined text-primary ${role === 'tutor' ? 'font-bold' : ''}`} style={role === 'tutor' ? { fontVariationSettings: "'FILL' 1" } : {}}>history_edu</span>
-                        <span className="font-label-md text-label-md">Gia sư</span>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Full Name */}
-                <div className="space-y-2">
-                  <label className="font-label-md text-label-md text-on-surface block" htmlFor="fullName">Họ và tên</label>
-                  <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
-                    <input className="w-full pl-12 pr-4 py-3 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" id="fullName" placeholder="Nhập họ và tên của bạn" required type="text" />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <label className="font-label-md text-label-md text-on-surface block" htmlFor="email">Email</label>
-                  <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">mail</span>
-                    <input className="w-full pl-12 pr-4 py-3 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" id="email" placeholder="example@gmail.com" required type="email" />
-                  </div>
-                </div>
-
-                {/* Password Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="font-label-md text-label-md text-on-surface block" htmlFor="password">Mật khẩu</label>
-                    <div className="relative group">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">lock</span>
-                      <input className="w-full pl-12 pr-4 py-3 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" id="password" placeholder="••••••••" required type="password" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="font-label-md text-label-md text-on-surface block" htmlFor="confirmPassword">Xác nhận</label>
-                    <div className="relative group">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">lock_reset</span>
-                      <input className="w-full pl-12 pr-4 py-3 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" id="confirmPassword" placeholder="••••••••" required type="password" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Terms */}
-                <div className="flex items-start gap-3 py-2">
-                  <input className="mt-1 rounded border-outline-variant text-primary focus:ring-primary-container h-4 w-4" id="terms" required type="checkbox" />
-                  <label className="text-body-sm text-on-surface-variant" htmlFor="terms">
-                    Tôi đồng ý với <a className="text-primary font-semibold hover:underline" href="#">Điều khoản dịch vụ</a> và <a className="text-primary font-semibold hover:underline" href="#">Chính sách bảo mật</a> của StudyHub.
-                  </label>
-                </div>
-
-                {/* Submit Button */}
-                <button 
-                  className="w-full bg-primary-container text-on-primary py-4 rounded-lg font-label-md text-label-md shadow-[0px_4px_12px_rgba(0,61,155,0.2)] hover:bg-primary transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed" 
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> 
-                      Đang xử lý...
-                    </span>
-                  ) : (
-                    "ĐĂNG KÝ"
-                  )}
-                </button>
-              </form>
-
-              {/* Back to Login */}
-              <div className="mt-8 text-center">
-                <p className="text-body-md text-on-surface-variant">
-                  Đã có tài khoản? 
-                  <Link to="/login" className="text-primary font-bold hover:underline ml-1">Đăng nhập ngay</Link>
-                </p>
-              </div>
-            </div>
-
-            {/* Footer Small */}
-            <footer className="mt-auto pt-12 text-center">
-              <p className="text-label-sm font-label-sm text-outline">© 2024 StudyHub Academic Platform. All rights reserved.</p>
-            </footer>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f4ff', padding: '40px 24px' }}>
+      <div style={{ width: '100%', maxWidth: '460px', animation: 'authFadeIn 0.5s cubic-bezier(0.16,1,0.3,1) both' }}>
+          {/* Logo */}
+          <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+            <StudyHubLogo iconSize={44} textSize="text-2xl" showTagline />
           </div>
+
+          {/* Tab switcher */}
+          <div style={{
+            display: 'flex',
+            background: '#f0f4ff',
+            borderRadius: '14px',
+            padding: '4px',
+            marginBottom: '28px',
+            gap: '4px',
+          }}>
+            <Link
+              to="/login"
+              style={{
+                flex: 1, textAlign: 'center', padding: '10px',
+                borderRadius: '10px',
+                fontWeight: 600, fontSize: '14px', textDecoration: 'none',
+                color: '#6b7a9a', background: 'transparent',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(26,52,128,0.06)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+            >
+              Đăng nhập
+            </Link>
+            <Link
+              to="/register"
+              style={{
+                flex: 1, textAlign: 'center', padding: '10px',
+                borderRadius: '10px',
+                fontWeight: 600, fontSize: '14px', textDecoration: 'none',
+                background: '#1a3480', color: 'white',
+                boxShadow: '0 2px 8px rgba(26,52,128,0.25)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Đăng ký
+            </Link>
+          </div>
+
+          {/* Header */}
+          <div style={{ marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '5px', letterSpacing: '-0.5px' }}>
+              Tạo tài khoản mới ✨
+            </h1>
+            <p style={{ color: '#6b7a9a', fontSize: '13px' }}>
+              Tham gia cộng đồng học thuật StudyHub ngay hôm nay.
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Role Selection */}
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '9px' }}>
+                Bạn tham gia với vai trò?
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {[
+                  { value: 'student' as const, label: 'Học viên', icon: 'school', desc: 'Tìm gia sư phù hợp' },
+                  { value: 'tutor' as const, label: 'Gia sư', icon: 'history_edu', desc: 'Dạy học, kiếm thêm' },
+                ].map(r => (
+                  <label key={r.value} style={{ cursor: 'pointer' }}>
+                    <input type="radio" name="role" value={r.value}
+                      checked={roleSelect === r.value}
+                      onChange={() => setRoleSelect(r.value)}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{
+                      padding: '14px 12px',
+                      border: `2px solid ${roleSelect === r.value ? '#1a3480' : '#e2e8f0'}`,
+                      borderRadius: '12px',
+                      background: roleSelect === r.value ? '#f0f4ff' : '#f8fafc',
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease',
+                      boxShadow: roleSelect === r.value ? '0 2px 12px rgba(26,52,128,0.12)' : 'none',
+                    }}>
+                      <span className="material-symbols-outlined" style={{
+                        fontSize: '26px', display: 'block', marginBottom: '5px',
+                        color: roleSelect === r.value ? '#1a3480' : '#94a3b8',
+                        fontVariationSettings: roleSelect === r.value ? "'FILL' 1" : "'FILL' 0",
+                      }}>{r.icon}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: roleSelect === r.value ? '#1a3480' : '#374151', display: 'block' }}>
+                        {r.label}
+                      </span>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', display: 'block' }}>
+                        {r.desc}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Full Name */}
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '7px' }}>
+                Họ và tên
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span className="material-symbols-outlined" style={{
+                  position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+                  fontSize: '20px', color: focusedField === 'name' ? '#1a3480' : '#94a3b8',
+                  transition: 'color 0.2s',
+                }}>person</span>
+                <input
+                  id="fullName" type="text" placeholder="Nhập họ và tên của bạn" required
+                  onFocus={() => setFocusedField('name')}
+                  onBlur={() => setFocusedField(null)}
+                  style={inputStyle('name')}
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '7px' }}>
+                Email
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span className="material-symbols-outlined" style={{
+                  position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+                  fontSize: '20px', color: focusedField === 'email' ? '#1a3480' : '#94a3b8',
+                  transition: 'color 0.2s',
+                }}>mail</span>
+                <input
+                  id="email" type="email" placeholder="example@gmail.com" required
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  style={inputStyle('email')}
+                />
+              </div>
+            </div>
+
+            {/* Password grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '7px' }}>
+                  Mật khẩu
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span className="material-symbols-outlined" style={{
+                    position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+                    fontSize: '18px', color: focusedField === 'pwd' ? '#1a3480' : '#94a3b8',
+                    transition: 'color 0.2s',
+                  }}>lock</span>
+                  <input
+                    id="password" type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••" required
+                    onFocus={() => setFocusedField('pwd')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ ...inputStyle('pwd'), paddingLeft: '38px', paddingRight: '36px' }}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{
+                    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '7px' }}>
+                  Xác nhận
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span className="material-symbols-outlined" style={{
+                    position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+                    fontSize: '18px', color: focusedField === 'confirm' ? '#1a3480' : '#94a3b8',
+                    transition: 'color 0.2s',
+                  }}>lock_reset</span>
+                  <input
+                    id="confirmPassword" type={showConfirm ? 'text' : 'password'}
+                    placeholder="••••••••" required
+                    onFocus={() => setFocusedField('confirm')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ ...inputStyle('confirm'), paddingLeft: '38px', paddingRight: '36px' }}
+                  />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{
+                    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                      {showConfirm ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Terms */}
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+              <input type="checkbox" id="terms" required style={{
+                width: '16px', height: '16px', marginTop: '1px',
+                accentColor: '#1a3480', cursor: 'pointer', flexShrink: 0,
+              }} />
+              <span style={{ fontSize: '12px', color: '#6b7a9a', lineHeight: 1.5 }}>
+                Tôi đồng ý với{' '}
+                <a href="#" style={{ color: '#1a3480', fontWeight: 700, textDecoration: 'none' }}>Điều khoản dịch vụ</a>
+                {' '}và{' '}
+                <a href="#" style={{ color: '#1a3480', fontWeight: 700, textDecoration: 'none' }}>Chính sách bảo mật</a>
+                {' '}của StudyHub.
+              </span>
+            </label>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                width: '100%', padding: '14px',
+                background: isSubmitting ? '#94a3b8' : 'linear-gradient(135deg, #1a3480, #0097aa)',
+                color: 'white', border: 'none', borderRadius: '12px',
+                fontSize: '14px', fontWeight: 700, letterSpacing: '0.5px',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                boxShadow: isSubmitting ? 'none' : '0 4px 16px rgba(26,52,128,0.3)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { if (!isSubmitting) (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; }}
+            >
+              {isSubmitting ? (
+                <>
+                  <span style={{
+                    width: '16px', height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTopColor: 'white',
+                    borderRadius: '50%',
+                    animation: 'spin 0.7s linear infinite',
+                    display: 'inline-block',
+                  }} />
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  TẠO TÀI KHOẢN
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '12px', color: '#94a3b8' }}>
+            © 2024 StudyHub Academic Platform. All rights reserved.
+          </p>
         </div>
-      </main>
+
+      {/* Inline keyframes */}
+      <style>{`
+        @keyframes authFadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -63,9 +63,9 @@ const Homepage: React.FC = () => {
       <main>
 
         {/* ===== HERO SECTION ===== */}
-        <section className="relative min-h-[780px] flex items-center justify-center overflow-hidden pt-[68px]">
+        <section className="relative pt-[120px] pb-24 flex justify-center">
           {/* Background blobs */}
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-[#eef2ff] via-[#f7f9ff] to-[#f0f9ff]" />
             <div className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/20 to-indigo-300/20 blur-[120px]" />
             <div className="absolute bottom-[-80px] left-[-80px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-secondary/20 to-teal-300/20 blur-[100px]" />
@@ -86,10 +86,6 @@ const Homepage: React.FC = () => {
                   Tìm{' '}
                   <span className="relative inline-block">
                     <span className="shimmer-text">gia sư tận tâm</span>
-                    <svg className="absolute -bottom-2 left-0 w-full" height="6" viewBox="0 0 200 6" preserveAspectRatio="none">
-                      <path d="M0 3 Q50 6 100 3 Q150 0 200 3" stroke="url(#grad)" strokeWidth="3" fill="none" />
-                      <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#003d9b" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
-                    </svg>
                   </span>
                   <br />
                   chỉ trong vài phút

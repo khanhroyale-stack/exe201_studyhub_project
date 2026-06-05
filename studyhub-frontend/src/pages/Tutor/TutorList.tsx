@@ -7,10 +7,8 @@ const TutorList: React.FC = () => {
   const [sortBy, setSortBy] = useState('popular');
   return (
     <div className="bg-[#f7f9ff] text-on-surface min-h-screen">
-      <div className="h-[68px]" />
-
       {/* ===== HERO SECTION ===== */}
-      <section className="relative bg-gradient-to-br from-[#0a2463] via-primary to-indigo-600 pt-16 pb-24 px-6 md:px-16 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[#0a2463] via-primary to-indigo-600 pt-[132px] pb-24 px-6 md:px-16 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-80px] right-[-80px] w-[500px] h-[500px] rounded-full bg-white/5 blur-[100px] animate-float" />
           <div className="absolute bottom-[-60px] left-[-60px] w-[400px] h-[400px] rounded-full bg-indigo-300/10 blur-[80px] animate-float-slow" />

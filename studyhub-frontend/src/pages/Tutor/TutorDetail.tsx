@@ -1,9 +1,10 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { MOCK_TUTORS } from '../../constants/mockData';
 
 const TutorDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const tutorId = id ? parseInt(id, 10) : 1;
   const tutor = MOCK_TUTORS.find(t => t.id === tutorId) || MOCK_TUTORS[0];
 
@@ -242,10 +243,13 @@ const TutorDetail: React.FC = () => {
                   <span className="text-body-sm font-body-sm">Dạy qua Google Meet / Zoom</span>
                 </div>
               </div>
-              <button className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+              <button onClick={() => {
+                alert('Chuyển hướng đến màn hình Chọn bài đăng để Mời dạy...');
+                navigate('/parent/posts');
+              }} className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                 <span className="material-symbols-outlined">person_add</span> Mời dạy
               </button>
-              <button className="w-full border border-primary text-primary py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
+              <button onClick={() => navigate('/parent/messages')} className="w-full border border-primary text-primary py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
                 <span className="material-symbols-outlined">chat</span> Nhắn tin
               </button>
               <p className="text-center text-label-sm font-label-sm text-on-surface-variant px-4">

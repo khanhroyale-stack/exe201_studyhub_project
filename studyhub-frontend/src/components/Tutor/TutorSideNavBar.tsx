@@ -1,99 +1,225 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { CURRENT_TUTOR } from '../../constants/mockTutorData';
 
-const navItems = [
-  { to: '/tutor/dashboard', icon: 'dashboard', label: 'Bảng điều khiển' },
-  { to: '/tutor/create-post', icon: 'post_add', label: 'Đăng tin mới' },
-  { to: '/tutor/classes', icon: 'school', label: 'Quản lý lớp' },
-  { to: '/tutor/schedule', icon: 'calendar_month', label: 'Lịch dạy' },
-  { to: '/tutor/search-classes', icon: 'search', label: 'Tìm lớp' },
-  { to: '/tutor/offers', icon: 'mail', label: 'Lời mời dạy' },
-  { to: '/tutor/billing', icon: 'receipt_long', label: 'Thanh toán phí' },
-  { to: '/tutor/messages', icon: 'chat', label: 'Tin nhắn' },
-  { to: '/tutor/reviews', icon: 'star', label: 'Đánh giá' },
+/**
+ * TutorSideNavBar — đơn giản hóa từ 10 → 6 mục
+ * Chia theo 3 nhóm rõ ràng:
+ *   1. Việc làm (tìm lớp + quản lý lớp)
+ *   2. Hoạt động (lịch + thu nhập)
+ *   3. Liên lạc (tin nhắn)
+ *
+ * Các mục ít dùng (Lời mời, Đã ứng tuyển, Đánh giá) được tích hợp
+ * vào trong trang tương ứng dưới dạng tabs / quick-links.
+ */
+
+const navGroups = [
+  {
+    // Không có tiêu đề — mục đứng độc lập
+    items: [
+      { to: '/tutor/dashboard', icon: 'dashboard', label: 'Tổng quan' },
+    ],
+  },
+  {
+    label: 'Việc làm',
+    items: [
+      {
+        to: '/tutor/search-classes',
+        icon: 'search',
+        label: 'Tìm lớp',
+        sublabel: 'Gồm lời mời & đã ứng tuyển',
+      },
+      {
+        to: '/tutor/classes',
+        icon: 'school',
+        label: 'Lớp đang dạy',
+        sublabel: 'Quản lý lớp hiện tại',
+      },
+    ],
+  },
+  {
+    label: 'Hoạt động',
+    items: [
+      {
+        to: '/tutor/schedule',
+        icon: 'calendar_month',
+        label: 'Lịch dạy',
+        sublabel: 'Thời khóa biểu',
+      },
+      {
+        to: '/tutor/billing',
+        icon: 'account_balance_wallet',
+        label: 'Thu nhập',
+        sublabel: 'Thanh toán & đánh giá',
+      },
+    ],
+  },
+  {
+    label: 'Liên lạc',
+    items: [
+      {
+        to: '/tutor/messages',
+        icon: 'chat',
+        label: 'Tin nhắn',
+      },
+    ],
+  },
 ];
 
 const TutorSideNavBar: React.FC = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
-    <aside className="fixed left-0 top-[72px] bottom-0 w-[280px] flex flex-col glass border-r border-white/20 z-30 animate-fade-in shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-      {/* User Info Card */}
-      <div className="px-5 py-5 border-b border-outline-variant">
+    <aside className="fixed left-0 top-[68px] bottom-0 w-[260px] flex flex-col bg-white border-r border-slate-100 z-30 shadow-[2px_0_20px_rgba(0,0,0,0.04)]">
+
+      {/* ── User Info ── */}
+      <div className="px-4 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <img
-            src={CURRENT_TUTOR.avatar}
-            alt="Avatar"
-            className="w-10 h-10 rounded-full object-cover border-2 border-outline-variant shrink-0"
-          />
+          <div className="relative shrink-0">
+            <img
+              src={CURRENT_TUTOR.avatar}
+              alt="Avatar"
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20"
+            />
+            {/* Online indicator */}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+          </div>
           <div className="overflow-hidden">
-            <p className="font-semibold text-sm text-on-surface truncate">{CURRENT_TUTOR.name}</p>
-            <p className="text-xs text-on-surface-variant">Gia sư</p>
+            <p className="font-bold text-sm text-[#0f172a] truncate">{CURRENT_TUTOR.name}</p>
+            <p className="text-xs text-slate-400 font-medium">Gia sư</p>
           </div>
         </div>
 
         {/* Quick stat */}
-        <div className="mt-4 bg-primary-fixed/40 rounded-xl px-4 py-3 flex items-center justify-between">
+        <div className="mt-3 bg-gradient-to-r from-primary/8 to-indigo-500/8 border border-primary/12 rounded-xl px-3 py-2.5 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-on-surface-variant">Số giờ đã dạy</p>
-            <p className="text-xl font-bold text-primary">{CURRENT_TUTOR.taughtHours}h</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Giờ đã dạy</p>
+            <p className="text-lg font-extrabold text-primary leading-tight">{CURRENT_TUTOR.taughtHours}h</p>
           </div>
-          <span className="material-symbols-outlined text-primary text-3xl">timer</span>
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
+          </div>
         </div>
       </div>
 
-      {/* Navigation Items */}
-      <nav className="flex-1 flex flex-col gap-0.5 px-3 py-4 overflow-y-auto">
-        {navItems.map(({ to, icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 text-sm font-medium ${
-                isActive
-                  ? 'bg-primary/10 text-primary font-semibold border-l-4 border-primary pl-2 shadow-sm'
-                  : 'text-on-surface-variant hover:bg-white/50 hover:text-primary hover:shadow-sm hover:translate-x-1'
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span
-                  className="material-symbols-outlined text-[20px]"
-                  style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
-                >
-                  {icon}
-                </span>
-                <span>{label}</span>
-              </>
+      {/* ── Navigation Groups ── */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+        {navGroups.map((group, gIdx) => (
+          <div key={gIdx}>
+            {/* Section label */}
+            {group.label && (
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.12em] px-3 pt-3 pb-1.5">
+                {group.label}
+              </p>
             )}
-          </NavLink>
+
+            {group.items.map(({ to, icon, label, sublabel }: any) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                    isActive
+                      ? 'bg-primary text-white shadow-md shadow-primary/25'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-[#0f172a]'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                      isActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-primary/10'
+                    }`}>
+                      <span
+                        className={`material-symbols-outlined text-[18px] ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary'}`}
+                        style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+                      >
+                        {icon}
+                      </span>
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className={`text-sm font-semibold leading-tight truncate ${isActive ? 'text-white' : ''}`}>
+                        {label}
+                      </p>
+                      {sublabel && (
+                        <p className={`text-[10px] leading-tight truncate mt-0.5 ${isActive ? 'text-white/70' : 'text-slate-400'}`}>
+                          {sublabel}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
-      {/* Bottom: Settings */}
-      <div className="px-3 py-4 border-t border-outline-variant">
+      {/* ── Bottom: Đăng bài PR + Settings + Logout ── */}
+      <div className="px-3 pb-4 pt-3 border-t border-slate-100 space-y-1.5">
+        {/* CTA: Đăng bài PR — nổi bật hơn nav item */}
+        <NavLink
+          to="/tutor/create-post"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              isActive
+                ? 'bg-primary text-white shadow-md shadow-primary/25'
+                : 'bg-primary/8 text-primary border border-primary/20 hover:bg-primary/15'
+            }`
+          }
+        >
+          {() => (
+            <>
+              <span
+                className="material-symbols-outlined text-[18px]"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                post_add
+              </span>
+              Đăng bài PR của bạn
+            </>
+          )}
+        </NavLink>
+
+        {/* Settings */}
         <NavLink
           to="/tutor/settings"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 text-sm font-medium ${
+            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
               isActive
-                ? 'bg-primary/10 text-primary font-semibold shadow-sm'
-                : 'text-on-surface-variant hover:bg-white/50 hover:text-primary hover:shadow-sm hover:translate-x-1'
+                ? 'bg-slate-100 text-[#0f172a] font-semibold'
+                : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
             }`
           }
         >
           {({ isActive }) => (
             <>
               <span
-                className="material-symbols-outlined text-[20px]"
-                style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+                className="material-symbols-outlined text-[18px]"
+                style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
               >
                 settings
               </span>
-              <span>Cài đặt</span>
+              Cài đặt
             </>
           )}
         </NavLink>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-50 hover:text-red-500 transition-all"
+        >
+          <span className="material-symbols-outlined text-[18px]">logout</span>
+          Đăng xuất
+        </button>
       </div>
     </aside>
   );

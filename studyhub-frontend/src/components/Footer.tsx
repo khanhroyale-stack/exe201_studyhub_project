@@ -1,4 +1,5 @@
 import React from 'react';
+import StudyHubLogo from './StudyHubLogo';
 
 const Footer: React.FC = () => {
   return (
@@ -6,7 +7,7 @@ const Footer: React.FC = () => {
       <div className="px-margin-desktop max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1">
-            <span className="font-headline-sm text-headline-sm font-bold text-primary">StudyHub</span>
+            <StudyHubLogo iconSize={32} textSize="text-xl" noLink />
             <p className="mt-6 text-body-md text-on-surface-variant leading-relaxed">Nền tảng kết nối gia sư và học viên hàng đầu Việt Nam, mang đến giải pháp học tập cá nhân hóa và chất lượng cao.</p>
           </div>
           <div>

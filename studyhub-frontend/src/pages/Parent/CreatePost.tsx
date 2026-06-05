@@ -1,16 +1,45 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { mockDb } from '../../services/mockDb';
+import { UnifiedPost, PostStatus } from '../../types/shared';
+import { CURRENT_PARENT } from '../../constants/mockParentData';
 
 const CreatePost: React.FC = () => {
   const [isOffline, setIsOffline] = useState(true);
+  const [subject, setSubject] = useState('');
+  const [price, setPrice] = useState('');
+  const [req, setReq] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate API call
-    setTimeout(() => {
-      navigate('/parent/posts');
-    }, 1500);
+    if (!subject || !price) {
+      alert('Vui lòng điền đầy đủ môn học và mức lương');
+      return;
+    }
+    
+    const newPost: UnifiedPost = {
+      id: `jp${Date.now()}`,
+      parentId: CURRENT_PARENT.id,
+      parentName: CURRENT_PARENT.name,
+      parentAvatar: CURRENT_PARENT.avatar,
+      title: `Tìm gia sư ${subject}`,
+      subject: subject,
+      description: req || 'Cần tìm gia sư.',
+      postedAt: new Date().toISOString(),
+      status: PostStatus.PENDING_APPROVAL,
+      location: isOffline ? 'Hà Nội' : 'Học Online',
+      schedule: '2 buổi/tuần',
+      pricePerSession: parseInt(price, 10) || 0,
+      learningMode: isOffline ? 'OFFLINE' : 'ONLINE',
+      requirement: req
+    };
+
+    const currentPosts = mockDb.getPosts();
+    mockDb.savePosts([newPost, ...currentPosts]);
+
+    alert('Đăng tin thành công! Bài đăng của bạn đang chờ Admin duyệt.');
+    navigate('/parent/posts');
   };
 
   return (
@@ -32,8 +61,12 @@ const CreatePost: React.FC = () => {
               <div className="space-y-2">
                 <label className="font-semibold text-sm text-on-surface block">Môn học</label>
                 <div className="relative">
-                  <select className="w-full appearance-none bg-surface border border-outline-variant rounded-lg px-4 py-3 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base">
-                    <option disabled selected value="">Chọn môn học</option>
+                  <select 
+                    value={subject} 
+                    onChange={e => setSubject(e.target.value)}
+                    className="w-full appearance-none bg-surface border border-outline-variant rounded-lg px-4 py-3 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base"
+                  >
+                    <option disabled value="">Chọn môn học</option>
                     <option>Toán học</option>
                     <option>Ngữ văn</option>
                     <option>Tiếng Anh</option>
@@ -101,7 +134,7 @@ const CreatePost: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <label className="font-semibold text-sm text-on-surface block">Mức lương đề xuất (VNĐ/ca)</label>
-                <input className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base" placeholder="Ví dụ: 200,000" type="number" />
+                <input value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base" placeholder="Ví dụ: 200,000" type="number" />
               </div>
             </div>
 
@@ -129,7 +162,7 @@ const CreatePost: React.FC = () => {
             {/* Requirements */}
             <div className="space-y-2 mb-10">
               <label className="font-semibold text-sm text-on-surface block">Yêu cầu đặc biệt</label>
-              <textarea className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base resize-none" placeholder="Ví dụ: Cần gia sư nữ, sinh viên trường Ngoại Thương, có kinh nghiệm dạy trẻ tự kỷ..." rows={4}></textarea>
+              <textarea value={req} onChange={e => setReq(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base resize-none" placeholder="Ví dụ: Cần gia sư nữ, sinh viên trường Ngoại Thương, có kinh nghiệm dạy trẻ tự kỷ..." rows={4}></textarea>
             </div>
 
             {/* Submit Button */}

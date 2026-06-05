@@ -6,35 +6,7 @@ const ParentDashboard: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Hero Search & Filter Section */}
-      <section className="relative rounded-3xl overflow-hidden bg-primary p-12 min-h-[300px] flex flex-col justify-center gap-6 shadow-xl animate-slide-up">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-            <path className="text-white" d="M0 0 L100 0 L100 100 Z" fill="currentColor"></path>
-          </svg>
-        </div>
-        <div className="relative z-10">
-          <h1 className="font-bold text-5xl text-on-primary mb-2">Tìm kiếm gia sư hoàn hảo</h1>
-          <p className="font-normal text-lg text-primary-fixed opacity-90 max-w-2xl">Đảm bảo tương lai học tập cho con bạn với đội ngũ gia sư đã được kiểm duyệt chuyên môn cao tại StudyHub.</p>
-        </div>
-        <div className="relative z-10 w-full max-w-4xl bg-surface p-2 rounded-2xl shadow-lg flex flex-col md:flex-row gap-2 border border-outline-variant">
-          <div className="flex-1 flex items-center px-4 gap-3 border-r border-outline-variant">
-            <span className="material-symbols-outlined text-on-surface-variant">search</span>
-            <input className="w-full bg-transparent border-none outline-none focus:ring-0 text-on-surface font-normal text-base placeholder:text-outline" placeholder="Môn học, từ khóa..." type="text" />
-          </div>
-          <div className="flex-1 flex items-center px-4 gap-3 border-r border-outline-variant">
-            <span className="material-symbols-outlined text-on-surface-variant">location_on</span>
-            <select className="w-full bg-transparent border-none outline-none focus:ring-0 text-on-surface font-normal text-base appearance-none cursor-pointer">
-              <option>Tất cả khu vực</option>
-              <option>Quận 1, TP. HCM</option>
-              <option>Cầu Giấy, Hà Nội</option>
-            </select>
-          </div>
-          <button className="bg-primary text-on-primary px-8 py-3 rounded-xl font-semibold text-xl hover:bg-primary-container transition-all flex items-center gap-2 active:scale-95 shadow-md">
-            Tìm kiếm
-          </button>
-        </div>
-      </section>
+
 
       {/* Stats Bento Grid */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up stagger-1">

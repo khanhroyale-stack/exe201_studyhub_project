@@ -28,6 +28,7 @@ import TutorBilling from '../pages/TutorPortal/TutorBilling';
 import Messages from '../pages/Shared/Messages';
 import TutorCreatePost from '../pages/TutorPortal/TutorCreatePost';
 import TutorClasses from '../pages/TutorPortal/TutorClasses';
+import TutorApplications from '../pages/TutorPortal/TutorApplications';
 import TutorSchedule from '../pages/TutorPortal/TutorSchedule';
 import TutorReviews from '../pages/TutorPortal/TutorReviews';
 import TutorSettings from '../pages/TutorPortal/TutorSettings';
@@ -59,7 +60,7 @@ const AppRouter: React.FC = () => {
         <Route path="dashboard" element={<ParentDashboard />} />
         <Route path="posts" element={<PostManagement />} />
         <Route path="posts/create" element={<CreatePost />} />
-        <Route path="applicants" element={<ApplicantReview />} />
+        <Route path="posts/:postId/applicants" element={<ApplicantReview />} />
         <Route path="classes" element={<ClassManagement />} />
         <Route path="feedback" element={<FeedbackList />} />
         <Route path="feedback/create" element={<CreateFeedback />} />
@@ -75,9 +76,10 @@ const AppRouter: React.FC = () => {
         <Route index element={<Navigate to="/tutor/dashboard" replace />} />
         <Route path="dashboard" element={<TutorDashboard />} />
         <Route path="search-classes" element={<TutorSearchClasses />} />
-        <Route path="apply-class" element={<TutorApplyClass />} />
+        <Route path="apply-class/:postId" element={<TutorApplyClass />} />
         <Route path="create-post" element={<TutorCreatePost />} />
         <Route path="classes" element={<TutorClasses />} />
+        <Route path="applications" element={<TutorApplications />} />
         <Route path="schedule" element={<TutorSchedule />} />
         <Route path="reviews" element={<TutorReviews />} />
         <Route path="offers" element={<TutorOffers />} />

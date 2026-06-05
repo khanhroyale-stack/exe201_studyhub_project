@@ -1,7 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockDb } from '../../services/mockDb';
+import { UnifiedPost, PostStatus } from '../../types/shared';
 
 const AdminContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'master-data' | 'moderation' | 'disputes' | 'financial'>('moderation');
+  const [pendingPosts, setPendingPosts] = useState<UnifiedPost[]>([]);
+
+  useEffect(() => {
+    loadPendingPosts();
+  }, [activeTab]);
+
+  const loadPendingPosts = () => {
+    const allPosts = mockDb.getPosts();
+    setPendingPosts(allPosts.filter(p => p.status === PostStatus.PENDING_APPROVAL));
+  };
+
+  const handleApprove = (postId: string) => {
+    const allPosts = mockDb.getPosts();
+    const updated = allPosts.map(p => p.id === postId ? { ...p, status: PostStatus.RECRUITING } : p);
+    mockDb.savePosts(updated);
+    loadPendingPosts();
+  };
+
+  const handleReject = (postId: string) => {
+    const allPosts = mockDb.getPosts();
+    const updated = allPosts.map(p => p.id === postId ? { ...p, status: PostStatus.CLOSED } : p);
+    mockDb.savePosts(updated);
+    loadPendingPosts();
+  };
 
   return (
     <div className="max-w-[1440px] mx-auto pb-20 animate-fade-in">
@@ -68,52 +94,38 @@ const AdminContent: React.FC = () => {
       {activeTab === 'moderation' && (
         <div className="flex flex-col gap-6 animate-slide-up stagger-1">
           <div className="flex justify-between items-center">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Bài đăng chờ duyệt</h2>
+            <h2 className="font-headline-md text-headline-md text-on-surface">Bài đăng chờ duyệt ({pendingPosts.length})</h2>
             <div className="flex gap-2">
               <select className="glass border border-white/20 rounded-xl px-3 py-2 font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
                 <option>Sắp xếp: Mới nhất</option>
-                <option>Sắp xếp: Bị gắn cờ</option>
+                <option>Sắp xếp: Cũ nhất</option>
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {/* Moderation Card 1 */}
-            <div className="glass border border-white/20 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all duration-300 relative group hover:-translate-y-1">
-              <div className="absolute top-4 right-4 px-2 py-1 bg-tertiary-container/30 text-tertiary-container font-label-sm text-label-sm rounded-lg flex items-center gap-1 backdrop-blur-sm border border-tertiary-container/20">
-                <span className="material-symbols-outlined text-[14px]">flag</span> Bị gắn cờ
-              </div>
-              <div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface">Cần làm hộ bài thi Toán! Trả giá cao</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Đăng bởi: Phụ huynh A • 2 giờ trước</p>
-              </div>
-              <div className="flex gap-2">
-                <span className="bg-primary-container/10 text-primary px-2 py-1 rounded font-label-sm text-label-sm">Toán</span>
-                <span className="bg-surface-container-high text-on-surface px-2 py-1 rounded font-label-sm text-label-sm">Cấp 3</span>
-              </div>
-              <p className="font-body-sm text-body-sm text-on-surface line-clamp-3">Tôi cần người làm bài kiểm tra cuối kì cho con tôi. Giá bao nhiêu cũng được. Phải chắc chắn được điểm A. Liên hệ ngoài Zalo.</p>
-              <div className="mt-auto pt-4 border-t border-outline-variant flex gap-3">
-                <button className="flex-1 bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md py-2 rounded-lg transition-colors border border-outline-variant">Xóa &amp; Cảnh cáo</button>
-                <button className="flex-1 bg-primary text-on-primary hover:bg-primary/90 font-label-md text-label-md py-2 rounded-lg transition-colors">Duyệt</button>
-              </div>
+          
+          {pendingPosts.length === 0 ? (
+            <div className="text-center py-12 text-on-surface-variant">Không có bài đăng nào cần duyệt.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {pendingPosts.map(post => (
+                <div key={post.id} className="glass border border-white/20 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all duration-300 relative group hover:-translate-y-1">
+                  <div>
+                    <h4 className="font-headline-sm text-headline-sm text-on-surface">{post.title}</h4>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Đăng bởi: {post.parentName}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="bg-primary-container/10 text-primary px-2 py-1 rounded font-label-sm text-label-sm">{post.subject}</span>
+                    <span className="bg-surface-container-high text-on-surface px-2 py-1 rounded font-label-sm text-label-sm">{post.learningMode}</span>
+                  </div>
+                  <p className="font-body-sm text-body-sm text-on-surface line-clamp-3">{post.description}</p>
+                  <div className="mt-auto pt-4 border-t border-outline-variant flex gap-3">
+                    <button onClick={() => handleReject(post.id)} className="flex-1 bg-surface-container-lowest text-error hover:bg-error-container/20 font-label-md text-label-md py-2 rounded-lg transition-colors border border-error/50">Từ chối</button>
+                    <button onClick={() => handleApprove(post.id)} className="flex-1 bg-primary text-on-primary hover:bg-primary/90 font-label-md text-label-md py-2 rounded-lg transition-colors">Duyệt bài</button>
+                  </div>
+                </div>
+              ))}
             </div>
-            
-            {/* Moderation Card 2 */}
-            <div className="glass border border-white/20 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all duration-300 group hover:-translate-y-1">
-              <div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface">Tìm gia sư Sinh học lớp 10 dài hạn</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Đăng bởi: Trần V. • 5 giờ trước</p>
-              </div>
-              <div className="flex gap-2">
-                <span className="bg-primary-container/10 text-primary px-2 py-1 rounded font-label-sm text-label-sm">Sinh học</span>
-                <span className="bg-surface-container-high text-on-surface px-2 py-1 rounded font-label-sm text-label-sm">Cấp 3</span>
-              </div>
-              <p className="font-body-sm text-body-sm text-on-surface line-clamp-3">Tìm gia sư có thể dạy ôn tập các khái niệm sinh học tế bào vào tối thứ 3 hàng tuần. Ưu tiên sinh viên Y Dược hoặc Sư phạm Sinh.</p>
-              <div className="mt-auto pt-4 border-t border-outline-variant flex gap-3">
-                <button className="flex-1 bg-surface-container-lowest text-error hover:bg-error-container/20 font-label-md text-label-md py-2 rounded-lg transition-colors border border-error/50">Xóa</button>
-                <button className="flex-1 bg-primary text-on-primary hover:bg-primary/90 font-label-md text-label-md py-2 rounded-lg transition-colors">Duyệt bài</button>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 

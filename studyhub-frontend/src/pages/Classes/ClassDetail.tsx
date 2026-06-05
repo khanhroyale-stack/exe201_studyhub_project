@@ -1,9 +1,12 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { MOCK_CLASSES } from '../../constants/mockData';
 
 const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isLoggedIn, role } = useAuth();
   const classId = id ? parseInt(id, 10) : 1;
 
   // Find class details based on ID, fallback to the first mock class if not found
@@ -143,7 +146,17 @@ const ClassDetail: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <button className="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-sm text-headline-sm hover:bg-primary-container transition-all active:scale-95">
+              <button onClick={() => {
+                if (!isLoggedIn) {
+                  alert('Vui lòng đăng nhập để đăng ký lớp học này!');
+                  navigate('/login');
+                } else if (role === 'parent') {
+                  alert('Đăng ký lớp học thành công! Chuyển hướng đến Quản lý lớp học...');
+                  navigate('/parent/classes');
+                } else {
+                  alert('Tính năng này dành cho phụ huynh. Gia sư vui lòng sử dụng tính năng Ứng tuyển.');
+                }
+              }} className="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-sm text-headline-sm hover:bg-primary-container transition-all active:scale-95">
                 Đăng ký ngay
               </button>
               <div className="text-center">

@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { mockDb } from '../../services/mockDb';
+import { UnifiedPost, PostStatus } from '../../types/shared';
 
 const TutorSearchClasses: React.FC = () => {
+  const [posts, setPosts] = useState<UnifiedPost[]>([]);
+
+  useEffect(() => {
+    const allPosts = mockDb.getPosts();
+    // Only show posts that have been approved and are recruiting
+    setPosts(allPosts.filter(p => p.status === PostStatus.RECRUITING));
+  }, []);
+
   return (
     <div className="animate-fade-in">
       <div className="mb-gutter flex justify-between items-end animate-slide-up">
@@ -78,182 +88,55 @@ const TutorSearchClasses: React.FC = () => {
               <input className="w-full bg-surface border border-outline-variant rounded-md py-1.5 px-3 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Tối đa" type="text" />
             </div>
           </div>
-          {/* Rating phụ huynh */}
-          <div className="mb-6 border-b border-outline-variant pb-6">
-            <h4 className="text-label-md font-label-md text-on-surface mb-3">Đánh giá phụ huynh</h4>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input className="rounded-full border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" name="rating" type="radio" />
-                <div className="flex items-center text-tertiary-fixed-dim">
-                  <span className="material-symbols-outlined icon-fill text-[18px]">star</span>
-                  <span className="material-symbols-outlined icon-fill text-[18px]">star</span>
-                  <span className="material-symbols-outlined icon-fill text-[18px]">star</span>
-                  <span className="material-symbols-outlined icon-fill text-[18px]">star</span>
-                  <span className="material-symbols-outlined text-[18px]">star</span>
-                  <span className="ml-2 text-body-sm text-on-surface-variant">Từ 4 sao</span>
-                </div>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input defaultChecked className="rounded-full border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" name="rating" type="radio" />
-                <span className="text-body-sm text-on-surface-variant">Tất cả</span>
-              </label>
-            </div>
-          </div>
-          {/* Thứ trong tuần */}
-          <div>
-            <h4 className="text-label-md font-label-md text-on-surface mb-3">Lịch học mong muốn</h4>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1.5 rounded-full border border-outline-variant text-body-sm cursor-pointer hover:bg-surface-container-high transition-colors">T2</span>
-              <span className="px-3 py-1.5 rounded-full border border-primary bg-primary-fixed text-on-primary-fixed font-medium text-body-sm cursor-pointer transition-colors">T3</span>
-              <span className="px-3 py-1.5 rounded-full border border-outline-variant text-body-sm cursor-pointer hover:bg-surface-container-high transition-colors">T4</span>
-              <span className="px-3 py-1.5 rounded-full border border-primary bg-primary-fixed text-on-primary-fixed font-medium text-body-sm cursor-pointer transition-colors">T5</span>
-              <span className="px-3 py-1.5 rounded-full border border-outline-variant text-body-sm cursor-pointer hover:bg-surface-container-high transition-colors">T6</span>
-              <span className="px-3 py-1.5 rounded-full border border-outline-variant text-body-sm cursor-pointer hover:bg-surface-container-high transition-colors">T7</span>
-              <span className="px-3 py-1.5 rounded-full border border-outline-variant text-body-sm cursor-pointer hover:bg-surface-container-high transition-colors">CN</span>
-            </div>
-          </div>
         </div>
         {/* Class List Grid */}
         <div className="flex-1 w-full grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up stagger-2">
-          {/* Card 1 */}
-          <div className="glass border border-white/20 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
-            <div className="absolute top-0 right-0 bg-secondary-container text-on-secondary-container text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">Mới</div>
-            <div className="flex justify-between items-start mb-4 pr-10">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded text-[11px] font-semibold">Tiếng Anh</span>
-                  <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-medium border border-outline-variant">Lớp 10</span>
-                </div>
-                <h3 className="text-headline-sm font-headline-sm text-on-background line-clamp-1">Gia sư Tiếng Anh giao tiếp cơ bản</h3>
-              </div>
+          {posts.length === 0 ? (
+            <div className="col-span-1 xl:col-span-2 text-center py-10 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant">
+              Hiện tại không có lớp học nào đang tuyển gia sư.
             </div>
-            <div className="space-y-3 mb-6 flex-1">
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">location_on</span>
+          ) : posts.map(post => (
+            <div key={post.id} className="glass border border-white/20 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
+              <div className="flex justify-between items-start mb-4 pr-10">
                 <div>
-                  <p className="text-body-sm font-medium text-on-surface">Quận 7, TP. Hồ Chí Minh</p>
-                  <p className="text-[13px] text-on-surface-variant">Dạy trực tiếp (Offline)</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded text-[11px] font-semibold">{post.subject}</span>
+                    <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-medium border border-outline-variant">{post.learningMode === 'ONLINE' ? 'Online' : 'Offline'}</span>
+                  </div>
+                  <h3 className="text-headline-sm font-headline-sm text-on-background line-clamp-1">{post.title}</h3>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-[20px] text-primary">calendar_today</span>
-                <p className="text-body-sm font-medium text-on-surface">2 ca/tuần (Tối T3, T5)</p>
-              </div><p className="text-[13px] text-on-surface-variant">19:00 - 21:00</p>
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">payments</span>
-                <div>
-                  <p className="text-body-sm font-bold text-primary">250.000đ - 300.000đ <span className="text-on-surface-variant font-normal text-[13px]">/ giờ</span></p>
+              <div className="space-y-3 mb-6 flex-1">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">{post.learningMode === 'ONLINE' ? 'laptop_mac' : 'location_on'}</span>
+                  <div>
+                    <p className="text-body-sm font-medium text-on-surface">{post.location}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="border-t border-outline-variant pt-4 mt-auto flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold text-sm">P</div>
-                <div>
-                  <p className="text-[13px] font-medium text-on-surface">Phụ huynh: Chị Mai</p>
-                  <div className="flex items-center text-tertiary-fixed-dim">
-                    <span className="material-symbols-outlined icon-fill text-[14px]">star</span>
-                    <span className="text-[12px] text-on-surface-variant ml-1">4.8 (12 đánh giá)</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[20px] text-primary">calendar_today</span>
+                  <p className="text-body-sm font-medium text-on-surface">{post.schedule}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">payments</span>
+                  <div>
+                    <p className="text-body-sm font-bold text-primary">{post.pricePerSession.toLocaleString()}đ <span className="text-on-surface-variant font-normal text-[13px]">/ ca</span></p>
                   </div>
                 </div>
               </div>
-              <Link to="/tutor/apply-class" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-on-primary-fixed-variant transition-colors shadow-sm">
-                Ứng tuyển ngay
-              </Link>
-            </div>
-          </div>
-          {/* Card 2 */}
-          <div className="glass border border-white/20 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
-            <div className="flex justify-between items-start mb-4 pr-10">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded text-[11px] font-semibold">Toán học</span>
-                  <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-medium border border-outline-variant">Luyện thi ĐH</span>
-                </div>
-                <h3 className="text-headline-sm font-headline-sm text-on-background line-clamp-1">Luyện thi Đại học môn Toán khối A</h3>
-              </div>
-            </div>
-            <div className="space-y-3 mb-6 flex-1">
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">laptop_mac</span>
-                <div>
-                  <p className="text-body-sm font-medium text-on-surface">Học trực tuyến (Online)</p>
-                  <p className="text-[13px] text-on-surface-variant">Qua Google Meet / Zoom</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-[20px] text-primary">calendar_today</span>
-                <p className="text-body-sm font-medium text-on-surface">3 ca/tuần (T2, T4, T6)</p>
-              </div><p className="text-[13px] text-on-surface-variant">18:00 - 20:00</p>
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">payments</span>
-                <div>
-                  <p className="text-body-sm font-bold text-primary">350.000đ <span className="text-on-surface-variant font-normal text-[13px]">/ giờ</span></p>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-outline-variant pt-4 mt-auto flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold text-sm">A</div>
-                <div>
-                  <p className="text-[13px] font-medium text-on-surface">Phụ huynh: Anh Tuấn</p>
-                  <div className="flex items-center text-tertiary-fixed-dim">
-                    <span className="material-symbols-outlined text-[14px]">star</span>
-                    <span className="text-[12px] text-on-surface-variant ml-1">Chưa có đánh giá</span>
+              <div className="border-t border-outline-variant pt-4 mt-auto flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <img src={post.parentAvatar} alt={post.parentName} className="w-8 h-8 rounded-full object-cover border border-outline-variant" />
+                  <div>
+                    <p className="text-[13px] font-medium text-on-surface">{post.parentName}</p>
                   </div>
                 </div>
-              </div>
-              <Link to="/tutor/apply-class" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-on-primary-fixed-variant transition-colors shadow-sm">
-                Ứng tuyển ngay
-              </Link>
-            </div>
-          </div>
-          {/* Card 3 */}
-          <div className="glass border border-white/20 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
-            <div className="flex justify-between items-start mb-4 pr-10">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded text-[11px] font-semibold">Vật lý</span>
-                  <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px] font-medium border border-outline-variant">Lớp 12</span>
-                </div>
-                <h3 className="text-headline-sm font-headline-sm text-on-background line-clamp-1">Kèm Vật lý 12 bám sát chương trình</h3>
+                <Link to={`/tutor/apply-class/${post.id}`} className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-on-primary-fixed-variant transition-colors shadow-sm">
+                  Ứng tuyển ngay
+                </Link>
               </div>
             </div>
-            <div className="space-y-3 mb-6 flex-1">
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">location_on</span>
-                <div>
-                  <p className="text-body-sm font-medium text-on-surface">Quận Cầu Giấy, Hà Nội</p>
-                  <p className="text-[13px] text-on-surface-variant">Dạy trực tiếp (Offline)</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-[20px] text-primary">calendar_today</span>
-                <p className="text-body-sm font-medium text-on-surface">1 ca/tuần (Sáng CN)</p>
-              </div><p className="text-[13px] text-on-surface-variant">08:00 - 10:00</p>
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">payments</span>
-                <div>
-                  <p className="text-body-sm font-bold text-primary">200.000đ <span className="text-on-surface-variant font-normal text-[13px]">/ giờ</span></p>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-outline-variant pt-4 mt-auto flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold text-sm">H</div>
-                <div>
-                  <p className="text-[13px] font-medium text-on-surface">Phụ huynh: Cô Hoa</p>
-                  <div className="flex items-center text-tertiary-fixed-dim">
-                    <span className="material-symbols-outlined icon-fill text-[14px]">star</span>
-                    <span className="text-[12px] text-on-surface-variant ml-1">5.0 (3 đánh giá)</span>
-                  </div>
-                </div>
-              </div>
-              <Link to="/tutor/apply-class" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-on-primary-fixed-variant transition-colors shadow-sm">
-                Ứng tuyển ngay
-              </Link>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

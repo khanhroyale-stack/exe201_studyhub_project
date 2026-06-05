@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import StudyHubLogo from '../../components/StudyHubLogo';
 
 const Register: React.FC = () => {
   const [role, setRole] = useState<'student' | 'tutor'>('student');
@@ -11,6 +12,8 @@ const Register: React.FC = () => {
   React.useEffect(() => {
     if (isLoggedIn) {
       if (currentRole === 'admin') navigate('/admin/dashboard');
+      else if (currentRole === 'parent') navigate('/parent/dashboard');
+      else if (currentRole === 'tutor') navigate('/tutor/dashboard');
       else navigate('/');
     }
   }, [isLoggedIn, currentRole, navigate]);
@@ -36,11 +39,7 @@ const Register: React.FC = () => {
           {/* Left Side: Side Navigation */}
           <aside className="hidden md:flex flex-col w-sidebar-width bg-surface-container-low border-r border-outline-variant py-8">
             <div className="px-8 mb-10">
-              <div className="flex items-center gap-3 mb-2">
-                <img alt="StudyHub Icon" className="w-10 h-10 rounded-lg object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyaSaOGQaDZXEQ0lLBqNlJh5HEVfK2xOw6Yuk87CB66PTHRrvaLoyeOMmasB35QWtLaltFl1PuU1mZjvbvjJzz1foXhkC5PTslY4GDTv7_NiqT61UHZdx059SZcgx1b_uD6hzsAsxCd4N2buxYQzI5KdOeOs4YnK13JaKFWlEbtVrtJ2tI4sG51oYm78fvGxArgcKYfXxWCwEstazVJItyG9neQwwuRMIk7cOg_fWS4rrV6ZVA41pliWrZl7jzI87FnDGoZhksp0ai" />
-                <span className="font-headline-sm text-headline-sm font-bold text-primary">StudyHub</span>
-              </div>
-              <p className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Academic Excellence</p>
+              <StudyHubLogo iconSize={36} textSize="text-xl" showTagline />
             </div>
             <nav className="flex-1 space-y-1">
               <Link to="/login" className="flex items-center gap-3 px-8 py-4 text-on-surface-variant font-medium hover:bg-surface-container transition-all duration-150 cursor-pointer active:scale-95 group">
@@ -65,7 +64,9 @@ const Register: React.FC = () => {
             <div className="w-full max-w-[480px]">
               {/* Branding & Header */}
               <div className="flex flex-col items-center mb-10 text-center">
-                <img alt="StudyHub Logo" className="h-10 mb-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUfTkws765waZziUHBQjWYQQrNEZElvZQgtBKdR1Ev5WmX-yTiodory7RHbyrAL8tFdf5t1nLLeq4n5DGLl2JmqS-lmubZFEbp9vRfhgAtZ_gTmjTmJkrgmajSPptnhDNklisWGG-c-Z-4AWT8DyXWjCiD0iniDRTe1spKI-DDxW9fy1sXjN-kVBlWs_YKnZ9YQBnQRX9s9nODPOYYw1a9UivWknHX093NiCVRqMUko9pxD2D_f4ZBWLrYvc7Vo0bPpewU6Gkn5Bka" />
+                <div className="mb-5">
+                  <StudyHubLogo iconSize={48} textSize="text-3xl" showTagline />
+                </div>
                 <h1 className="font-headline-md text-headline-md text-on-surface mb-2">Tạo tài khoản mới</h1>
                 <p className="text-body-md text-on-surface-variant">Tham gia cộng đồng học thuật StudyHub ngay hôm nay.</p>
               </div>

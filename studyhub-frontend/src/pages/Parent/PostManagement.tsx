@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MOCK_JOB_POSTINGS, MOCK_APPLICANTS } from '../../constants/mockParentData';
+import { mockDb } from '../../services/mockDb';
+import { UnifiedPost, PostStatus, ApplicationStatus } from '../../types/shared';
 
 const PostManagement: React.FC = () => {
-  const totalPosts = MOCK_JOB_POSTINGS.length;
-  const activePosts = MOCK_JOB_POSTINGS.filter(p => p.status !== 'CLOSED').length;
-  const newApplicants = MOCK_APPLICANTS.filter(a => a.status === 'PENDING').length;
+  const [posts, setPosts] = useState<UnifiedPost[]>([]);
+  const [newApplicantsCount, setNewApplicantsCount] = useState(0);
+
+  useEffect(() => {
+    const allPosts = mockDb.getPosts();
+    setPosts(allPosts);
+
+    const allApps = mockDb.getApplications();
+    const newApps = allApps.filter(a => a.status === ApplicationStatus.PENDING);
+    setNewApplicantsCount(newApps.length);
+  }, []);
+
+  const totalPosts = posts.length;
+  const activePosts = posts.filter(p => p.status === PostStatus.RECRUITING).length;
+  const pendingApprovalPosts = posts.filter(p => p.status === PostStatus.PENDING_APPROVAL).length;
 
   return (
     <div className="flex flex-col gap-8 animate-fade-in">
@@ -22,7 +35,7 @@ const PostManagement: React.FC = () => {
       </div>
 
       {/* Dashboard Filters & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up stagger-1">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up stagger-1">
         <div className="glass p-6 rounded-2xl border border-white/20 flex items-center gap-4 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
           <div className="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
             <span className="material-symbols-outlined">list_alt</span>
@@ -42,12 +55,21 @@ const PostManagement: React.FC = () => {
           </div>
         </div>
         <div className="glass p-6 rounded-2xl border border-white/20 flex items-center gap-4 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+            <span className="material-symbols-outlined">hourglass_empty</span>
+          </div>
+          <div>
+            <p className="font-medium text-xs text-on-surface-variant uppercase">Chờ duyệt</p>
+            <p className="font-bold text-2xl text-on-surface">{pendingApprovalPosts}</p>
+          </div>
+        </div>
+        <div className="glass p-6 rounded-2xl border border-white/20 flex items-center gap-4 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
           <div className="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center text-on-tertiary-container">
             <span className="material-symbols-outlined">group</span>
           </div>
           <div>
             <p className="font-medium text-xs text-on-surface-variant uppercase">Ứng viên mới</p>
-            <p className="font-bold text-2xl text-on-surface">{newApplicants}</p>
+            <p className="font-bold text-2xl text-on-surface">{newApplicantsCount}</p>
           </div>
         </div>
       </div>
@@ -67,63 +89,66 @@ const PostManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {MOCK_JOB_POSTINGS.map((post) => (
-                <tr key={post.id} className={`hover:bg-surface-container transition-colors group ${post.status === 'CLOSED' ? 'opacity-75' : ''}`}>
-                  <td className="px-6 py-4">
-                    <span className="font-semibold text-sm text-on-surface block">{post.title}</span>
-                    <span className="text-[12px] text-on-surface-variant">ID: #{post.id}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-medium text-xs">
-                      {post.subject}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-normal text-sm text-on-surface-variant">
-                    {new Date(post.postedAt).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="px-6 py-4">
-                    {post.status === 'CLOSED' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-medium text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
-                        Đã đóng
+              {posts.map((post) => {
+                const appsForPost = mockDb.getApplications().filter(a => a.postId === post.id).length;
+                return (
+                  <tr key={post.id} className={`hover:bg-surface-container transition-colors group ${post.status === PostStatus.CLOSED ? 'opacity-75' : ''}`}>
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-sm text-on-surface block">{post.title}</span>
+                      <span className="text-[12px] text-on-surface-variant">ID: #{post.id}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-medium text-xs">
+                        {post.subject}
                       </span>
-                    ) : post.status === 'PRIORITY' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container font-medium text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                        Ưu tiên
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-medium text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                        Đang tuyển
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-on-surface">{post.applicantsCount}</span>
-                      <span className="font-normal text-sm text-on-surface-variant">người</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    {post.status !== 'CLOSED' ? (
-                      <Link to="/parent/applicants" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm">
-                        Xem ứng viên
-                      </Link>
-                    ) : (
-                      <button className="border border-outline-variant text-on-surface-variant px-4 py-2 rounded-lg font-medium text-xs hover:bg-surface-container transition-colors">
-                        Chi tiết
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 font-normal text-sm text-on-surface-variant">
+                      {new Date(post.postedAt).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="px-6 py-4">
+                      {post.status === PostStatus.CLOSED ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-medium text-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
+                          Đã đóng
+                        </span>
+                      ) : post.status === PostStatus.PENDING_APPROVAL ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-800 font-medium text-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                          Chờ duyệt
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-medium text-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                          Đang tuyển
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-on-surface">{appsForPost}</span>
+                        <span className="font-normal text-sm text-on-surface-variant">người</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {post.status === PostStatus.RECRUITING ? (
+                        <Link to={`/parent/posts/${post.id}/applicants`} className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm">
+                          Xem ứng viên
+                        </Link>
+                      ) : (
+                        <button className="border border-outline-variant text-on-surface-variant px-4 py-2 rounded-lg font-medium text-xs hover:bg-surface-container transition-colors">
+                          Chi tiết
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         {/* Pagination placeholder */}
         <div className="px-6 py-4 glass border-t border-white/20 flex items-center justify-between">
-          <span className="font-normal text-sm text-on-surface-variant">Hiển thị 1-{MOCK_JOB_POSTINGS.length} trên {MOCK_JOB_POSTINGS.length} bài đăng</span>
+          <span className="font-normal text-sm text-on-surface-variant">Hiển thị 1-{posts.length} trên {posts.length} bài đăng</span>
           <div className="flex items-center gap-2">
             <button className="p-2 rounded-md border border-outline-variant text-on-surface-variant cursor-not-allowed">
               <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>chevron_left</span>

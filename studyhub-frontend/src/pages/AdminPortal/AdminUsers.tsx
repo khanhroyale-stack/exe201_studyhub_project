@@ -1,194 +1,325 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+// --- MOCK DATA ---
+const MOCK_ACCOUNTS = [
+  { id: 'A001', name: 'Nguyễn Thị Thu', email: 'thu.nguyen@example.com', role: 'Gia sư', status: 'Hoạt động', joinedAt: '12/10/2023', avatar: 'https://i.pravatar.cc/150?u=thu' },
+  { id: 'A002', name: 'Trần Minh Tuấn', email: 'tuan.tran@example.com', role: 'Phụ huynh', status: 'Hoạt động', joinedAt: '15/10/2023', avatar: 'https://i.pravatar.cc/150?u=tuan' },
+  { id: 'A003', name: 'Lê Anh Khoa', email: 'khoa.le@example.com', role: 'Gia sư', status: 'Bị khóa', joinedAt: '01/11/2023', avatar: 'https://i.pravatar.cc/150?u=khoa' },
+  { id: 'A004', name: 'Phạm Mai Hương', email: 'huong.pham@example.com', role: 'Phụ huynh', status: 'Hoạt động', joinedAt: '20/11/2023', avatar: 'https://i.pravatar.cc/150?u=huong' },
+  { id: 'A005', name: 'Vũ Đức Phát', email: 'phat.vu@example.com', role: 'Gia sư', status: 'Chờ duyệt', joinedAt: '05/12/2023', avatar: 'https://i.pravatar.cc/150?u=phat' },
+];
 
 const AdminUsers: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'ekyc' | 'accounts'>('accounts');
+  const [searchTerm, setSearchTerm] = useState('');
+
   return (
     <div className="max-w-[1440px] mx-auto pb-20 animate-fade-in">
       {/* Page Header & Tabs */}
       <div className="mb-8 animate-slide-up">
-        <h2 className="font-headline-lg text-headline-lg md:text-headline-xl md:font-headline-xl text-on-surface mb-6">Quản lý Người dùng &amp; eKYC</h2>
-        <div className="flex border-b border-outline-variant">
-          <button className="px-6 py-3 font-label-md text-label-md text-primary border-b-2 border-primary bg-surface-container-lowest">
+        <h2 className="font-headline-lg text-headline-lg md:text-headline-xl md:font-headline-xl text-on-surface mb-6 font-bold text-[#0f172a]">
+          Quản lý Người dùng & eKYC
+        </h2>
+        <div className="flex border-b border-slate-200">
+          <button 
+            onClick={() => setActiveTab('ekyc')}
+            className={`px-6 py-3 font-semibold text-sm transition-colors relative ${activeTab === 'ekyc' ? 'text-primary' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
             Duyệt hồ sơ Gia sư
+            {activeTab === 'ekyc' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
           </button>
-          <button className="px-6 py-3 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors">
+          <button 
+            onClick={() => setActiveTab('accounts')}
+            className={`px-6 py-3 font-semibold text-sm transition-colors relative ${activeTab === 'accounts' ? 'text-primary' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
             Quản lý Tài khoản
+            {activeTab === 'accounts' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
           </button>
         </div>
       </div>
 
-      {/* Bento Grid Layout for eKYC */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-gutter animate-slide-up stagger-1">
-        {/* Left Column: Verification Queue */}
-        <div className="xl:col-span-4 flex flex-col gap-4">
-          <div className="glass border border-white/20 rounded-2xl overflow-hidden flex flex-col h-[800px] shadow-sm hover:shadow-lg transition-all duration-300">
-            <div className="p-4 border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center sticky top-0">
-              <h3 className="font-headline-sm text-headline-sm">Hàng chờ duyệt</h3>
-              <span className="bg-surface-container-high px-2 py-1 rounded-full font-label-sm text-label-sm">12 Chờ</span>
-            </div>
-            <div className="overflow-y-auto flex-1 p-2">
-              {/* Queue Item 1 (Active) */}
-              <div className="p-3 mb-2 rounded-lg bg-primary-fixed border border-primary cursor-pointer transition-colors">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary font-bold">NT</div>
-                    <div>
-                      <p className="font-label-md text-label-md">Nguyễn Thị Thu</p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant">Toán • Thạc sĩ</p>
-                    </div>
-                  </div>
-                  <span className="bg-tertiary-fixed text-on-tertiary-fixed-variant px-2 py-1 rounded font-label-sm text-label-sm">Chờ duyệt</span>
-                </div>
-                <p className="font-body-sm text-body-sm text-outline text-right">Đã nộp 2 giờ trước</p>
-              </div>
-              {/* Queue Item 2 */}
-              <div className="p-3 mb-2 rounded-lg bg-surface-container-lowest border border-outline-variant hover:shadow-sm cursor-pointer transition-all">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-bold">TM</div>
-                    <div>
-                      <p className="font-label-md text-label-md">Trần Minh</p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant">Vật lý • Kỹ sư</p>
-                    </div>
-                  </div>
-                  <span className="bg-tertiary-fixed text-on-tertiary-fixed-variant px-2 py-1 rounded font-label-sm text-label-sm">Chờ duyệt</span>
-                </div>
-                <p className="font-body-sm text-body-sm text-outline text-right">Đã nộp 5 giờ trước</p>
-              </div>
-              {/* Queue Item 3 (Rejected) */}
-              <div className="p-3 mb-2 rounded-lg bg-surface-container-lowest border border-outline-variant opacity-75 hover:opacity-100 transition-opacity cursor-pointer">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold">LA</div>
-                    <div>
-                      <p className="font-label-md text-label-md">Lê Anh</p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant">Mỹ thuật • Cử nhân</p>
-                    </div>
-                  </div>
-                  <span className="bg-error-container text-on-error-container px-2 py-1 rounded font-label-sm text-label-sm">Bị từ chối</span>
-                </div>
-                <p className="font-body-sm text-body-sm text-outline text-right">Cập nhật 1 ngày trước</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Detailed View */}
-        <div className="xl:col-span-8">
-          <div className="glass border border-white/20 rounded-2xl overflow-hidden h-[800px] flex flex-col shadow-sm hover:shadow-lg transition-all duration-300">
-            {/* Profile Header */}
-            <div className="p-6 border-b border-outline-variant bg-surface-container-low flex justify-between items-start">
-              <div className="flex gap-6 items-center">
-                <div className="w-20 h-20 rounded-full bg-surface-variant flex items-center justify-center text-primary font-headline-xl text-headline-xl border-2 border-primary-fixed">
-                  NT
-                </div>
-                <div>
-                  <h2 className="font-headline-md text-headline-md mb-1">Nguyễn Thị Thu</h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant mb-2">thu.nguyen@example.com • 0912 345 678</p>
-                  <div className="flex gap-2">
-                    <span className="bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full font-label-sm text-label-sm">Toán</span>
-                    <span className="bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full font-label-sm text-label-sm">Khoa học</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <button className="px-4 py-2 border border-outline rounded-lg font-label-md text-label-md hover:bg-surface-container-highest transition-colors">
-                  Yêu cầu thêm
-                </button>
-                <button className="px-4 py-2 border border-error text-error rounded-lg font-label-md text-label-md hover:bg-error-container transition-colors">
-                  Từ chối
-                </button>
-                <button className="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm">
-                  Duyệt hồ sơ
-                </button>
-              </div>
+      {/* =========================================================================
+                                 TAB: QUẢN LÝ TÀI KHOẢN
+      ========================================================================= */}
+      {activeTab === 'accounts' && (
+        <div className="animate-slide-up stagger-1 space-y-6">
+          
+          {/* Filters & Actions */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center gap-3 w-full sm:w-[320px] bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+              <span className="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+              <input 
+                type="text" 
+                placeholder="Tìm tên, email, ID..." 
+                className="bg-transparent border-none outline-none text-sm w-full text-slate-700"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
             
-            {/* Documents Canvas */}
-            <div className="p-6 overflow-y-auto flex-1 bg-surface-container-lowest/50">
-              {/* Status Overview */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="p-4 rounded-xl border border-outline-variant glass flex items-center gap-3 hover:-translate-y-1 transition-transform">
-                  <span className="material-symbols-outlined text-primary text-3xl">badge</span>
-                  <div>
-                    <p className="font-label-sm text-label-sm text-outline">Xác minh danh tính</p>
-                    <p className="font-label-md text-label-md text-tertiary-container">Cần xem xét</p>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <select className="bg-white border border-slate-200 rounded-xl text-sm text-slate-600 px-4 py-2.5 outline-none font-medium shadow-sm w-full sm:w-auto cursor-pointer">
+                <option>Tất cả vai trò</option>
+                <option>Gia sư</option>
+                <option>Phụ huynh</option>
+              </select>
+              <select className="bg-white border border-slate-200 rounded-xl text-sm text-slate-600 px-4 py-2.5 outline-none font-medium shadow-sm w-full sm:w-auto cursor-pointer">
+                <option>Tất cả trạng thái</option>
+                <option>Hoạt động</option>
+                <option>Bị khóa</option>
+                <option>Chờ duyệt</option>
+              </select>
+              <button className="bg-primary text-white p-2.5 rounded-xl hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25">
+                <span className="material-symbols-outlined text-[20px] block">filter_list</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Accounts Table */}
+          <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Người dùng</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Vai trò</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Trạng thái</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Ngày tham gia</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {MOCK_ACCOUNTS.map((acc) => (
+                    <tr key={acc.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img src={acc.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100" />
+                          <div>
+                            <p className="text-sm font-bold text-[#0f172a] group-hover:text-primary transition-colors">{acc.name}</p>
+                            <p className="text-xs text-slate-500 font-medium">{acc.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                          acc.role === 'Gia sư' 
+                            ? 'bg-blue-50 text-blue-600 border-blue-100' 
+                            : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                        }`}>
+                          <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {acc.role === 'Gia sư' ? 'school' : 'family_home'}
+                          </span>
+                          {acc.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            acc.status === 'Hoạt động' ? 'bg-emerald-500' :
+                            acc.status === 'Bị khóa' ? 'bg-red-500' : 'bg-amber-500'
+                          }`}></span>
+                          <span className={`text-xs font-bold ${
+                            acc.status === 'Hoạt động' ? 'text-emerald-700' :
+                            acc.status === 'Bị khóa' ? 'text-red-700' : 'text-amber-700'
+                          }`}>
+                            {acc.status}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500 font-medium">
+                        {acc.joinedAt}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Xem chi tiết">
+                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                          </button>
+                          <button className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Chỉnh sửa">
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          </button>
+                          {acc.status === 'Bị khóa' ? (
+                            <button className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Mở khóa">
+                              <span className="material-symbols-outlined text-[18px]">lock_open</span>
+                            </button>
+                          ) : (
+                            <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Khóa tài khoản">
+                              <span className="material-symbols-outlined text-[18px]">lock</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <span className="text-xs font-medium text-slate-500">Hiển thị 1-5 của 120 tài khoản</span>
+              <div className="flex items-center gap-1">
+                <button className="p-1 rounded-lg text-slate-400 hover:bg-white hover:text-primary border border-transparent hover:border-slate-200 shadow-sm disabled:opacity-30">
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </button>
+                <button className="w-7 h-7 rounded-lg bg-primary text-white text-xs font-bold shadow-md shadow-primary/25">1</button>
+                <button className="w-7 h-7 rounded-lg text-slate-600 hover:bg-white hover:text-primary border border-transparent hover:border-slate-200 shadow-sm text-xs font-bold">2</button>
+                <button className="w-7 h-7 rounded-lg text-slate-600 hover:bg-white hover:text-primary border border-transparent hover:border-slate-200 shadow-sm text-xs font-bold">3</button>
+                <button className="p-1 rounded-lg text-slate-400 hover:bg-white hover:text-primary border border-transparent hover:border-slate-200 shadow-sm">
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+                                 TAB: DUYỆT EKYC
+      ========================================================================= */}
+      {activeTab === 'ekyc' && (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 animate-slide-up stagger-1">
+          {/* Left Column: Verification Queue */}
+          <div className="xl:col-span-4 flex flex-col gap-4">
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden flex flex-col h-[800px] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+              <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0">
+                <h3 className="font-bold text-lg text-[#0f172a]">Hàng chờ duyệt</h3>
+                <span className="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-bold">12 Chờ</span>
+              </div>
+              <div className="overflow-y-auto flex-1 p-3 space-y-2">
+                {/* Queue Item 1 (Active) */}
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 cursor-pointer transition-all">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">NT</div>
+                      <div>
+                        <p className="font-bold text-sm text-[#0f172a]">Nguyễn Thị Thu</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Toán • Thạc sĩ</p>
+                      </div>
+                    </div>
+                    <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase">Chờ duyệt</span>
                   </div>
+                  <p className="text-[10px] text-slate-400 text-right font-medium">Đã nộp 2 giờ trước</p>
                 </div>
-                <div className="p-4 rounded-xl border border-outline-variant glass flex items-center gap-3 hover:-translate-y-1 transition-transform">
-                  <span className="material-symbols-outlined text-primary text-3xl">school</span>
-                  <div>
-                    <p className="font-label-sm text-label-sm text-outline">Bằng cấp</p>
-                    <p className="font-label-md text-label-md text-tertiary-container">Cần xem xét</p>
+                {/* Queue Item 2 */}
+                <div className="p-4 rounded-xl bg-white border border-slate-100 hover:border-slate-300 hover:shadow-sm cursor-pointer transition-all group">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold group-hover:text-primary group-hover:bg-primary/10 transition-colors">TM</div>
+                      <div>
+                        <p className="font-bold text-sm text-[#0f172a] group-hover:text-primary transition-colors">Trần Minh</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Vật lý • Kỹ sư</p>
+                      </div>
+                    </div>
+                    <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase">Chờ duyệt</span>
                   </div>
-                </div>
-                <div className="p-4 rounded-xl border border-outline-variant glass flex items-center gap-3 hover:-translate-y-1 transition-transform">
-                  <span className="material-symbols-outlined text-secondary text-3xl">policy</span>
-                  <div>
-                    <p className="font-label-sm text-label-sm text-outline">Lý lịch tư pháp</p>
-                    <p className="font-label-md text-label-md text-secondary">Đã vượt qua</p>
-                  </div>
+                  <p className="text-[10px] text-slate-400 text-right font-medium">Đã nộp 5 giờ trước</p>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Document Sections */}
-              <div className="space-y-8">
-                {/* ID Document */}
-                <div>
-                  <h4 className="font-headline-sm text-headline-sm mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined">id_card</span> Giấy tờ tuỳ thân
-                  </h4>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="aspect-[1.6/1] bg-surface-variant rounded-lg border border-outline-variant relative overflow-hidden group">
-                      <div className="absolute inset-0 flex items-center justify-center flex-col text-on-surface-variant">
-                        <span className="material-symbols-outlined text-4xl mb-2">image</span>
-                        <span className="font-body-sm text-body-sm">CCCD_MatTruoc.jpg</span>
-                      </div>
-                      <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                        <button className="bg-surface-container-lowest px-4 py-2 rounded-full font-label-md text-label-md shadow-sm">Xem toàn màn hình</button>
-                      </div>
+          {/* Right Column: Detailed View */}
+          <div className="xl:col-span-8">
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden h-[800px] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+              {/* Profile Header */}
+              <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex gap-5 items-center">
+                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl border-4 border-white shadow-sm">
+                    NT
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-xl text-[#0f172a] mb-1">Nguyễn Thị Thu</h2>
+                    <p className="text-sm font-medium text-slate-500 mb-2.5">thu.nguyen@example.com • 0912 345 678</p>
+                    <div className="flex gap-2">
+                      <span className="bg-blue-50 text-blue-600 border border-blue-100 px-2.5 py-1 rounded-lg text-xs font-bold">Toán</span>
+                      <span className="bg-indigo-50 text-indigo-600 border border-indigo-100 px-2.5 py-1 rounded-lg text-xs font-bold">Khoa học</span>
                     </div>
-                    <div className="flex flex-col justify-center space-y-4">
-                      <div>
-                        <p className="font-label-sm text-label-sm text-outline">Loại giấy tờ</p>
-                        <p className="font-body-md text-body-md">Căn cước công dân</p>
-                      </div>
-                      <div>
-                        <p className="font-label-sm text-label-sm text-outline">Tên trích xuất</p>
-                        <p className="font-body-md text-body-md">Nguyễn Thị Thu</p>
-                      </div>
-                      <div>
-                        <p className="font-label-sm text-label-sm text-outline">Độ chính xác (AI)</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="h-2 w-32 bg-surface-variant rounded-full overflow-hidden">
-                            <div className="h-full bg-secondary w-[92%]"></div>
-                          </div>
-                          <span className="font-label-sm text-label-sm text-secondary">92%</span>
-                        </div>
-                      </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <button className="flex-1 md:flex-none px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 hover:text-[#0f172a] transition-colors shadow-sm">
+                    Yêu cầu thêm
+                  </button>
+                  <button className="flex-1 md:flex-none px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-xl text-sm font-bold hover:bg-red-100 hover:border-red-200 transition-colors shadow-sm">
+                    Từ chối
+                  </button>
+                  <button className="flex-1 md:flex-none px-6 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/25 active:scale-95">
+                    Duyệt hồ sơ
+                  </button>
+                </div>
+              </div>
+              
+              {/* Documents Canvas */}
+              <div className="p-6 overflow-y-auto flex-1 bg-white">
+                {/* Status Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-amber-600">badge</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Xác minh danh tính</p>
+                      <p className="text-sm font-bold text-amber-600 mt-0.5">Cần xem xét</p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-amber-600">school</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Bằng cấp</p>
+                      <p className="text-sm font-bold text-amber-600 mt-0.5">Cần xem xét</p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-emerald-600">policy</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-emerald-600/70 uppercase tracking-wide">Lý lịch tư pháp</p>
+                      <p className="text-sm font-bold text-emerald-700 mt-0.5">Đã vượt qua</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Credentials */}
-                <div>
-                  <h4 className="font-headline-sm text-headline-sm mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined">workspace_premium</span> Bằng cấp học thuật
-                  </h4>
-                  <div className="border border-outline-variant rounded-lg p-4 glass">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-outline text-3xl">picture_as_pdf</span>
-                        <div>
-                          <p className="font-label-md text-label-md">ThacSi_ToanHoc.pdf</p>
-                          <p className="font-body-sm text-body-sm text-outline">2.4 MB • Tải lên 24 tháng 10, 2023</p>
+                {/* Document Sections */}
+                <div className="space-y-8">
+                  {/* ID Document */}
+                  <div>
+                    <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary">id_card</span> Giấy tờ tuỳ thân
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="aspect-[1.6/1] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 relative overflow-hidden group">
+                        <div className="absolute inset-0 flex items-center justify-center flex-col text-slate-400">
+                          <span className="material-symbols-outlined text-4xl mb-2 group-hover:scale-110 transition-transform">image</span>
+                          <span className="text-xs font-medium">CCCD_MatTruoc.jpg</span>
+                        </div>
+                        <div className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm cursor-pointer">
+                          <button className="bg-white px-4 py-2 rounded-xl text-sm font-bold text-primary shadow-lg flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[18px]">zoom_in</span> Xem toàn màn hình
+                          </button>
                         </div>
                       </div>
-                      <button className="text-primary hover:text-primary-container font-label-md text-label-md flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">visibility</span> Xem
-                      </button>
-                    </div>
-                    <div className="bg-surface-container/50 p-3 rounded text-body-sm font-body-sm text-on-surface-variant border border-outline-variant border-dashed">
-                      <strong>Kiểm tra tự động:</strong> Tên trường khớp. Bằng cấp phù hợp với thông tin khai báo.
+                      <div className="flex flex-col justify-center space-y-5 bg-slate-50 p-5 rounded-xl border border-slate-100">
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Loại giấy tờ</p>
+                          <p className="text-sm font-semibold text-[#0f172a]">Căn cước công dân</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Tên trích xuất (OCR)</p>
+                          <p className="text-sm font-semibold text-[#0f172a]">Nguyễn Thị Thu</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Độ chính xác (AI)</p>
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 w-[92%]"></div>
+                            </div>
+                            <span className="text-xs font-bold text-emerald-600">92%</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -196,7 +327,7 @@ const AdminUsers: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

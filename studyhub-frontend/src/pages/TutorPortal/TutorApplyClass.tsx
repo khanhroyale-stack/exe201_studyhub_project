@@ -1,11 +1,53 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { mockDb } from '../../services/mockDb';
+import { UnifiedPost, UnifiedApplication, ApplicationStatus } from '../../types/shared';
+import { CURRENT_TUTOR } from '../../constants/mockTutorData';
 
 const TutorApplyClass: React.FC = () => {
+  const { postId } = useParams<{ postId: string }>();
+  const navigate = useNavigate();
+  const [post, setPost] = useState<UnifiedPost | null>(null);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const allPosts = mockDb.getPosts();
+    const found = allPosts.find(p => p.id === postId);
+    if (found) {
+      setPost(found);
+    }
+  }, [postId]);
+
+  const handleSubmit = () => {
+    if (!post) return;
+    const newApp: UnifiedApplication = {
+      id: `a${Date.now()}`,
+      postId: post.id,
+      tutorId: CURRENT_TUTOR.id,
+      tutorName: CURRENT_TUTOR.name,
+      tutorAvatar: CURRENT_TUTOR.avatar,
+      tutorTitle: CURRENT_TUTOR.title,
+      tutorRating: 5.0,
+      appliedAt: new Date().toISOString(),
+      status: ApplicationStatus.PENDING,
+      message: message
+    };
+
+    const apps = mockDb.getApplications();
+    mockDb.saveApplications([newApp, ...apps]);
+
+    alert('Hồ sơ ứng tuyển đã được gửi!');
+    navigate('/tutor/applications');
+  };
+
+  if (!post) {
+    return <div className="p-8">Đang tải...</div>;
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-8 pb-20 animate-fade-in">
       <div className="space-y-2 animate-slide-up">
-        <h1 className="text-headline-lg md:text-headline-lg font-headline-lg text-on-surface">Ứng tuyển Lớp Toán 11 - Cầu Giấy</h1>
+        <h1 className="text-headline-lg md:text-headline-lg font-headline-lg text-on-surface">Ứng tuyển {post.title}</h1>
         <p className="text-body-lg font-body-lg text-on-surface-variant">Vui lòng điền đầy đủ thông tin để phụ huynh có cái nhìn tốt nhất về bạn.</p>
       </div>
 
@@ -17,6 +59,8 @@ const TutorApplyClass: React.FC = () => {
         </h2>
         <p className="text-body-sm text-on-surface-variant mb-4">Hãy viết một đoạn ngắn giới thiệu bản thân, phương pháp giảng dạy và lý do bạn phù hợp với lớp này.</p>
         <textarea 
+          value={message}
+          onChange={e => setMessage(e.target.value)}
           className="w-full h-40 rounded-xl bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-body-md p-4 resize-y transition-all outline-none" 
           placeholder="Ví dụ: Chào anh/chị, em là sinh viên năm 3 ĐH Sư Phạm chuyên ngành Toán..."
         ></textarea>
@@ -37,13 +81,12 @@ const TutorApplyClass: React.FC = () => {
         <div className="space-y-6">
           {/* Personal Info */}
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full border-2 border-surface bg-primary-container flex items-center justify-center font-bold text-xl text-on-primary-container shadow-sm">A</div>
+            <img src={CURRENT_TUTOR.avatar} alt="Avatar" className="w-16 h-16 rounded-full border-2 border-surface object-cover shadow-sm" />
             <div>
-              <h3 className="text-body-lg font-bold text-on-surface">Nguyễn Văn A</h3>
-              <p className="text-body-md text-on-surface-variant">Sinh viên năm 3 - Đại học Sư Phạm Hà Nội</p>
+              <h3 className="text-body-lg font-bold text-on-surface">{CURRENT_TUTOR.fullName}</h3>
+              <p className="text-body-md text-on-surface-variant">{CURRENT_TUTOR.title}</p>
               <div className="flex gap-2 mt-2">
-                <span className="px-2 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded text-label-sm font-label-sm">Toán học</span>
-                <span className="px-2 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded text-label-sm font-label-sm">Vật lý</span>
+                <span className="px-2 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded text-label-sm font-label-sm">{post.subject}</span>
               </div>
             </div>
             <Link to="/tutor/settings" className="ml-auto text-primary text-label-sm hover:underline">Chỉnh sửa</Link>
@@ -65,24 +108,9 @@ const TutorApplyClass: React.FC = () => {
               <ul className="space-y-2">
                 <li className="flex items-start gap-2 text-body-md">
                   <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">work_history</span>
-                  <span>2 năm gia sư môn Toán cấp 3, học sinh đỗ ĐH Bách Khoa.</span>
+                  <span>2 năm gia sư cấp 3.</span>
                 </li>
               </ul>
-            </div>
-          </div>
-          <hr className="border-outline-variant" />
-          {/* Certifications */}
-          <div>
-            <h4 className="text-label-md font-label-md text-on-surface-variant mb-2 uppercase tracking-wider">Chứng chỉ nổi bật</h4>
-            <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 border border-outline-variant rounded-lg p-2 bg-surface">
-                <span className="material-symbols-outlined text-secondary text-[20px]">verified</span>
-                <span className="text-body-sm font-medium">IELTS 7.0</span>
-              </div>
-              <div className="flex items-center gap-2 border border-outline-variant rounded-lg p-2 bg-surface">
-                <span className="material-symbols-outlined text-secondary text-[20px]">verified</span>
-                <span className="text-body-sm font-medium">Giải Nhì HSG Toán Tỉnh</span>
-              </div>
             </div>
           </div>
         </div>
@@ -99,7 +127,7 @@ const TutorApplyClass: React.FC = () => {
         </label>
         <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
           <Link to="/tutor/search-classes" className="px-6 py-3 rounded-xl border border-outline-variant text-body-md font-medium text-on-surface hover:bg-white/50 transition-colors text-center active:scale-95">Hủy</Link>
-          <button className="px-6 py-3 bg-primary text-on-primary rounded-xl text-body-md font-medium hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95">Gửi hồ sơ ứng tuyển</button>
+          <button onClick={handleSubmit} className="px-6 py-3 bg-primary text-on-primary rounded-xl text-body-md font-medium hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95">Gửi hồ sơ ứng tuyển</button>
         </div>
       </section>
     </div>

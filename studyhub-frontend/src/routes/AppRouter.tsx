@@ -1,47 +1,56 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
 import Layout from '../components/Layout';
-import Homepage from '../pages/Homepage';
-import ClassList from '../pages/Classes/ClassList';
-import ClassDetail from '../pages/Classes/ClassDetail';
-import TutorList from '../pages/Tutor/TutorList';
-import TutorDetail from '../pages/Tutor/TutorDetail';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-
 import ParentLayout from '../components/Parent/ParentLayout';
-import ParentDashboard from '../pages/Parent/ParentDashboard';
-import PostManagement from '../pages/Parent/PostManagement';
-import CreatePost from '../pages/Parent/CreatePost';
-import ApplicantReview from '../pages/Parent/ApplicantReview';
-import ClassManagement from '../pages/Parent/ClassManagement';
-import FeedbackList from '../pages/Parent/FeedbackList';
-import CreateFeedback from '../pages/Parent/CreateFeedback';
-import Settings from '../pages/Parent/Settings';
-
 import TutorLayout from '../components/Tutor/TutorLayout';
-import TutorDashboard from '../pages/TutorPortal/TutorDashboard';
-import TutorSearchClasses from '../pages/TutorPortal/TutorSearchClasses';
-import TutorApplyClass from '../pages/TutorPortal/TutorApplyClass';
-import TutorOffers from '../pages/TutorPortal/TutorOffers';
-import TutorBilling from '../pages/TutorPortal/TutorBilling';
-import Messages from '../pages/Shared/Messages';
-import TutorCreatePost from '../pages/TutorPortal/TutorCreatePost';
-import TutorClasses from '../pages/TutorPortal/TutorClasses';
-import TutorApplications from '../pages/TutorPortal/TutorApplications';
-import TutorSchedule from '../pages/TutorPortal/TutorSchedule';
-import TutorReviews from '../pages/TutorPortal/TutorReviews';
-import TutorSettings from '../pages/TutorPortal/TutorSettings';
-
 import AdminLayout from '../components/Admin/AdminLayout';
-import AdminDashboard from '../pages/AdminPortal/AdminDashboard';
-import AdminUsers from '../pages/AdminPortal/AdminUsers';
-import AdminContent from '../pages/AdminPortal/AdminContent';
-import AdminReports from '../pages/AdminPortal/AdminReports';
+
+const Homepage = lazy(() => import('../pages/Homepage'));
+const ClassList = lazy(() => import('../pages/Classes/ClassList'));
+const ClassDetail = lazy(() => import('../pages/Classes/ClassDetail'));
+const TutorList = lazy(() => import('../pages/Tutor/TutorList'));
+const TutorDetail = lazy(() => import('../pages/Tutor/TutorDetail'));
+const Login = lazy(() => import('../pages/Login'));
+const Register = lazy(() => import('../pages/Register'));
+
+const ParentDashboard = lazy(() => import('../pages/Parent/ParentDashboard'));
+const PostManagement = lazy(() => import('../pages/Parent/PostManagement'));
+const CreatePost = lazy(() => import('../pages/Parent/CreatePost'));
+const ApplicantReview = lazy(() => import('../pages/Parent/ApplicantReview'));
+const ClassManagement = lazy(() => import('../pages/Parent/ClassManagement'));
+const FeedbackList = lazy(() => import('../pages/Parent/FeedbackList'));
+const CreateFeedback = lazy(() => import('../pages/Parent/CreateFeedback'));
+const Settings = lazy(() => import('../pages/Parent/Settings'));
+
+const TutorDashboard = lazy(() => import('../pages/TutorPortal/TutorDashboard'));
+const TutorSearchClasses = lazy(() => import('../pages/TutorPortal/TutorSearchClasses'));
+const TutorApplyClass = lazy(() => import('../pages/TutorPortal/TutorApplyClass'));
+const TutorOffers = lazy(() => import('../pages/TutorPortal/TutorOffers'));
+const TutorBilling = lazy(() => import('../pages/TutorPortal/TutorBilling'));
+const Messages = lazy(() => import('../pages/Shared/Messages'));
+const TutorCreatePost = lazy(() => import('../pages/TutorPortal/TutorCreatePost'));
+const TutorClasses = lazy(() => import('../pages/TutorPortal/TutorClasses'));
+const TutorApplications = lazy(() => import('../pages/TutorPortal/TutorApplications'));
+const TutorSchedule = lazy(() => import('../pages/TutorPortal/TutorSchedule'));
+const TutorReviews = lazy(() => import('../pages/TutorPortal/TutorReviews'));
+const TutorSettings = lazy(() => import('../pages/TutorPortal/TutorSettings'));
+
+const AdminDashboard = lazy(() => import('../pages/AdminPortal/AdminDashboard'));
+const AdminUsers = lazy(() => import('../pages/AdminPortal/AdminUsers'));
+const AdminContent = lazy(() => import('../pages/AdminPortal/AdminContent'));
+const AdminReports = lazy(() => import('../pages/AdminPortal/AdminReports'));
+
+const SuspenseFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 const AppRouter: React.FC = () => {
   return (
-    <Routes>
+    <Suspense fallback={<SuspenseFallback />}>
+      <Routes>
       {/* ── Public Routes (shared Navbar + Footer via Layout) ── */}
       <Route path="/" element={<Layout />}>
         <Route index element={<Homepage />} />
@@ -105,6 +114,7 @@ const AppRouter: React.FC = () => {
       {/* ── Global catch-all ── */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 };
 

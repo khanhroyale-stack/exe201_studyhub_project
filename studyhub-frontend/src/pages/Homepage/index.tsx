@@ -67,15 +67,15 @@ const Homepage: React.FC = () => {
           {/* Background blobs */}
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-gradient-to-br from-[#eef2ff] via-[#f7f9ff] to-[#f0f9ff]" />
-            <div className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/20 to-indigo-300/20 blur-[120px] animate-float" />
-            <div className="absolute bottom-[-80px] left-[-80px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-secondary/20 to-teal-300/20 blur-[100px] animate-float-slow" />
+            <div className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/20 to-indigo-300/20 blur-[120px]" />
+            <div className="absolute bottom-[-80px] left-[-80px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-secondary/20 to-teal-300/20 blur-[100px]" />
             <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 blur-[80px] rounded-full" />
           </div>
 
           <div className="relative z-10 px-6 md:px-16 w-full max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex flex-col items-center justify-center">
               {/* LEFT TEXT */}
-              <div className="flex-1 text-center lg:text-left">
+              <div className="w-full max-w-4xl text-center">
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 bg-white border border-primary/20 rounded-full px-4 py-2 mb-8 shadow-sm animate-scale-in">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -95,12 +95,12 @@ const Homepage: React.FC = () => {
                   chỉ trong vài phút
                 </h1>
 
-                <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto lg:mx-0 animate-slide-up opacity-0 stagger-2 leading-relaxed">
+                <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto animate-slide-up opacity-0 stagger-2 leading-relaxed">
                   Kết nối với hàng nghìn gia sư đã được xác thực danh tính và chuyên môn. Học thử miễn phí, an tâm tuyệt đối.
                 </p>
 
                 {/* Search Bar */}
-                <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,61,155,0.12)] p-2 flex flex-col sm:flex-row gap-2 max-w-xl mx-auto lg:mx-0 border border-white/80 animate-slide-up opacity-0 stagger-3">
+                <div className="relative z-20 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,61,155,0.12)] p-2 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto border border-white/80 animate-slide-up opacity-0 stagger-3">
                   {/* Keyword input */}
                   <div className="flex-1 flex items-center gap-3 px-4 py-2 border-b sm:border-b-0 sm:border-r border-slate-100">
                     <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">search</span>
@@ -132,7 +132,7 @@ const Homepage: React.FC = () => {
                 </div>
 
                 {/* Quick tags */}
-                <div className="flex flex-wrap gap-2 mt-5 justify-center lg:justify-start animate-slide-up opacity-0 stagger-4">
+                <div className="relative z-10 flex flex-wrap gap-2 mt-5 justify-center animate-slide-up opacity-0 stagger-4">
                   <span className="text-sm text-slate-400">Phổ biến:</span>
                   {['Toán lớp 10', 'IELTS 6.5', 'Luyện thi ĐH', 'Tiếng Anh'].map(tag => (
                     <button key={tag} className="px-3 py-1 bg-white border border-slate-200 hover:border-primary hover:text-primary rounded-full text-xs font-medium text-slate-500 transition-all shadow-sm hover:shadow">
@@ -142,41 +142,7 @@ const Homepage: React.FC = () => {
                 </div>
               </div>
 
-              {/* RIGHT FLOATING CARDS */}
-              <div className="hidden lg:flex flex-col gap-4 shrink-0 animate-slide-right opacity-0 stagger-2">
-                {/* Card 1 */}
-                <div className="bg-white rounded-2xl shadow-xl border border-white p-5 flex items-center gap-4 w-[300px] hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <span className="material-symbols-outlined text-white text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-extrabold text-[#0f172a]">3,500+</p>
-                    <p className="text-sm text-slate-400 font-medium">Gia sư được xác thực</p>
-                  </div>
-                </div>
-
-                {/* Card 2 — floating */}
-                <div className="bg-white rounded-2xl shadow-xl border border-white p-5 flex items-center gap-4 w-[280px] ml-8 animate-float-delay hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/30">
-                    <span className="material-symbols-outlined text-white text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-extrabold text-[#0f172a]">12,000+</p>
-                    <p className="text-sm text-slate-400 font-medium">Lớp học kết nối</p>
-                  </div>
-                </div>
-
-                {/* Card 3 */}
-                <div className="bg-white rounded-2xl shadow-xl border border-white p-5 flex items-center gap-4 w-[300px] hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                    <span className="material-symbols-outlined text-white text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-extrabold text-[#0f172a]">98%</p>
-                    <p className="text-sm text-slate-400 font-medium">Phụ huynh hài lòng</p>
-                  </div>
-                </div>
-              </div>
+              {/* Removed RIGHT FLOATING CARDS */}
             </div>
           </div>
         </section>
@@ -257,7 +223,7 @@ const Homepage: React.FC = () => {
                   className={`bg-white rounded-3xl border border-slate-100 overflow-hidden group hover:shadow-[0_20px_60px_-10px_rgba(0,61,155,0.15)] hover:-translate-y-2 transition-all duration-500 flex flex-col animate-slide-up opacity-0 stagger-${idx + 1} shadow-sm`}
                 >
                   <div className="relative h-52 overflow-hidden">
-                    <img alt={cls.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src={cls.image} />
+                    <img alt={cls.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src={cls.image} loading="lazy" decoding="async" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm text-slate-700 px-3 py-1.5 rounded-lg text-sm font-bold shadow-md flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-primary text-[16px]">payments</span>
@@ -286,7 +252,7 @@ const Homepage: React.FC = () => {
 
                     {/* Tutor row */}
                     <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-5">
-                      <img src={cls.tutorAvatar} alt="Tutor" className="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow" />
+                      <img src={cls.tutorAvatar} alt="Tutor" className="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow" loading="lazy" decoding="async" />
                       <div>
                         <p className="text-xs font-bold text-[#0f172a]">{cls.tutorName}</p>
                         <p className="text-xs text-slate-400">{cls.tutorDesc}</p>
@@ -327,7 +293,7 @@ const Homepage: React.FC = () => {
                 </div>
                 <p className="text-slate-600 italic leading-relaxed mb-6 text-[15px]">"{t.quote}"</p>
                 <div className="flex items-center gap-4">
-                  <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20" />
+                  <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20" loading="lazy" decoding="async" />
                   <div>
                     <p className="font-bold text-[#0f172a] text-sm">{t.name}</p>
                     <p className="text-slate-400 text-xs">{t.role}</p>

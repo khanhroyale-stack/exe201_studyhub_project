@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MOCK_CLASSES } from '../../constants/mockData';
 import CustomSelect from '../../components/CustomSelect';
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'hana-viewer': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { url?: string; style?: React.CSSProperties };
+    }
+  }
+}
 
 const STATS = [
   { value: '12,000+', label: 'Lớp đã kết nối', icon: 'school', color: 'from-blue-500 to-indigo-600' },
@@ -57,6 +65,21 @@ const TESTIMONIALS = [
 const Homepage: React.FC = () => {
   const classesToShow = MOCK_CLASSES.slice(0, 3);
   const [searchLocation, setSearchLocation] = useState('');
+  const [hanaReady, setHanaReady] = useState(false);
+
+  useEffect(() => {
+    // Dynamically load hana-viewer script to ensure it registers
+    // the custom element before React tries to render it
+    if (customElements.get('hana-viewer')) {
+      setHanaReady(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = 'https://cdn.spline.design/@splinetool/hana-viewer@1.2.54/hana-viewer.js';
+    script.onload = () => setHanaReady(true);
+    document.head.appendChild(script);
+  }, []);
 
   return (
     <div className="bg-[#f7f9ff] text-on-background overflow-x-hidden">
@@ -64,12 +87,31 @@ const Homepage: React.FC = () => {
 
         {/* ===== HERO SECTION ===== */}
         <section className="relative pt-[120px] pb-24 flex justify-center">
-          {/* Background blobs */}
+          {/* Background blobs and 3D Spline */}
           <div className="absolute inset-0 z-0 overflow-hidden">
+            {/* Gradient background — shows instantly while 3D loads */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#eef2ff] via-[#f7f9ff] to-[#f0f9ff]" />
             <div className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/20 to-indigo-300/20 blur-[120px]" />
             <div className="absolute bottom-[-80px] left-[-80px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-secondary/20 to-teal-300/20 blur-[100px]" />
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 blur-[80px] rounded-full" />
+
+            {/* 3D Background — hana-viewer */}
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                top: '-10%', left: '-10%',
+                width: '120%', height: '120%',
+                opacity: 0.9,
+              }}
+            >
+              {hanaReady && (
+                <hana-viewer
+                  url="https://prod.spline.design/DXZulGqQC57VpVKk-rgE/scene.hanacode"
+                  style={{ width: '100%', height: '100%', display: 'block' }}
+                ></hana-viewer>
+              )}
+            </div>
+
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
           </div>
 
           <div className="relative z-10 px-6 md:px-16 w-full max-w-7xl mx-auto">
@@ -162,7 +204,7 @@ const Homepage: React.FC = () => {
         </section>
 
         {/* ===== HOW IT WORKS ===== */}
-        <section className="px-6 md:px-16 py-20 max-w-7xl mx-auto">
+        <section className="px-6 md:px-16 pt-20 pb-0 max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="inline-flex items-center gap-2 bg-primary/8 text-primary px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -194,11 +236,26 @@ const Homepage: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* 3D Spline Design */}
+          <div className="mt-8 w-full h-[400px] md:h-[500px] flex justify-center items-center relative z-10 animate-slide-up opacity-0 stagger-4 -mb-10 md:-mb-20 overflow-hidden group">
+            <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[120%]">
+              {hanaReady && (
+                <hana-viewer url="https://prod.spline.design/XstVPGIkuMmDC1wd-wP4/scene.hanacode" style={{ width: '100%', height: '100%' }}></hana-viewer>
+              )}
+            </div>
+            
+            {/* Overlay to fade bottom edge */}
+            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#f7f9ff] via-[#f7f9ff]/80 to-transparent pointer-events-none z-20" />
+          </div>
         </section>
 
         {/* ===== CLASS LIST SECTION ===== */}
-        <section className="px-6 md:px-16 py-20 bg-white border-y border-slate-100">
-          <div className="max-w-7xl mx-auto">
+        <section className="px-6 md:px-16 pt-32 pb-20 bg-white relative">
+          {/* Smooth gradient transition at the top of the white section */}
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#f7f9ff] to-white pointer-events-none" />
+          
+          <div className="max-w-7xl mx-auto relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
               <div>
                 <span className="inline-block bg-emerald-50 text-emerald-700 text-sm font-bold px-4 py-1.5 rounded-full mb-3 border border-emerald-100">

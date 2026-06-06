@@ -81,7 +81,7 @@ const TutorList: React.FC = () => {
 
             {/* Price Range */}
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Học phí (VNĐ/giờ)</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Học phí (VNĐ/ca)</p>
               <input className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" max="1000000" min="50000" step="50000" type="range" defaultValue="500000" />
               <div className="flex justify-between mt-2 text-xs text-slate-400 font-medium">
                 <span>50k</span><span>1,000k</span>
@@ -183,7 +183,7 @@ const TutorList: React.FC = () => {
                   <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                     <div>
                       <span className="text-lg font-extrabold text-primary">{tutor.price}</span>
-                      <span className="text-xs text-slate-400 font-medium">/giờ</span>
+                      <span className="text-xs text-slate-400 font-medium">/ca</span>
                     </div>
                     <Link
                       to={`/tutors/${tutor.id}`}

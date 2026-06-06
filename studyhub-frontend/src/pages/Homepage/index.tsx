@@ -68,17 +68,21 @@ const Homepage: React.FC = () => {
   const [hanaReady, setHanaReady] = useState(false);
 
   useEffect(() => {
-    // Dynamically load hana-viewer script to ensure it registers
-    // the custom element before React tries to render it
-    if (customElements.get('hana-viewer')) {
-      setHanaReady(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.src = 'https://cdn.spline.design/@splinetool/hana-viewer@1.2.54/hana-viewer.js';
-    script.onload = () => setHanaReady(true);
-    document.head.appendChild(script);
+    // Delay rendering hana-viewer slightly to allow route transitions
+    // and navbar animations to finish smoothly without main thread blocking.
+    const timer = setTimeout(() => {
+      if (customElements.get('hana-viewer')) {
+        setHanaReady(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://cdn.spline.design/@splinetool/hana-viewer@1.2.54/hana-viewer.js';
+      script.onload = () => setHanaReady(true);
+      document.head.appendChild(script);
+    }, 400); // 400ms delay gives enough time for 200ms-300ms CSS transitions to finish
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -179,8 +183,6 @@ const Homepage: React.FC = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Removed RIGHT FLOATING CARDS */}
             </div>
           </div>
         </section>

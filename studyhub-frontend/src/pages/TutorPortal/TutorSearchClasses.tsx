@@ -81,7 +81,7 @@ const TutorSearchClasses: React.FC = () => {
           </div>
           {/* Khoảng học phí */}
           <div className="mb-6 border-b border-outline-variant pb-6">
-            <h4 className="text-label-md font-label-md text-on-surface mb-3">Khoảng học phí (VNĐ/h)</h4>
+            <h4 className="text-label-md font-label-md text-on-surface mb-3">Khoảng học phí (VNĐ/ca)</h4>
             <div className="flex items-center gap-2">
               <input className="w-full bg-surface border border-outline-variant rounded-md py-1.5 px-3 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Tối thiểu" type="text" />
               <span className="text-on-surface-variant">-</span>

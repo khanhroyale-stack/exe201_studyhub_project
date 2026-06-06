@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tutor_applications") @Data
@@ -31,4 +32,7 @@ public class TutorApplication {
     private String message;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    // Trong class TutorApplication.java
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
+    private List<StudyMaterial> studyMaterials;
 }

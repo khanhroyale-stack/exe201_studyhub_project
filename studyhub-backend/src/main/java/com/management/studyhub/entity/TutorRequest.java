@@ -6,6 +6,7 @@ import lombok.Data;
 
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "tutor_requests") @Data
@@ -33,4 +34,6 @@ public class TutorRequest {
     @Column(length = 20)
     private RequestStatus status; // OPEN, CLOSED
     private boolean isDeleted = false;
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequestSchedule> schedules;
 }

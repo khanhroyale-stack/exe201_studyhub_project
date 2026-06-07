@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MOCK_CLASSES } from '../../constants/mockData';
 import CustomSelect from '../../components/CustomSelect';
+import { ClassDto } from '../../types/class';
 
 declare global {
   namespace JSX {
@@ -45,25 +45,10 @@ const HOW_IT_WORKS = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    name: 'Chị Nguyễn Lan Anh',
-    role: 'Phụ huynh bé lớp 10',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBf8IwMybzeHQ58NopJnuBaSr81qhSa0FwewviuCcTnxfaVd0qGAsyeTbDXTyDavvtLVgmoYtYRV7hU5wICafi34zY4XiehqPSqldqT-G3__dLDoyAXSCamO4dOPXbEuPJRw9ILZhXkAtL68Us4oTUj3wcWR6oVZS7mMwweiQSsS-JI8SvPbzPUBTBs5m1piaN0XBmCIgugy1KcEsdHMPHUV0fe3oVsIitdyEJ5OVNTV1mV7R7PAGgFf6LyTlpUTOon0EPnZ34M48tx',
-    quote: 'Chỉ trong 2 ngày đăng bài đã có hơn 5 gia sư ứng tuyển. Thầy dạy con tôi bây giờ rất tận tâm và điểm số cải thiện rõ rệt. Cảm ơn StudyHub!',
-    stars: 5,
-  },
-  {
-    name: 'Em Trần Hoàng',
-    role: 'Gia sư — Sinh viên ĐH Bách Khoa',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTcyLV-pbCBKDruyPCKCIM4TqRUMe6owsX04_nA7hfv7pkavDnwNb5qh6nKmjn0waHKwRaliXWc7bwcZdJjX7_KOXYpPyx3f7zcV2w3yuFYUc-oA2zb1MCSVTCrkgmFmt_dxPUpoQVOozyI2HLAtv-0s7NyjJK3tcu9VO8-oPwPb8OAGd_JWbWmzlUleayZJrT7fX4p9bgRArPDwTI_9mZHP6xMlK2uJzakJzfSY7-A8CCmnMoZTVWGOf3vVH2xyclpDoC7hf06Qcc',
-    quote: 'Nhờ StudyHub em đã có thêm thu nhập ổn định từ việc dạy 3 lớp song song. Hệ thống quản lý lịch dạy và tính phí rất minh bạch, em hoàn toàn tin tưởng.',
-    stars: 5,
-  },
-];
-
+import { TestimonialDto } from '../../types/testimonial';
 const Homepage: React.FC = () => {
-  const classesToShow = MOCK_CLASSES.slice(0, 3);
+  const [classesToShow, setClassesToShow] = useState<ClassDto[]>([]);
+  const [testimonials, setTestimonials] = useState<TestimonialDto[]>([]);
   const [searchLocation, setSearchLocation] = useState('');
   const [hanaReady, setHanaReady] = useState(false);
 
@@ -81,6 +66,22 @@ const Homepage: React.FC = () => {
       script.onload = () => setHanaReady(true);
       document.head.appendChild(script);
     }, 400); // 400ms delay gives enough time for 200ms-300ms CSS transitions to finish
+
+    // Fetch featured courses
+    fetch('http://localhost:8080/api/courses/featured')
+      .then(res => res.json())
+      .then(data => {
+        setClassesToShow(data);
+      })
+      .catch(err => console.error('Failed to fetch featured courses:', err));
+
+    // Fetch featured testimonials
+    fetch('http://localhost:8080/api/testimonials/featured')
+      .then(res => res.json())
+      .then(data => {
+        setTestimonials(data);
+      })
+      .catch(err => console.error('Failed to fetch featured testimonials:', err));
 
     return () => clearTimeout(timer);
   }, []);
@@ -287,6 +288,9 @@ const Homepage: React.FC = () => {
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm">
                       <span className="material-symbols-outlined text-amber-500 text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                       <span className="text-xs font-bold text-slate-700">{cls.rating}</span>
+                      {cls.reviewCount !== undefined && (
+                        <span className="text-xs text-slate-500">({cls.reviewCount})</span>
+                      )}
                     </div>
                   </div>
 
@@ -335,7 +339,7 @@ const Homepage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
-            {TESTIMONIALS.map((t, idx) => (
+            {testimonials.map((t, idx) => (
               <div
                 key={idx}
                 className={`bg-white border border-slate-100 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-slide-up opacity-0 stagger-${idx + 1} relative overflow-hidden shadow-sm`}

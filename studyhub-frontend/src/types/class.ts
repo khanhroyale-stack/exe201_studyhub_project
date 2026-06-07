@@ -2,6 +2,7 @@ export interface ClassDto {
   id: number;
   title: string;
   rating: string;
+  reviewCount?: number;
   location: string;
   locationType: string; // e.g. 'location_on', 'videocam'
   tutorName: string;

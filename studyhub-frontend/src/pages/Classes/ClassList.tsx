@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MOCK_CLASSES } from '../../constants/mockData';
 import CustomSelect from '../../components/CustomSelect';
+import { ClassDto } from '../../types/class';
 
 const ClassList: React.FC = () => {
   const [sortBy, setSortBy] = useState('newest');
+  const [classes, setClasses] = useState<ClassDto[]>([]);
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/courses')
+      .then(res => res.json())
+      .then(data => setClasses(data))
+      .catch(err => console.error('Failed to fetch courses:', err));
+  }, []);
+
   return (
     <div className="bg-[#f7f9ff] text-on-surface min-h-screen">
       {/* ===== HERO / SEARCH SECTION ===== */}
@@ -121,7 +130,7 @@ const ClassList: React.FC = () => {
           {/* Header row */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-7 gap-4">
             <p className="text-sm text-slate-500">
-              Tìm thấy <span className="font-bold text-[#0f172a]">{MOCK_CLASSES.length}</span> lớp học phù hợp
+              Tìm thấy <span className="font-bold text-[#0f172a]">{classes.length}</span> lớp học phù hợp
             </p>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-400 uppercase">Sắp xếp:</span>
@@ -140,7 +149,7 @@ const ClassList: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {MOCK_CLASSES.map((cls) => (
+            {classes.map((cls) => (
               <div
                 key={cls.id}
                 className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_12px_40px_rgba(0,61,155,0.12)] hover:-translate-y-1 transition-all duration-300 group flex flex-col shadow-sm"
@@ -161,7 +170,7 @@ const ClassList: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 text-slate-400 text-xs mb-4">
-                    <span className="material-symbols-outlined text-[15px]">{cls.locationType === 'computer' || cls.locationType === 'videocam' ? 'videocam' : 'location_on'}</span>
+                    <span className="material-symbols-outlined text-[15px]">{cls.locationType === 'computer' || cls.locationType === 'videocam' || cls.locationType === 'Online' ? 'videocam' : 'location_on'}</span>
                     {cls.location}
                   </div>
 

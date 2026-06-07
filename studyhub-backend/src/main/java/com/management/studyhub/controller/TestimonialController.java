@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/testimonials")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class TestimonialController {
 

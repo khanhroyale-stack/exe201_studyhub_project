@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 // TutorProfile.java
 @Entity
@@ -48,4 +49,20 @@ public class TutorProfile {
     private String rejectionReason;
 
     private boolean isDeleted = false;
+
+    private Double price;
+    
+    @Column(length = 20)
+    private String teachingMethod; // ONLINE, OFFLINE, BOTH
+    
+    private Double averageRating = 0.0;
+    private Integer totalReviews = 0;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "tutor_subjects",
+        joinColumns = @JoinColumn(name = "tutor_profile_id"),
+        inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
+    private Set<Subject> subjects;
 }

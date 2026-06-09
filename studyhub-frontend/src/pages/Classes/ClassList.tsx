@@ -1,40 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import CustomSelect from '../../components/CustomSelect';
-import { useClasses } from '../../hooks/useClasses';
-import { ClassFilterParams } from '../../types/filter';
+import { ClassDto } from '../../types/class';
 
 const ClassList: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const [filters, setFilters] = useState<ClassFilterParams>({
-    keyword: searchParams.get('keyword') || '',
-    subjects: [],
-    maxPrice: 1000000,
-    learningMode: 'All',
-    grades: [],
-    sortBy: 'newest',
-    location: searchParams.get('location') || ''
-  });
+  const [sortBy, setSortBy] = useState('newest');
+  const [classes, setClasses] = useState<ClassDto[]>([]);
 
-  const { data: classes, isLoading } = useClasses(filters);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
 
-  const handleSubjectChange = (subject: string) => {
-    setFilters(prev => ({
-      ...prev,
-      subjects: prev.subjects.includes(subject)
-        ? prev.subjects.filter(s => s !== subject)
-        : [...prev.subjects, subject]
-    }));
+  // Filter States
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [maxPrice, setMaxPrice] = useState<number>(1000000);
+  const [method, setMethod] = useState<string>('All');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (keyword) params.append('keyword', keyword);
+    if (selectedSubjects.length > 0) params.append('subjects', selectedSubjects.join(','));
+    if (selectedGrades.length > 0) params.append('grades', selectedGrades.join(','));
+    if (maxPrice < 1000000) params.append('maxPrice', maxPrice.toString());
+    if (method !== 'All') params.append('method', method);
+
+    fetch(`http://localhost:8080/api/courses?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => setClasses(data))
+      .catch(err => console.error('Failed to fetch courses:', err));
+  }, [keyword, selectedSubjects, selectedGrades, maxPrice, method]);
+
+  const toggleSubject = (subject: string) => {
+    setSelectedSubjects(prev => prev.includes(subject) ? prev.filter(s => s !== subject) : [...prev, subject]);
   };
 
-  const handleGradeChange = (grade: string) => {
-    setFilters(prev => ({
-      ...prev,
-      grades: prev.grades.includes(grade)
-        ? prev.grades.filter(g => g !== grade)
-        : [...prev.grades, grade]
-    }));
+  const toggleGrade = (grade: string) => {
+    setSelectedGrades(prev => prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]);
   };
+
+  const resetFilters = () => {
+    setSelectedSubjects([]);
+    setSelectedGrades([]);
+    setMaxPrice(1000000);
+    setMethod('All');
+    setKeyword('');
+    setSearchParams({});
+  };
+
   return (
     <div className="bg-[#f7f9ff] text-on-surface min-h-screen">
       {/* ===== HERO / SEARCH SECTION ===== */}
@@ -66,8 +78,8 @@ const ClassList: React.FC = () => {
                 className="w-full border-none outline-none text-sm placeholder:text-slate-400 text-slate-700 bg-transparent"
                 placeholder="Tìm kiếm tên lớp, môn học, từ khóa..."
                 type="text"
-                value={filters.keyword}
-                onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
               />
             </div>
             <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
@@ -99,23 +111,21 @@ const ClassList: React.FC = () => {
                 <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
                 Bộ lọc
               </h2>
-              <button 
-                className="text-primary text-sm font-semibold hover:underline"
-                onClick={() => setFilters({ keyword: '', subjects: [], maxPrice: 1000000, learningMode: 'All', grades: [], sortBy: 'newest' })}
-              >Xóa hết</button>
+              <button className="text-primary text-sm font-semibold hover:underline">Xóa hết</button>
+              <button onClick={resetFilters} className="text-primary text-sm font-semibold hover:underline">Xóa hết</button>
             </div>
 
             {/* Môn học */}
             <div className="mb-7">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Môn học</h3>
               <div className="space-y-2.5">
-                {['Toán học', 'Vật lý', 'Hóa học', 'Tiếng Anh', 'Tin học'].map(subject => (
+                {['Toán học', 'Vật lý', 'Hóa học', 'Tiếng Anh', 'Tin học'].map((subject) => (
                   <label key={subject} className="flex items-center gap-3 cursor-pointer group">
                     <input 
+                      checked={selectedSubjects.includes(subject)} 
+                      onChange={() => toggleSubject(subject)}
                       className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" 
                       type="checkbox" 
-                      checked={filters.subjects.includes(subject)}
-                      onChange={() => handleSubjectChange(subject)}
                     />
                     <span className="text-sm text-slate-600 group-hover:text-primary transition-colors font-medium">{subject}</span>
                   </label>
@@ -129,13 +139,12 @@ const ClassList: React.FC = () => {
               <input 
                 className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" 
                 max="1000000" min="50000" step="50000" type="range" 
-                value={filters.maxPrice}
-                onChange={(e) => setFilters({ ...filters, maxPrice: parseInt(e.target.value) })}
+                value={maxPrice} 
+                onChange={(e) => setMaxPrice(Number(e.target.value))} 
               />
+              <div className="text-center text-primary font-bold mt-2">{(maxPrice / 1000).toLocaleString()}k</div>
               <div className="flex justify-between mt-2 text-xs text-slate-400 font-medium">
-                <span>50k</span>
-                <span className="text-primary font-bold">{filters.maxPrice / 1000}k</span>
-                <span>1.000k</span>
+                <span>50k</span><span>1.000k</span>
               </div>
             </div>
 
@@ -144,13 +153,15 @@ const ClassList: React.FC = () => {
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Hình thức học</h3>
               <div className="grid grid-cols-2 gap-2">
                 <button 
-                  onClick={() => setFilters({ ...filters, learningMode: filters.learningMode === 'Online' ? 'All' : 'Online' })}
-                  className={`py-2 px-3 rounded-xl text-sm font-semibold transition-colors ${filters.learningMode === 'Online' ? 'bg-primary text-white shadow-sm shadow-primary/25 border border-primary' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}
-                >Online</button>
+                  onClick={() => setMethod(method === 'Online' ? 'All' : 'Online')}
+                  className={`py-2 px-3 rounded-xl text-sm font-semibold transition-colors ${method === 'Online' ? 'bg-primary text-white border-primary shadow-sm shadow-primary/25' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}>
+                  Online
+                </button>
                 <button 
-                  onClick={() => setFilters({ ...filters, learningMode: filters.learningMode === 'Offline' ? 'All' : 'Offline' })}
-                  className={`py-2 px-3 rounded-xl text-sm font-semibold transition-colors ${filters.learningMode === 'Offline' ? 'bg-primary text-white shadow-sm shadow-primary/25 border border-primary' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}
-                >Offline</button>
+                  onClick={() => setMethod(method === 'Offline' ? 'All' : 'Offline')}
+                  className={`py-2 px-3 rounded-xl text-sm font-semibold transition-colors ${method === 'Offline' ? 'bg-primary text-white border-primary shadow-sm shadow-primary/25' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}>
+                  Offline
+                </button>
               </div>
             </div>
 
@@ -158,13 +169,13 @@ const ClassList: React.FC = () => {
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Lớp học</h3>
               <div className="space-y-2.5">
-                {['Lớp 10', 'Lớp 11', 'Lớp 12'].map(grade => (
+                {['Lớp 10', 'Lớp 11', 'Lớp 12'].map((grade) => (
                   <label key={grade} className="flex items-center gap-3 cursor-pointer group">
                     <input 
+                      checked={selectedGrades.includes(grade)}
+                      onChange={() => toggleGrade(grade)}
                       className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" 
                       type="checkbox" 
-                      checked={filters.grades.includes(grade)}
-                      onChange={() => handleGradeChange(grade)}
                     />
                     <span className="text-sm text-slate-600 group-hover:text-primary transition-colors font-medium">{grade}</span>
                   </label>
@@ -190,25 +201,15 @@ const ClassList: React.FC = () => {
                   { value: 'price_desc', label: 'Học phí cao → thấp' },
                   { value: 'rating', label: 'Đánh giá cao nhất' },
                 ]}
-                value={filters.sortBy}
-                onChange={(val) => setFilters({ ...filters, sortBy: val })}
+                value={sortBy}
+                onChange={setSortBy}
                 size="sm"
               />
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          ) : classes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-              <span className="material-symbols-outlined text-4xl mb-4">search_off</span>
-              <p>Không tìm thấy lớp học nào phù hợp với bộ lọc.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              {classes.map((cls) => (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {classes.map((cls) => (
               <div
                 key={cls.id}
                 className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-[0_12px_40px_rgba(0,61,155,0.12)] hover:-translate-y-1 transition-all duration-300 group flex flex-col shadow-sm"
@@ -229,7 +230,7 @@ const ClassList: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 text-slate-400 text-xs mb-4">
-                    <span className="material-symbols-outlined text-[15px]">{cls.locationType === 'computer' || cls.locationType === 'videocam' ? 'videocam' : 'location_on'}</span>
+                    <span className="material-symbols-outlined text-[15px]">{cls.locationType === 'computer' || cls.locationType === 'videocam' || cls.locationType === 'Online' ? 'videocam' : 'location_on'}</span>
                     {cls.location}
                   </div>
 
@@ -258,7 +259,6 @@ const ClassList: React.FC = () => {
               </div>
             ))}
           </div>
-          )}
 
           {/* Pagination */}
           <div className="mt-12 flex justify-center items-center gap-2">

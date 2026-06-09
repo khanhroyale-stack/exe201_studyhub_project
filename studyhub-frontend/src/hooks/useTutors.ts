@@ -51,7 +51,7 @@ export const useTutors = (filters: TutorFilterParams) => {
         const isOnlineFilter = filters.learningMode === 'Online';
         // MOCK_TUTORS hiện không có locationType cụ thể, nhưng có thể dựa vào description. 
         // Hoặc cho qua do data mock. Tạm thời filter theo tags có chữ online/offline
-        filtered = filtered.filter(tutor => {
+        filtered = filtered.filter(() => {
           if (isOnlineFilter) return true; // Giả sử ai cũng dạy online đc
           return true; 
         });

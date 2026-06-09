@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { MOCK_CLASSES } from '../constants/mockData';
 import { ClassFilterParams } from '../types/filter';
 import { ClassDto } from '../types/class';

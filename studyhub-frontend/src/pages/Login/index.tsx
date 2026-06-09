@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import StudyHubLogo from '../../components/StudyHubLogo';
+import { authApi } from '../../services/authApi';
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'parent' | 'tutor' | 'admin'>('parent');
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const { login, isLoggedIn, role } = useAuth();
   const navigate = useNavigate();
@@ -21,24 +25,20 @@ const Login: React.FC = () => {
     }
   }, [isLoggedIn, role, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const response = await authApi.login({ email, password });
+      login(response.token, response.role.toLowerCase() as 'admin' | 'parent' | 'tutor');
+      // Navigation is handled by the useEffect above
+    } catch (error: any) {
+      setErrorMsg(error.response?.data || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+    } finally {
       setIsSubmitting(false);
-      login(selectedRole);
-      if (selectedRole === 'admin') navigate('/admin/dashboard');
-      else if (selectedRole === 'parent') navigate('/parent/dashboard');
-      else if (selectedRole === 'tutor') navigate('/tutor/dashboard');
-      else navigate('/');
-    }, 1200);
+    }
   };
-
-  const roles = [
-    { value: 'parent' as const, label: 'Phụ huynh', icon: 'family_restroom' },
-    { value: 'tutor' as const, label: 'Gia sư', icon: 'school' },
-    { value: 'admin' as const, label: 'Admin', icon: 'admin_panel_settings' },
-  ];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f4ff', padding: '40px 24px' }}>
@@ -98,6 +98,13 @@ const Login: React.FC = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            
+            {errorMsg && (
+              <div style={{ padding: '12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', fontSize: '13px', fontWeight: 500 }}>
+                {errorMsg}
+              </div>
+            )}
+
             {/* Email */}
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '7px' }}>
@@ -111,6 +118,8 @@ const Login: React.FC = () => {
                 }}>mail</span>
                 <input
                   id="email" type="email" placeholder="example@email.com" required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
                   style={{
@@ -141,6 +150,8 @@ const Login: React.FC = () => {
                 <input
                   id="password" type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••" required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
                   style={{
@@ -164,42 +175,6 @@ const Login: React.FC = () => {
                     {showPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
-              </div>
-            </div>
-
-            {/* Role Selection */}
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '10px' }}>
-                Đăng nhập với vai trò
-                <span style={{ marginLeft: '6px', fontSize: '11px', color: '#94a3b8', fontWeight: 400 }}>(dùng để test)</span>
-              </label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {roles.map(r => (
-                  <label key={r.value} style={{ flex: 1 }}>
-                    <input type="radio" name="role" value={r.value}
-                      checked={selectedRole === r.value}
-                      onChange={() => setSelectedRole(r.value)}
-                      style={{ display: 'none' }}
-                    />
-                    <div style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                      padding: '10px 8px',
-                      border: `2px solid ${selectedRole === r.value ? '#1a3480' : '#e2e8f0'}`,
-                      borderRadius: '10px',
-                      background: selectedRole === r.value ? '#f0f4ff' : '#f8fafc',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}>
-                      <span className="material-symbols-outlined" style={{
-                        fontSize: '20px',
-                        color: selectedRole === r.value ? '#1a3480' : '#94a3b8',
-                      }}>{r.icon}</span>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: selectedRole === r.value ? '#1a3480' : '#6b7a9a' }}>
-                        {r.label}
-                      </span>
-                    </div>
-                  </label>
-                ))}
               </div>
             </div>
 

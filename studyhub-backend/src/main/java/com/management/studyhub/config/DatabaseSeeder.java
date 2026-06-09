@@ -2,12 +2,16 @@ package com.management.studyhub.config;
 
 import com.management.studyhub.entity.Course;
 import com.management.studyhub.entity.TutorProfile;
+import com.management.studyhub.entity.User;
+import com.management.studyhub.entity.enums.UserRole;
 import com.management.studyhub.repository.CourseRepository;
 import com.management.studyhub.repository.TutorProfileRepository;
 import com.management.studyhub.entity.Testimonial;
 import com.management.studyhub.repository.TestimonialRepository;
+import com.management.studyhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +24,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final CourseRepository courseRepository;
     private final TestimonialRepository testimonialRepository;
     private final com.management.studyhub.repository.SubjectRepository subjectRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -101,7 +107,22 @@ public class DatabaseSeeder implements CommandLineRunner {
         testimonialRepository.save(t4);
     }
 
+    private User createUser(String email, UserRole role) {
+        User u = new User();
+        u.setEmail(email);
+        u.setPassword(passwordEncoder.encode("123456"));
+        u.setRole(role);
+        return userRepository.save(u);
+    }
+
     private void seedTutorsAndCourses() {
+        if (!userRepository.existsByEmail("admin@gmail.com")) {
+            createUser("admin@gmail.com", UserRole.ADMIN);
+        }
+        if (!userRepository.existsByEmail("parent@gmail.com")) {
+            createUser("parent@gmail.com", UserRole.PARENT);
+        }
+
         List<com.management.studyhub.entity.Subject> subjects = subjectRepository.findAll();
         
         com.management.studyhub.entity.Subject mathSubject = subjects.stream().filter(s -> s.getName().equals("Toán học")).findFirst().orElse(null);
@@ -116,6 +137,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 1
         TutorProfile t1 = new TutorProfile();
+        t1.setUser(createUser("tutor1@gmail.com", UserRole.TUTOR));
         t1.setFullName("Thầy Nguyễn Hoàng Nam");
         t1.setIntroduction("Thạc sĩ Toán học - ĐH Sư Phạm HN");
         t1.setAvatarUrl("https://ui-avatars.com/api/?name=Nguyen+Hoang+Nam&background=random");
@@ -143,6 +165,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 2
         TutorProfile t2 = new TutorProfile();
+        t2.setUser(createUser("tutor2@gmail.com", UserRole.TUTOR));
         t2.setFullName("Cô Trần Thị B");
         t2.setIntroduction("Thạc sĩ Vật Lý");
         t2.setAvatarUrl("https://ui-avatars.com/api/?name=Tran+Thi+B&background=random");
@@ -170,6 +193,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 3
         TutorProfile t3 = new TutorProfile();
+        t3.setUser(createUser("tutor3@gmail.com", UserRole.TUTOR));
         t3.setFullName("Mr. David Smith");
         t3.setIntroduction("Bản ngữ (USA), IELTS 9.0");
         t3.setAvatarUrl("https://ui-avatars.com/api/?name=David+Smith&background=random");
@@ -197,6 +221,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Course 4
         TutorProfile t4 = new TutorProfile();
+        t4.setUser(createUser("tutor4@gmail.com", UserRole.TUTOR));
         t4.setFullName("Lê Minh C");
         t4.setIntroduction("Software Engineer at FPT");
         t4.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Minh+C&background=random");
@@ -254,6 +279,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 5 (Literature)
         TutorProfile t5 = new TutorProfile();
+        t5.setUser(createUser("tutor5@gmail.com", UserRole.TUTOR));
         t5.setFullName("Cô Lê Hà");
         t5.setIntroduction("Giáo viên chuyên Văn 10 năm kinh nghiệm");
         t5.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Ha&background=random");
@@ -281,6 +307,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 6 (Biology)
         TutorProfile t6 = new TutorProfile();
+        t6.setUser(createUser("tutor6@gmail.com", UserRole.TUTOR));
         t6.setFullName("Thầy Vũ Dũng");
         t6.setIntroduction("Sinh viên Y Dược loại giỏi");
         t6.setAvatarUrl("https://ui-avatars.com/api/?name=Vu+Dung&background=random");
@@ -308,6 +335,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 7 (History)
         TutorProfile t7 = new TutorProfile();
+        t7.setUser(createUser("tutor7@gmail.com", UserRole.TUTOR));
         t7.setFullName("Cô Đinh Hương");
         t7.setIntroduction("Thạc sĩ Sử học");
         t7.setAvatarUrl("https://ui-avatars.com/api/?name=Dinh+Huong&background=random");
@@ -335,6 +363,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 8 (Geography)
         TutorProfile t8 = new TutorProfile();
+        t8.setUser(createUser("tutor8@gmail.com", UserRole.TUTOR));
         t8.setFullName("Thầy Phan Bách");
         t8.setIntroduction("Chuyên gia luyện thi Địa Lý");
         t8.setAvatarUrl("https://ui-avatars.com/api/?name=Phan+Bach&background=random");

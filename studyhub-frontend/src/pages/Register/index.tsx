@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import StudyHubLogo from '../../components/StudyHubLogo';
+import { authApi } from '../../services/authApi';
 
 const Register: React.FC = () => {
   const [roleSelect, setRoleSelect] = useState<'student' | 'tutor'>('student');
@@ -9,6 +10,11 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const { isLoggedIn, role: currentRole } = useAuth();
   const navigate = useNavigate();
@@ -22,13 +28,25 @@ const Register: React.FC = () => {
     }
   }, [isLoggedIn, currentRole, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+    if (password !== confirmPassword) {
+      setErrorMsg("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const apiRole = roleSelect === 'student' ? 'PARENT' : 'TUTOR';
+      await authApi.register({ email, password, role: apiRole });
+      alert('Đăng ký thành công! Vui lòng đăng nhập.');
+      navigate('/login');
+    } catch (error: any) {
+      setErrorMsg(error.response?.data || 'Đăng ký thất bại. Vui lòng thử lại.');
+    } finally {
       setIsSubmitting(false);
-      alert('Yêu cầu đăng ký đã được gửi! Vui lòng kiểm tra email để xác thực.');
-    }, 1500);
+    }
   };
 
   const inputStyle = (field: string): React.CSSProperties => ({
@@ -105,6 +123,13 @@ const Register: React.FC = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            
+            {errorMsg && (
+              <div style={{ padding: '12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', fontSize: '13px', fontWeight: 500 }}>
+                {errorMsg}
+              </div>
+            )}
+
             {/* Role Selection */}
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '9px' }}>
@@ -180,6 +205,8 @@ const Register: React.FC = () => {
                 }}>mail</span>
                 <input
                   id="email" type="email" placeholder="example@gmail.com" required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
                   style={inputStyle('email')}
@@ -202,6 +229,8 @@ const Register: React.FC = () => {
                   <input
                     id="password" type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••" required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     onFocus={() => setFocusedField('pwd')}
                     onBlur={() => setFocusedField(null)}
                     style={{ ...inputStyle('pwd'), paddingLeft: '38px', paddingRight: '36px' }}
@@ -229,6 +258,8 @@ const Register: React.FC = () => {
                   <input
                     id="confirmPassword" type={showConfirm ? 'text' : 'password'}
                     placeholder="••••••••" required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     onFocus={() => setFocusedField('confirm')}
                     onBlur={() => setFocusedField(null)}
                     style={{ ...inputStyle('confirm'), paddingLeft: '38px', paddingRight: '36px' }}

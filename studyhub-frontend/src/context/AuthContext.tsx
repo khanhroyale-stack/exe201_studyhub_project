@@ -5,7 +5,7 @@ type Role = 'parent' | 'tutor' | 'admin' | null;
 interface AuthContextType {
   isLoggedIn: boolean;
   role: Role;
-  login: (role: Role) => void;
+  login: (token: string, role: Role) => void;
   logout: () => void;
 }
 
@@ -20,11 +20,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (localStorage.getItem('sh_role') as Role) || null;
   });
 
-  const login = useCallback((userRole: Role) => {
+  const login = useCallback((token: string, userRole: Role) => {
     setIsLoggedIn(true);
     setRole(userRole);
     localStorage.setItem('sh_logged_in', 'true');
     localStorage.setItem('sh_role', userRole ?? '');
+    localStorage.setItem('sh_token', token);
   }, []);
 
   const logout = useCallback(() => {
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRole(null);
     localStorage.removeItem('sh_logged_in');
     localStorage.removeItem('sh_role');
+    localStorage.removeItem('sh_token');
   }, []);
 
   return (

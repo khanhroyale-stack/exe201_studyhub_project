@@ -1,10 +1,33 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MOCK_TUTORS } from '../../constants/mockData';
 import CustomSelect from '../../components/CustomSelect';
+import { useTutors } from '../../hooks/useTutors';
+import { TutorFilterParams } from '../../types/filter';
 
 const TutorList: React.FC = () => {
-  const [sortBy, setSortBy] = useState('popular');
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<TutorFilterParams>({
+    keyword: searchParams.get('keyword') || '',
+    subjects: [],
+    maxPrice: 1000000,
+    minRating: 0,
+    learningMode: 'All',
+    sortBy: 'popular',
+    location: searchParams.get('location') || ''
+  });
+
+  const { tutors, isLoading } = useTutors(filters);
+
+  const handleSubjectChange = (subject: string) => {
+    setFilters(prev => ({
+      ...prev,
+      subjects: prev.subjects.includes(subject)
+        ? prev.subjects.filter(s => s !== subject)
+        : [...prev.subjects, subject]
+    }));
+  };
+
   return (
     <div className="bg-[#f7f9ff] text-on-surface min-h-screen">
       {/* ===== HERO SECTION ===== */}
@@ -35,16 +58,22 @@ const TutorList: React.FC = () => {
                 className="w-full border-none outline-none text-sm placeholder:text-slate-400 text-slate-700 bg-transparent"
                 placeholder="Tên gia sư hoặc từ khóa..."
                 type="text"
+                value={filters.keyword}
+                onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
               />
             </div>
             <div className="flex-1 flex items-center gap-3 px-4 py-2">
               <span className="material-symbols-outlined text-slate-400 text-[20px]">book</span>
-              <select className="w-full border-none outline-none text-sm text-slate-600 bg-transparent cursor-pointer">
-                <option>Tất cả môn học</option>
-                <option>Toán học</option>
-                <option>Vật lý</option>
-                <option>Hóa học</option>
-                <option>Tiếng Anh</option>
+              <select 
+                className="w-full border-none outline-none text-sm text-slate-600 bg-transparent cursor-pointer"
+                value={filters.subjects[0] || ''}
+                onChange={(e) => setFilters(prev => ({ ...prev, subjects: e.target.value ? [e.target.value] : [] }))}
+              >
+                <option value="">Tất cả môn học</option>
+                <option value="Toán học">Toán học</option>
+                <option value="Vật lý">Vật lý</option>
+                <option value="Hóa học">Hóa học</option>
+                <option value="Tiếng Anh">Tiếng Anh</option>
               </select>
             </div>
             <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-2 shrink-0">
@@ -70,9 +99,14 @@ const TutorList: React.FC = () => {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Môn học</p>
               <div className="space-y-2.5">
-                {['Toán học', 'Vật lý', 'Tiếng Anh'].map(s => (
+                {['Toán học', 'Vật lý', 'Hóa học', 'Tiếng Anh'].map(s => (
                   <label key={s} className="flex items-center gap-3 cursor-pointer group">
-                    <input className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox" />
+                    <input 
+                      className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" 
+                      type="checkbox" 
+                      checked={filters.subjects.includes(s)}
+                      onChange={() => handleSubjectChange(s)}
+                    />
                     <span className="text-sm text-slate-600 group-hover:text-primary transition-colors font-medium">{s}</span>
                   </label>
                 ))}
@@ -82,7 +116,12 @@ const TutorList: React.FC = () => {
             {/* Price Range */}
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Học phí (VNĐ/ca)</p>
-              <input className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" max="1000000" min="50000" step="50000" type="range" defaultValue="500000" />
+              <input 
+                className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" 
+                max="1000000" min="50000" step="50000" type="range" 
+                value={filters.maxPrice} 
+                onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: parseInt(e.target.value, 10) }))} 
+              />
               <div className="flex justify-between mt-2 text-xs text-slate-400 font-medium">
                 <span>50k</span><span>1,000k</span>
               </div>
@@ -92,11 +131,16 @@ const TutorList: React.FC = () => {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Đánh giá</p>
               <div className="space-y-2">
-                {[5, 4, 3].map(r => (
+                {[5, 4, 3, 0].map(r => (
                   <label key={r} className="flex items-center gap-3 cursor-pointer group">
-                    <input className="border-slate-300 text-primary focus:ring-primary h-4 w-4" name="rating" type="radio" />
+                    <input 
+                      className="border-slate-300 text-primary focus:ring-primary h-4 w-4" 
+                      name="rating" type="radio" 
+                      checked={filters.minRating === r}
+                      onChange={() => setFilters(prev => ({ ...prev, minRating: r }))}
+                    />
                     <span className="flex items-center gap-1 text-sm text-slate-600 font-medium">
-                      {r}+ <span className="material-symbols-outlined text-amber-400 text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                      {r === 0 ? 'Tất cả' : `${r}+ `} {r !== 0 && <span className="material-symbols-outlined text-amber-400 text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>}
                     </span>
                   </label>
                 ))}
@@ -107,9 +151,9 @@ const TutorList: React.FC = () => {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Hình thức dạy</p>
               <div className="flex flex-wrap gap-2">
-                <button className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-sm shadow-primary/25">Tất cả</button>
-                <button className="px-4 py-2 rounded-xl border border-slate-200 text-slate-500 hover:border-primary hover:text-primary text-xs font-medium transition-colors">Online</button>
-                <button className="px-4 py-2 rounded-xl border border-slate-200 text-slate-500 hover:border-primary hover:text-primary text-xs font-medium transition-colors">Offline</button>
+                <button onClick={() => setFilters(prev => ({ ...prev, learningMode: 'All' }))} className={`px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors ${filters.learningMode === 'All' ? 'bg-primary text-white shadow-primary/25' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}>Tất cả</button>
+                <button onClick={() => setFilters(prev => ({ ...prev, learningMode: 'Online' }))} className={`px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors ${filters.learningMode === 'Online' ? 'bg-primary text-white shadow-primary/25' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}>Online</button>
+                <button onClick={() => setFilters(prev => ({ ...prev, learningMode: 'Offline' }))} className={`px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors ${filters.learningMode === 'Offline' ? 'bg-primary text-white shadow-primary/25' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}>Offline</button>
               </div>
             </div>
 
@@ -129,7 +173,9 @@ const TutorList: React.FC = () => {
           {/* Header row */}
           <div className="flex justify-between items-center mb-7">
             <p className="text-sm text-slate-500">
-              Tìm thấy <span className="font-bold text-primary">{MOCK_TUTORS.length}</span> gia sư phù hợp
+              {isLoading ? 'Đang tìm kiếm...' : (
+                <>Tìm thấy <span className="font-bold text-primary">{tutors.length}</span> gia sư phù hợp</>
+              )}
             </p>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-400 uppercase">Sắp xếp:</span>
@@ -139,15 +185,29 @@ const TutorList: React.FC = () => {
                   { value: 'price_asc', label: 'Giá thấp → cao' },
                   { value: 'rating', label: 'Đánh giá cao nhất' },
                 ]}
-                value={sortBy}
-                onChange={setSortBy}
+                value={filters.sortBy}
+                onChange={(val) => setFilters(prev => ({ ...prev, sortBy: val }))}
                 size="sm"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {MOCK_TUTORS.map((tutor) => (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative min-h-[400px]">
+            {isLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-[2px] rounded-2xl">
+                <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              </div>
+            )}
+            
+            {!isLoading && tutors.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-white rounded-3xl border border-slate-100 border-dashed">
+                <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">search_off</span>
+                <h3 className="text-lg font-bold text-slate-700 mb-1">Không tìm thấy gia sư</h3>
+                <p className="text-slate-400 text-sm">Thử thay đổi từ khóa hoặc bộ lọc để xem thêm kết quả</p>
+              </div>
+            )}
+
+            {tutors.map((tutor) => (
               <div key={tutor.id} className="bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-[0_12px_40px_rgba(0,61,155,0.1)] hover:-translate-y-1 transition-all duration-300 group shadow-sm flex gap-5">
                 {/* Avatar */}
                 <div className="relative shrink-0">

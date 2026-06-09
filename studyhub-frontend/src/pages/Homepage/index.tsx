@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MOCK_CLASSES } from '../../constants/mockData';
 import CustomSelect from '../../components/CustomSelect';
 
@@ -64,8 +64,18 @@ const TESTIMONIALS = [
 
 const Homepage: React.FC = () => {
   const classesToShow = MOCK_CLASSES.slice(0, 3);
+  const navigate = useNavigate();
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
+  const [searchTarget, setSearchTarget] = useState('tutors');
   const [hanaReady, setHanaReady] = useState(false);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchKeyword) params.append('keyword', searchKeyword);
+    if (searchLocation) params.append('location', searchLocation);
+    navigate(`/${searchTarget}?${params.toString()}`);
+  };
 
   useEffect(() => {
     // Delay rendering hana-viewer slightly to allow route transitions
@@ -142,32 +152,50 @@ const Homepage: React.FC = () => {
                 </p>
 
                 {/* Search Bar */}
-                <div className="relative z-20 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,61,155,0.12)] p-2 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto border border-white/80 animate-slide-up opacity-0 stagger-3">
+                <div className="relative z-20 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,61,155,0.12)] p-2 flex flex-col sm:flex-row gap-2 max-w-4xl mx-auto border border-white/80 animate-slide-up opacity-0 stagger-3">
+                  {/* Target selector */}
+                  <CustomSelect
+                    options={[
+                      { value: 'tutors', label: 'Tìm Gia sư' },
+                      { value: 'classes', label: 'Tìm Lớp học' },
+                    ]}
+                    value={searchTarget}
+                    onChange={setSearchTarget}
+                    icon="category"
+                    placeholder="Loại tìm kiếm"
+                    className="sm:w-[150px] border-b sm:border-b-0 sm:border-r border-slate-100"
+                  />
                   {/* Keyword input */}
                   <div className="flex-1 flex items-center gap-3 px-4 py-2 border-b sm:border-b-0 sm:border-r border-slate-100">
                     <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">search</span>
                     <input
                       className="w-full bg-transparent border-none outline-none text-sm placeholder:text-slate-400 text-slate-700"
-                      placeholder="Môn học, từ khóa..."
+                      placeholder="Nhập môn học, từ khóa..."
                       type="text"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     />
                   </div>
                   {/* Location selector */}
                   <CustomSelect
                     options={[
-                      { value: '', label: 'Khu vực học' },
-                      { value: 'hcm', label: 'TP. Hồ Chí Minh' },
-                      { value: 'hn', label: 'Hà Nội' },
-                      { value: 'dn', label: 'Đà Nẵng' },
+                      { value: '', label: 'Mọi khu vực' },
+                      { value: 'thach_hoa', label: 'Thạch Hòa' },
+                      { value: 'tan_xa', label: 'Tân Xã' },
+                      { value: 'binh_yen', label: 'Bình Yên' },
+                      { value: 'ha_bang', label: 'Hạ Bằng' },
+                      { value: 'dong_truc', label: 'Đồng Trúc' },
+                      { value: 'tien_xuan', label: 'Tiến Xuân' },
                     ]}
                     value={searchLocation}
                     onChange={setSearchLocation}
                     icon="location_on"
                     placeholder="Khu vực"
-                    className="sm:w-[160px]"
+                    className="sm:w-[150px]"
                   />
                   {/* Search button */}
-                  <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2">
+                  <button onClick={handleSearch} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">search</span>
                     Tìm ngay
                   </button>

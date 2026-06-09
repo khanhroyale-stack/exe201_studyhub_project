@@ -37,7 +37,10 @@ public class TutorSpecification {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
             }
             if (maxPrice != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.isNull(root.get("price")),
+                        criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice)
+                ));
             }
 
             if (minRating != null) {

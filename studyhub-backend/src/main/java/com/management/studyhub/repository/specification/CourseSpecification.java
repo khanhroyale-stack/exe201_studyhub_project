@@ -24,7 +24,11 @@ public class CourseSpecification {
                 String[] subjectArr = subjects.split(",");
                 List<Predicate> subjectPredicates = new ArrayList<>();
                 for (String subj : subjectArr) {
-                    String likeSubj = "%" + subj.trim().toLowerCase() + "%";
+                    String cleanSubj = subj.trim().toLowerCase();
+                    if (cleanSubj.endsWith(" học")) {
+                        cleanSubj = cleanSubj.replace(" học", "");
+                    }
+                    String likeSubj = "%" + cleanSubj + "%";
                     Predicate titleMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), likeSubj);
                     Predicate descMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), likeSubj);
                     subjectPredicates.add(criteriaBuilder.or(titleMatch, descMatch));

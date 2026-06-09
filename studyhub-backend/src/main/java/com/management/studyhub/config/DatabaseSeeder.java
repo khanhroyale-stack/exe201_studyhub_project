@@ -109,12 +109,22 @@ public class DatabaseSeeder implements CommandLineRunner {
         com.management.studyhub.entity.Subject chemistrySubject = subjects.stream().filter(s -> s.getName().equals("Hóa học")).findFirst().orElse(null);
         com.management.studyhub.entity.Subject englishSubject = subjects.stream().filter(s -> s.getName().equals("Tiếng Anh")).findFirst().orElse(null);
         com.management.studyhub.entity.Subject itSubject = subjects.stream().filter(s -> s.getName().equals("Tin học")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject literatureSubject = subjects.stream().filter(s -> s.getName().equals("Ngữ văn")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject biologySubject = subjects.stream().filter(s -> s.getName().equals("Sinh học")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject historySubject = subjects.stream().filter(s -> s.getName().equals("Lịch sử")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject geographySubject = subjects.stream().filter(s -> s.getName().equals("Địa lý")).findFirst().orElse(null);
 
         // Tutor 1
         TutorProfile t1 = new TutorProfile();
         t1.setFullName("Thầy Nguyễn Hoàng Nam");
         t1.setIntroduction("Thạc sĩ Toán học - ĐH Sư Phạm HN");
         t1.setAvatarUrl("https://ui-avatars.com/api/?name=Nguyen+Hoang+Nam&background=random");
+        t1.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t1.setPrice(350000.0);
+        t1.setTeachingMethod("ONLINE");
+        t1.setAverageRating(4.9);
+        t1.setTotalReviews(120);
+        if (mathSubject != null) t1.setSubjects(java.util.Set.of(mathSubject));
         tutorProfileRepository.save(t1);
 
         Course c1 = new Course();
@@ -136,6 +146,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         t2.setFullName("Cô Trần Thị B");
         t2.setIntroduction("Thạc sĩ Vật Lý");
         t2.setAvatarUrl("https://ui-avatars.com/api/?name=Tran+Thi+B&background=random");
+        t2.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t2.setPrice(180000.0);
+        t2.setTeachingMethod("ONLINE");
+        t2.setAverageRating(4.8);
+        t2.setTotalReviews(85);
+        if (physicsSubject != null) t2.setSubjects(java.util.Set.of(physicsSubject));
         tutorProfileRepository.save(t2);
 
         Course c2 = new Course();
@@ -157,6 +173,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         t3.setFullName("Mr. David Smith");
         t3.setIntroduction("Bản ngữ (USA), IELTS 9.0");
         t3.setAvatarUrl("https://ui-avatars.com/api/?name=David+Smith&background=random");
+        t3.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t3.setPrice(450000.0);
+        t3.setTeachingMethod("OFFLINE");
+        t3.setAverageRating(5.0);
+        t3.setTotalReviews(200);
+        if (englishSubject != null) t3.setSubjects(java.util.Set.of(englishSubject));
         tutorProfileRepository.save(t3);
 
         Course c3 = new Course();
@@ -178,6 +200,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         t4.setFullName("Lê Minh C");
         t4.setIntroduction("Software Engineer at FPT");
         t4.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Minh+C&background=random");
+        t4.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t4.setPrice(300000.0);
+        t4.setTeachingMethod("ONLINE");
+        t4.setAverageRating(4.7);
+        t4.setTotalReviews(50);
+        if (itSubject != null) t4.setSubjects(java.util.Set.of(itSubject));
         tutorProfileRepository.save(t4);
 
         Course c4 = new Course();
@@ -223,5 +251,113 @@ public class DatabaseSeeder implements CommandLineRunner {
         c6.setTutor(t1); // reuse Nguyễn Hoàng Nam
         c6.setSubject(chemistrySubject);
         courseRepository.save(c6);
+
+        // Tutor 5 (Literature)
+        TutorProfile t5 = new TutorProfile();
+        t5.setFullName("Cô Lê Hà");
+        t5.setIntroduction("Giáo viên chuyên Văn 10 năm kinh nghiệm");
+        t5.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Ha&background=random");
+        t5.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t5.setPrice(200000.0);
+        t5.setTeachingMethod("ONLINE");
+        t5.setAverageRating(4.9);
+        t5.setTotalReviews(150);
+        if (literatureSubject != null) t5.setSubjects(java.util.Set.of(literatureSubject));
+        tutorProfileRepository.save(t5);
+
+        Course c7 = new Course();
+        c7.setTitle("Luyện Thi Đại Học Môn Ngữ Văn");
+        c7.setDescription("Hệ thống kiến thức trọng tâm, rèn kỹ năng viết bài nghị luận xã hội và văn học.");
+        c7.setLocation("Trực tuyến (Zoom)");
+        c7.setLocationType("computer");
+        c7.setPrice("200.000đ");
+        c7.setImage("https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600");
+        c7.setSchedule("Thứ 4 - Thứ 6");
+        c7.setRating(4.9);
+        c7.setReviewCount(150);
+        c7.setTutor(t5);
+        c7.setSubject(literatureSubject);
+        courseRepository.save(c7);
+
+        // Tutor 6 (Biology)
+        TutorProfile t6 = new TutorProfile();
+        t6.setFullName("Thầy Vũ Dũng");
+        t6.setIntroduction("Sinh viên Y Dược loại giỏi");
+        t6.setAvatarUrl("https://ui-avatars.com/api/?name=Vu+Dung&background=random");
+        t6.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t6.setPrice(150000.0);
+        t6.setTeachingMethod("OFFLINE");
+        t6.setAverageRating(4.8);
+        t6.setTotalReviews(90);
+        if (biologySubject != null) t6.setSubjects(java.util.Set.of(biologySubject));
+        tutorProfileRepository.save(t6);
+
+        Course c8 = new Course();
+        c8.setTitle("Bồi Dưỡng Sinh Học 12");
+        c8.setDescription("Tổng ôn Sinh học, nắm vững di truyền và tiến hóa.");
+        c8.setLocation("Hà Nội (Offline)");
+        c8.setLocationType("location_on");
+        c8.setPrice("150.000đ");
+        c8.setImage("https://images.unsplash.com/photo-1530213786676-4189f1756920?w=600");
+        c8.setSchedule("Thứ 7 - CN");
+        c8.setRating(4.8);
+        c8.setReviewCount(90);
+        c8.setTutor(t6);
+        c8.setSubject(biologySubject);
+        courseRepository.save(c8);
+
+        // Tutor 7 (History)
+        TutorProfile t7 = new TutorProfile();
+        t7.setFullName("Cô Đinh Hương");
+        t7.setIntroduction("Thạc sĩ Sử học");
+        t7.setAvatarUrl("https://ui-avatars.com/api/?name=Dinh+Huong&background=random");
+        t7.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t7.setPrice(250000.0);
+        t7.setTeachingMethod("ONLINE");
+        t7.setAverageRating(4.7);
+        t7.setTotalReviews(60);
+        if (historySubject != null) t7.setSubjects(java.util.Set.of(historySubject));
+        tutorProfileRepository.save(t7);
+
+        Course c9 = new Course();
+        c9.setTitle("Lịch Sử 12 Lấy Gốc");
+        c9.setDescription("Bí quyết ghi nhớ các sự kiện lịch sử không bao giờ quên.");
+        c9.setLocation("Học qua Google Meet");
+        c9.setLocationType("videocam");
+        c9.setPrice("250.000đ");
+        c9.setImage("https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=600");
+        c9.setSchedule("Thứ 2 - Thứ 4");
+        c9.setRating(4.7);
+        c9.setReviewCount(60);
+        c9.setTutor(t7);
+        c9.setSubject(historySubject);
+        courseRepository.save(c9);
+
+        // Tutor 8 (Geography)
+        TutorProfile t8 = new TutorProfile();
+        t8.setFullName("Thầy Phan Bách");
+        t8.setIntroduction("Chuyên gia luyện thi Địa Lý");
+        t8.setAvatarUrl("https://ui-avatars.com/api/?name=Phan+Bach&background=random");
+        t8.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t8.setPrice(220000.0);
+        t8.setTeachingMethod("ONLINE");
+        t8.setAverageRating(4.8);
+        t8.setTotalReviews(80);
+        if (geographySubject != null) t8.setSubjects(java.util.Set.of(geographySubject));
+        tutorProfileRepository.save(t8);
+
+        Course c10 = new Course();
+        c10.setTitle("Địa Lý Thực Hành Atlat");
+        c10.setDescription("Kỹ năng xem Atlat và xử lý số liệu biểu đồ cực nhanh.");
+        c10.setLocation("Trực tuyến (Zoom)");
+        c10.setLocationType("computer");
+        c10.setPrice("220.000đ");
+        c10.setImage("https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600");
+        c10.setSchedule("Chủ Nhật");
+        c10.setRating(4.8);
+        c10.setReviewCount(80);
+        c10.setTutor(t8);
+        c10.setSubject(geographySubject);
+        courseRepository.save(c10);
     }
 }

@@ -46,7 +46,11 @@ const HOW_IT_WORKS = [
 ];
 
 import { TestimonialDto } from '../../types/testimonial';
+import { useNavigate } from 'react-router-dom';
+
 const Homepage: React.FC = () => {
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState('');
   const [classesToShow, setClassesToShow] = useState<ClassDto[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialDto[]>([]);
   const [searchLocation, setSearchLocation] = useState('');
@@ -151,6 +155,13 @@ const Homepage: React.FC = () => {
                       className="w-full bg-transparent border-none outline-none text-sm placeholder:text-slate-400 text-slate-700"
                       placeholder="Môn học, từ khóa..."
                       type="text"
+                      value={keyword}
+                      onChange={e => setKeyword(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                           navigate(`/tutors?keyword=${encodeURIComponent(keyword)}`);
+                        }
+                      }}
                     />
                   </div>
                   {/* Location selector */}
@@ -168,7 +179,9 @@ const Homepage: React.FC = () => {
                     className="sm:w-[160px]"
                   />
                   {/* Search button */}
-                  <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2">
+                  <button 
+                    onClick={() => navigate(`/tutors?keyword=${encodeURIComponent(keyword)}`)}
+                    className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">search</span>
                     Tìm ngay
                   </button>

@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface CourseService {
     List<CourseDto> getFeaturedCourses();
-    List<CourseDto> getAllCourses();
+    List<CourseDto> getAllCourses(List<Integer> subjectIds, Double maxPrice, String teachingMethod, List<String> grades, String keyword);
 }

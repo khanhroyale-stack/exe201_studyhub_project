@@ -25,9 +25,61 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseDto> getAllCourses() {
-        List<Course> courses = courseRepository.findAll();
-        return courses.stream().map(this::mapToDto).collect(Collectors.toList());
+    public List<CourseDto> getAllCourses(List<Integer> subjectIds, Double maxPrice, String teachingMethod, List<String> grades, String keyword) {
+        List<Course> courses;
+        if (subjectIds != null && !subjectIds.isEmpty()) {
+            courses = courseRepository.findBySubjectIdIn(subjectIds);
+        } else {
+            courses = courseRepository.findAll();
+        }
+
+        return courses.stream()
+            .filter(c -> {
+                if (maxPrice != null) {
+                    String priceStr = c.getPrice() != null ? c.getPrice().replaceAll("[^0-9]", "") : "";
+                    if (!priceStr.isEmpty()) {
+                        try {
+                            double price = Double.parseDouble(priceStr);
+                            if (price > maxPrice) return false;
+                        } catch (Exception ignored) {}
+                    }
+                }
+                if (teachingMethod != null && !teachingMethod.isEmpty() && !teachingMethod.equalsIgnoreCase("ALL")) {
+                    boolean isOnline = "computer".equals(c.getLocationType()) || "videocam".equals(c.getLocationType()) || "Online".equalsIgnoreCase(c.getLocationType());
+                    if (teachingMethod.equalsIgnoreCase("ONLINE") && !isOnline) return false;
+                    if (teachingMethod.equalsIgnoreCase("OFFLINE") && isOnline) return false;
+                }
+                if (grades != null && !grades.isEmpty()) {
+                    boolean matchGrade = false;
+                    String title = c.getTitle() != null ? c.getTitle().toLowerCase() : "";
+                    String desc = c.getDescription() != null ? c.getDescription().toLowerCase() : "";
+                    for (String grade : grades) {
+                        String g = grade.toLowerCase();
+                        String gradeNumber = g.replaceAll("[^0-9]", "");
+                        if (!gradeNumber.isEmpty()) {
+                            if (title.contains(gradeNumber) || desc.contains(gradeNumber)) {
+                                matchGrade = true;
+                                break;
+                            }
+                        } else {
+                            if (title.contains(g) || desc.contains(g)) {
+                                matchGrade = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!matchGrade) return false;
+                }
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    String title = c.getTitle() != null ? c.getTitle().toLowerCase() : "";
+                    String subjectName = c.getSubject() != null ? c.getSubject().getName().toLowerCase() : "";
+                    String kw = keyword.toLowerCase().trim();
+                    if (!title.contains(kw) && !subjectName.contains(kw)) return false;
+                }
+                return true;
+            })
+            .map(this::mapToDto)
+            .collect(Collectors.toList());
     }
 
     private CourseDto mapToDto(Course course) {
@@ -53,6 +105,11 @@ public class CourseServiceImpl implements CourseService {
             dto.setTutorName(course.getTutor().getFullName());
             dto.setTutorDesc(course.getTutor().getIntroduction());
             dto.setTutorAvatar(course.getTutor().getAvatarUrl());
+        }
+
+        if (course.getSubject() != null) {
+            dto.setSubjectId(course.getSubject().getId());
+            dto.setSubjectName(course.getSubject().getName());
         }
 
         return dto;

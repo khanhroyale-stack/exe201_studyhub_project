@@ -19,14 +19,51 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final TutorProfileRepository tutorProfileRepository;
     private final CourseRepository courseRepository;
     private final TestimonialRepository testimonialRepository;
+    private final com.management.studyhub.repository.SubjectRepository subjectRepository;
 
     @Override
     public void run(String... args) throws Exception {
+        if (subjectRepository.count() == 0) {
+            seedSubjects();
+        }
         if (courseRepository.count() == 0) {
             seedTutorsAndCourses();
+        } else {
+            fixCourseSubjects();
         }
         if (testimonialRepository.count() == 0) {
             seedTestimonials();
+        }
+    }
+
+    private void seedSubjects() {
+        String[] subjectNames = {"Toán học", "Vật lý", "Hóa học", "Tiếng Anh", "Tin học", "Ngữ văn", "Sinh học", "Lịch sử", "Địa lý"};
+        for (String name : subjectNames) {
+            com.management.studyhub.entity.Subject subject = new com.management.studyhub.entity.Subject();
+            subject.setName(name);
+            subjectRepository.save(subject);
+        }
+    }
+
+    private void fixCourseSubjects() {
+        List<com.management.studyhub.entity.Subject> subjects = subjectRepository.findAll();
+        com.management.studyhub.entity.Subject mathSubject = subjects.stream().filter(s -> s.getName().equals("Toán học")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject physicsSubject = subjects.stream().filter(s -> s.getName().equals("Vật lý") || s.getName().equals("Vật lí")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject chemistrySubject = subjects.stream().filter(s -> s.getName().equals("Hóa học") || s.getName().equals("Hoá học")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject englishSubject = subjects.stream().filter(s -> s.getName().equals("Tiếng Anh")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject itSubject = subjects.stream().filter(s -> s.getName().equals("Tin học")).findFirst().orElse(null);
+
+        List<Course> courses = courseRepository.findAll();
+        for (Course c : courses) {
+            if (c.getSubject() == null) {
+                String title = c.getTitle() != null ? c.getTitle().toLowerCase() : "";
+                if (title.contains("toán")) c.setSubject(mathSubject);
+                else if (title.contains("vật lý") || title.contains("vật lí")) c.setSubject(physicsSubject);
+                else if (title.contains("ielts") || title.contains("tiếng anh")) c.setSubject(englishSubject);
+                else if (title.contains("python") || title.contains("tin học") || title.contains("lập trình")) c.setSubject(itSubject);
+                else if (title.contains("hóa học") || title.contains("hoá học")) c.setSubject(chemistrySubject);
+                courseRepository.save(c);
+            }
         }
     }
 
@@ -65,6 +102,14 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedTutorsAndCourses() {
+        List<com.management.studyhub.entity.Subject> subjects = subjectRepository.findAll();
+        
+        com.management.studyhub.entity.Subject mathSubject = subjects.stream().filter(s -> s.getName().equals("Toán học")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject physicsSubject = subjects.stream().filter(s -> s.getName().equals("Vật lý")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject chemistrySubject = subjects.stream().filter(s -> s.getName().equals("Hóa học")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject englishSubject = subjects.stream().filter(s -> s.getName().equals("Tiếng Anh")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject itSubject = subjects.stream().filter(s -> s.getName().equals("Tin học")).findFirst().orElse(null);
+
         // Tutor 1
         TutorProfile t1 = new TutorProfile();
         t1.setFullName("Thầy Nguyễn Hoàng Nam");
@@ -83,6 +128,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         c1.setRating(4.9);
         c1.setReviewCount(120);
         c1.setTutor(t1);
+        c1.setSubject(mathSubject);
         courseRepository.save(c1);
 
         // Tutor 2
@@ -103,6 +149,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         c2.setRating(4.8);
         c2.setReviewCount(85);
         c2.setTutor(t2);
+        c2.setSubject(physicsSubject);
         courseRepository.save(c2);
 
         // Tutor 3
@@ -123,6 +170,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         c3.setRating(5.0);
         c3.setReviewCount(200);
         c3.setTutor(t3);
+        c3.setSubject(englishSubject);
         courseRepository.save(c3);
 
         // Course 4
@@ -143,6 +191,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         c4.setRating(4.7);
         c4.setReviewCount(50);
         c4.setTutor(t4);
+        c4.setSubject(itSubject);
         courseRepository.save(c4);
 
         // Course 5
@@ -157,6 +206,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         c5.setRating(4.9);
         c5.setReviewCount(150);
         c5.setTutor(t3); // reuse David Smith
+        c5.setSubject(englishSubject);
         courseRepository.save(c5);
 
         // Course 6
@@ -171,6 +221,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         c6.setRating(4.6);
         c6.setReviewCount(30);
         c6.setTutor(t1); // reuse Nguyễn Hoàng Nam
+        c6.setSubject(chemistrySubject);
         courseRepository.save(c6);
     }
 }

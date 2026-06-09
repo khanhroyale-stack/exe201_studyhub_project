@@ -13,4 +13,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Query("SELECT c FROM Course c ORDER BY c.rating DESC, c.reviewCount DESC")
     List<Course> findFeaturedCourses(Pageable pageable);
+
+    @Query("SELECT c FROM Course c WHERE c.subject.id IN :subjectIds")
+    List<Course> findBySubjectIdIn(@org.springframework.data.repository.query.Param("subjectIds") List<Integer> subjectIds);
 }

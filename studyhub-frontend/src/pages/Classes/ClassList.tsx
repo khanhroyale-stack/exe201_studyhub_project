@@ -6,13 +6,84 @@ import { ClassDto } from '../../types/class';
 const ClassList: React.FC = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [classes, setClasses] = useState<ClassDto[]>([]);
+  const [subjects, setSubjects] = useState<{id: number, name: string}[]>([]);
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState<number[]>([]);
+  const [maxPrice, setMaxPrice] = useState<number>(1000000);
+  const [teachingMethod, setTeachingMethod] = useState<string>('ALL');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
+  const [keyword, setKeyword] = useState<string>('');
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/courses')
+    // Fetch subjects
+    fetch('http://localhost:8080/api/v1/subjects')
       .then(res => res.json())
-      .then(data => setClasses(data))
-      .catch(err => console.error('Failed to fetch courses:', err));
+      .then(data => setSubjects(data))
+      .catch(err => console.error('Failed to fetch subjects:', err));
   }, []);
+
+  useEffect(() => {
+    // Fetch courses with filter
+    const queryParams = new URLSearchParams();
+    if (selectedSubjectIds.length > 0) {
+      queryParams.append('subjectIds', selectedSubjectIds.join(','));
+    }
+    queryParams.append('maxPrice', maxPrice.toString());
+    if (teachingMethod !== 'ALL') {
+      queryParams.append('teachingMethod', teachingMethod);
+    }
+    if (selectedGrades.length > 0) {
+      queryParams.append('grades', selectedGrades.join(','));
+    }
+    if (searchKeyword.trim() !== '') {
+      queryParams.append('keyword', searchKeyword);
+    }
+    
+    fetch(`http://localhost:8080/api/courses?${queryParams.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        // Sort data manually for now since backend doesn't support sortBy query param
+        let sortedData = [...data];
+        if (sortBy === 'price_asc') {
+           sortedData.sort((a, b) => {
+               const pA = parseInt(a.price?.replace(/[^0-9]/g, '') || '0');
+               const pB = parseInt(b.price?.replace(/[^0-9]/g, '') || '0');
+               return pA - pB;
+           });
+        } else if (sortBy === 'price_desc') {
+           sortedData.sort((a, b) => {
+               const pA = parseInt(a.price?.replace(/[^0-9]/g, '') || '0');
+               const pB = parseInt(b.price?.replace(/[^0-9]/g, '') || '0');
+               return pB - pA;
+           });
+        } else if (sortBy === 'rating') {
+           sortedData.sort((a, b) => parseFloat(b.rating || '0') - parseFloat(a.rating || '0'));
+        }
+        setClasses(sortedData);
+      })
+      .catch(err => console.error('Failed to fetch courses:', err));
+  }, [selectedSubjectIds, maxPrice, teachingMethod, selectedGrades, searchKeyword, sortBy]);
+
+  const toggleSubject = (id: number) => {
+    setSelectedSubjectIds(prev => 
+      prev.includes(id) ? prev.filter(sId => sId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleGrade = (grade: string) => {
+    setSelectedGrades(prev => 
+      prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]
+    );
+  };
+
+  const clearAllFilters = () => {
+      setSelectedSubjectIds([]);
+      setMaxPrice(1000000);
+      setTeachingMethod('ALL');
+      setSelectedGrades([]);
+      setSearchKeyword('');
+      setKeyword('');
+  };
 
   return (
     <div className="bg-[#f7f9ff] text-on-surface min-h-screen">
@@ -45,9 +116,15 @@ const ClassList: React.FC = () => {
                 className="w-full border-none outline-none text-sm placeholder:text-slate-400 text-slate-700 bg-transparent"
                 placeholder="Tìm kiếm tên lớp, môn học, từ khóa..."
                 type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && setSearchKeyword(keyword)}
               />
             </div>
-            <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
+            <button 
+              onClick={() => setSearchKeyword(keyword)}
+              className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/90 hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+            >
               <span className="material-symbols-outlined text-[18px]">search</span>
               Tìm kiếm
             </button>
@@ -57,7 +134,11 @@ const ClassList: React.FC = () => {
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <span className="text-white/50 text-sm">Gợi ý:</span>
             {['Luyện thi đại học', 'Tiếng Anh Giao tiếp', 'Toán 12'].map(s => (
-              <button key={s} className="px-3 py-1 bg-white/15 border border-white/20 hover:bg-white/25 text-white text-xs rounded-full font-medium transition-all">
+              <button 
+                key={s} 
+                onClick={() => { setKeyword(s); setSearchKeyword(s); }}
+                className="px-3 py-1 bg-white/15 border border-white/20 hover:bg-white/25 text-white text-xs rounded-full font-medium transition-all"
+              >
                 {s}
               </button>
             ))}
@@ -76,17 +157,27 @@ const ClassList: React.FC = () => {
                 <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
                 Bộ lọc
               </h2>
-              <button className="text-primary text-sm font-semibold hover:underline">Xóa hết</button>
+              <button 
+                onClick={clearAllFilters}
+                className="text-primary text-sm font-semibold hover:underline"
+              >
+                Xóa hết
+              </button>
             </div>
 
             {/* Môn học */}
             <div className="mb-7">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Môn học</h3>
               <div className="space-y-2.5">
-                {['Toán học', 'Vật lý', 'Hóa học', 'Tiếng Anh', 'Tin học'].map(subject => (
-                  <label key={subject} className="flex items-center gap-3 cursor-pointer group">
-                    <input className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox" />
-                    <span className="text-sm text-slate-600 group-hover:text-primary transition-colors font-medium">{subject}</span>
+                {subjects.map(subject => (
+                  <label key={subject.id} className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      checked={selectedSubjectIds.includes(subject.id)}
+                      onChange={() => toggleSubject(subject.id)}
+                      className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" 
+                      type="checkbox" 
+                    />
+                    <span className="text-sm text-slate-600 group-hover:text-primary transition-colors font-medium">{subject.name}</span>
                   </label>
                 ))}
               </div>
@@ -95,9 +186,14 @@ const ClassList: React.FC = () => {
             {/* Học phí */}
             <div className="mb-7">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Học phí (VNĐ/ca)</h3>
-              <input className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" max="1000000" min="50000" step="50000" type="range" defaultValue="500000" />
+              <input 
+                className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" 
+                max="1000000" min="50000" step="50000" type="range" 
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(Number(e.target.value))}
+              />
               <div className="flex justify-between mt-2 text-xs text-slate-400 font-medium">
-                <span>50k</span><span>1.000k</span>
+                <span>50k</span><span className="text-primary font-bold">{maxPrice.toLocaleString()}đ</span>
               </div>
             </div>
 
@@ -105,8 +201,18 @@ const ClassList: React.FC = () => {
             <div className="mb-7">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Hình thức học</h3>
               <div className="grid grid-cols-2 gap-2">
-                <button className="py-2 px-3 bg-primary text-white border border-primary rounded-xl text-sm font-semibold shadow-sm shadow-primary/25">Online</button>
-                <button className="py-2 px-3 border border-slate-200 text-slate-500 hover:border-primary hover:text-primary rounded-xl text-sm font-medium transition-colors">Offline</button>
+                <button 
+                  onClick={() => setTeachingMethod(teachingMethod === 'ONLINE' ? 'ALL' : 'ONLINE')}
+                  className={`py-2 px-3 rounded-xl text-sm font-semibold transition-colors ${teachingMethod === 'ONLINE' ? 'bg-primary text-white shadow-sm shadow-primary/25 border border-primary' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}
+                >
+                  Online
+                </button>
+                <button 
+                  onClick={() => setTeachingMethod(teachingMethod === 'OFFLINE' ? 'ALL' : 'OFFLINE')}
+                  className={`py-2 px-3 rounded-xl text-sm font-semibold transition-colors ${teachingMethod === 'OFFLINE' ? 'bg-primary text-white shadow-sm shadow-primary/25 border border-primary' : 'border border-slate-200 text-slate-500 hover:border-primary hover:text-primary'}`}
+                >
+                  Offline
+                </button>
               </div>
             </div>
 
@@ -114,9 +220,14 @@ const ClassList: React.FC = () => {
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Lớp học</h3>
               <div className="space-y-2.5">
-                {['Lớp 10', 'Lớp 11', 'Lớp 12'].map((grade, idx) => (
+                {['Lớp 10', 'Lớp 11', 'Lớp 12'].map((grade) => (
                   <label key={grade} className="flex items-center gap-3 cursor-pointer group">
-                    <input defaultChecked={idx === 1} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox" />
+                    <input 
+                      checked={selectedGrades.includes(grade)}
+                      onChange={() => toggleGrade(grade)}
+                      className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" 
+                      type="checkbox" 
+                    />
                     <span className="text-sm text-slate-600 group-hover:text-primary transition-colors font-medium">{grade}</span>
                   </label>
                 ))}

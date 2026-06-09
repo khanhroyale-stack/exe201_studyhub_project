@@ -25,7 +25,12 @@ public class CourseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CourseDto>> getAllCourses() {
-        return ResponseEntity.ok(courseService.getAllCourses());
+    public ResponseEntity<List<CourseDto>> getAllCourses(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) List<Integer> subjectIds,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Double maxPrice,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String teachingMethod,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) List<String> grades,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(courseService.getAllCourses(subjectIds, maxPrice, teachingMethod, grades, keyword));
     }
 }

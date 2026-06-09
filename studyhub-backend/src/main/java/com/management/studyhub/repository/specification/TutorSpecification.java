@@ -45,7 +45,9 @@ public class TutorSpecification {
             }
 
             if (teachingMethod != null && !teachingMethod.isEmpty() && !teachingMethod.equalsIgnoreCase("ALL")) {
-                predicates.add(criteriaBuilder.equal(root.get("teachingMethod"), teachingMethod));
+                Predicate methodPredicate = criteriaBuilder.equal(root.get("teachingMethod"), teachingMethod);
+                Predicate bothPredicate = criteriaBuilder.equal(root.get("teachingMethod"), "BOTH");
+                predicates.add(criteriaBuilder.or(methodPredicate, bothPredicate));
             }
 
             // Distinct is necessary when joining with subjects to avoid duplicate rows

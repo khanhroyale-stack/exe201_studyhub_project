@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import CustomSelect from '../../components/CustomSelect';
 import { tutorApi, Subject, Tutor, TutorFilterParams } from '../../services/tutorApi';
 
 const TutorList: React.FC = () => {
+  const [searchParamsUrl, setSearchParamsUrl] = useSearchParams();
+  const initialKeyword = searchParamsUrl.get('keyword') || '';
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [loading, setLoading] = useState(false);
@@ -14,8 +16,8 @@ const TutorList: React.FC = () => {
   const [totalElements, setTotalElements] = useState(0);
 
   // Filters
-  const [keyword, setKeyword] = useState('');
-  const [searchKeyword, setSearchKeyword] = useState(''); // Only update when hitting search
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const [searchKeyword, setSearchKeyword] = useState(initialKeyword); // Only update when hitting search
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<number[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(1000000);
   const [rating, setRating] = useState<number | undefined>(undefined);
@@ -72,6 +74,12 @@ const TutorList: React.FC = () => {
   const handleSearch = () => {
     setSearchKeyword(keyword);
     setPage(0);
+    if (keyword) {
+      searchParamsUrl.set('keyword', keyword);
+    } else {
+      searchParamsUrl.delete('keyword');
+    }
+    setSearchParamsUrl(searchParamsUrl);
   };
 
   return (

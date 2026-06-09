@@ -21,4 +21,8 @@ public class CourseDto {
     private String tutorName;
     private String tutorDesc;
     private String tutorAvatar;
+
+    // Subject info
+    private Integer subjectId;
+    private String subjectName;
 }

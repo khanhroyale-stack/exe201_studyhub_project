@@ -163,7 +163,6 @@ public class ParentPortalService {
 
     public List<ParentFeedbackDTO> getFeedbacks() {
         Parent parent = getCurrentParent();
-        List<ClassSession> classes = classSessionRepository.findByParent(parent);
         return parentFeedbackRepository.findAll().stream()
             .filter(f -> f.getClassSession() != null && f.getClassSession().getParent().getId().equals(parent.getId()))
             .map(f -> {

@@ -20,4 +20,10 @@ public class CommissionRecord {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private CommissionStatus status; // UNPAID, PAID
+
+    // For billing display: how many sessions and at what price
+    private Integer sessionsCount;
+    private BigDecimal pricePerSession;
+    // Derived: totalRevenue = sessionsCount * pricePerSession
+    // Derived: amount (platform fee) = totalRevenue * 10%
 }

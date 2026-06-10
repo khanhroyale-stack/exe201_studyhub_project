@@ -1,54 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
+import { tutorPortalApi } from '../../services/tutorPortalApi';
 import { UnifiedOffer, OfferStatus, ClassStatus, UnifiedClass } from '../../types/shared';
-import { CURRENT_TUTOR } from '../../constants/mockTutorData';
 
 const TutorOffers: React.FC = () => {
   const [offers, setOffers] = useState<UnifiedOffer[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const allOffers = mockDb.getOffers();
-    const myOffers = allOffers.filter(o => o.tutorId === CURRENT_TUTOR.id);
-    setOffers(myOffers);
+    const fetchOffers = async () => {
+      try {
+        const myOffers = await tutorPortalApi.getOffers();
+        setOffers(myOffers);
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+      }
+    };
+    fetchOffers();
   }, []);
 
-  const handleAccept = (offerId: string) => {
-    const allOffers = mockDb.getOffers();
-    const updatedOffers = allOffers.map(o => o.id === offerId ? { ...o, status: OfferStatus.ACCEPTED } : o);
-    mockDb.saveOffers(updatedOffers);
-
-    const offerToAccept = offers.find(o => o.id === offerId);
-    if (offerToAccept) {
-      const currentClasses = mockDb.getClasses();
-      const newClass: UnifiedClass = {
-        id: `c${Date.now()}`,
-        postId: undefined, // Offer might not be tied to a specific post
-        className: offerToAccept.className,
-        parentId: offerToAccept.parentId,
-        parentName: offerToAccept.parentName,
-        tutorId: CURRENT_TUTOR.id,
-        tutorName: CURRENT_TUTOR.name,
-        tutorAvatar: CURRENT_TUTOR.avatar,
-        schedule: offerToAccept.schedule,
-        status: ClassStatus.TRIAL_WAITING,
-        progress: 0,
-        pricePerSession: offerToAccept.pricePerSession,
-        learningMode: offerToAccept.learningMode,
-      };
-      mockDb.saveClasses([newClass, ...currentClasses]);
+  const handleAccept = async (offerId: string) => {
+    try {
+      // await tutorPortalApi.acceptOffer(offerId);
+      setOffers(offers.map(o => o.id === offerId ? { ...o, status: OfferStatus.ACCEPTED } : o));
+      alert('Đã chấp nhận lời mời dạy! Bạn có thể xem trong Quản lý lớp.');
+      navigate('/tutor/classes');
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra.');
     }
-
-    alert('Đã chấp nhận lời mời dạy! Bạn có thể xem trong Quản lý lớp.');
-    navigate('/tutor/classes');
   };
 
-  const handleReject = (offerId: string) => {
-    const allOffers = mockDb.getOffers();
-    const updatedOffers = allOffers.map(o => o.id === offerId ? { ...o, status: OfferStatus.REJECTED } : o);
-    mockDb.saveOffers(updatedOffers);
-    setOffers(offers.map(o => o.id === offerId ? { ...o, status: OfferStatus.REJECTED } : o));
+  const handleReject = async (offerId: string) => {
+    try {
+      // await tutorPortalApi.rejectOffer(offerId);
+      setOffers(offers.map(o => o.id === offerId ? { ...o, status: OfferStatus.REJECTED } : o));
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra.');
+    }
   };
 
   return (

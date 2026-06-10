@@ -1,8 +1,28 @@
-import React from 'react';
-import { CURRENT_PARENT, MOCK_JOB_POSTINGS } from '../../constants/mockParentData';
+import React, { useEffect, useState } from 'react';
+import { parentPortalApi, DashboardStats } from '../../services/parentPortalApi';
+import { UnifiedPost } from '../../types/shared';
+const CURRENT_PARENT = {
+  name: 'Elena',
+  avatar: 'https://i.pravatar.cc/150?u=elena'
+};
 
 const ParentDashboard: React.FC = () => {
-  const activePostings = MOCK_JOB_POSTINGS.filter(p => p.status !== 'CLOSED');
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [activePostings, setActivePostings] = useState<UnifiedPost[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsData = await parentPortalApi.getDashboardStats();
+        setStats(statsData);
+        const postsData = await parentPortalApi.getJobPostings();
+        setActivePostings(postsData.filter(p => p.status !== 'CLOSED'));
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
@@ -13,21 +33,21 @@ const ParentDashboard: React.FC = () => {
         <div className="md:col-span-1 p-6 glass border border-white/20 rounded-3xl flex flex-col gap-2 hover:-translate-y-1 transition-transform shadow-sm hover:shadow-lg">
           <span className="font-semibold text-sm text-on-surface-variant uppercase tracking-wider">Hồ sơ ứng tuyển</span>
           <div className="flex items-baseline gap-2">
-            <span className="font-bold text-3xl text-primary">12</span>
-            <span className="font-medium text-xs text-secondary">+3 hôm nay</span>
+            <span className="font-bold text-3xl text-primary">{stats?.activeApplications || 0}</span>
+            <span className="font-medium text-xs text-secondary">+{stats?.newApplicationsToday || 0} hôm nay</span>
           </div>
         </div>
         <div className="md:col-span-1 p-6 glass border border-white/20 rounded-3xl flex flex-col gap-2 hover:-translate-y-1 transition-transform shadow-sm hover:shadow-lg">
           <span className="font-semibold text-sm text-on-surface-variant uppercase tracking-wider">Lớp đang đợi</span>
           <div className="flex items-baseline gap-2">
-            <span className="font-bold text-3xl text-primary">0{CURRENT_PARENT.classesWaiting}</span>
+            <span className="font-bold text-3xl text-primary">{stats?.classesWaiting || 0}</span>
             <span className="font-medium text-xs text-outline">Giảm 1</span>
           </div>
         </div>
         <div className="md:col-span-2 p-6 glass border border-white/20 rounded-3xl flex items-center justify-between hover:-translate-y-1 transition-transform shadow-sm hover:shadow-lg">
           <div>
             <span className="font-semibold text-sm text-on-surface-variant uppercase tracking-wider">Ngân sách đã chi (Tháng này)</span>
-            <p className="font-bold text-3xl text-primary mt-1">{CURRENT_PARENT.budgetSpentThisMonth.toLocaleString('vi-VN')}đ</p>
+            <p className="font-bold text-3xl text-primary mt-1">{(stats?.budgetSpentThisMonth || 0).toLocaleString('vi-VN')}đ</p>
           </div>
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
             <span className="material-symbols-outlined text-3xl text-primary">trending_up</span>

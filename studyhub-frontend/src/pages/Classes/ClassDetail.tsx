@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_CLASSES } from '../../constants/mockData';
+import { tutorPortalApi, JobPosting } from '../../services/tutorPortalApi';
 
 const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,8 +9,21 @@ const ClassDetail: React.FC = () => {
   const { isLoggedIn, role } = useAuth();
   const classId = id ? parseInt(id, 10) : 1;
 
-  // Find class details based on ID, fallback to the first mock class if not found
-  const currentClass = MOCK_CLASSES.find(c => c.id === classId) || MOCK_CLASSES[0];
+  const [currentClass, setCurrentClass] = React.useState<JobPosting | null>(null);
+
+  React.useEffect(() => {
+    const fetchClass = async () => {
+      try {
+        const data = await tutorPortalApi.getJobPostingById(classId);
+        setCurrentClass(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchClass();
+  }, [classId]);
+
+  if (!currentClass) return <div className="text-center pt-[104px]">Đang tải...</div>;
 
   return (
     <div className="bg-background text-on-surface">
@@ -30,7 +43,7 @@ const ClassDetail: React.FC = () => {
             {/* Hero Section Card */}
             <section className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
               <div className="relative h-[320px] w-full">
-                <img className="w-full h-full object-cover" src={currentClass.image} alt={currentClass.title} />
+                <img className="w-full h-full object-cover" src={'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop'} alt={currentClass.title} />
               </div>
               <div className="p-8">
                 <h1 className="font-headline-lg text-headline-lg text-on-surface mb-4">{currentClass.title}</h1>
@@ -41,11 +54,11 @@ const ClassDetail: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-tertiary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="font-label-md text-label-md">{currentClass.rating} (128 đánh giá)</span>
+                    <span className="font-label-md text-label-md">5.0 (128 đánh giá)</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[20px]">groups</span>
-                    <span className="font-label-md text-label-md">{currentClass.currentStudents || 15}/{currentClass.maxStudents || 20} Học viên</span>
+                    <span className="font-label-md text-label-md">15/20 Học viên</span>
                   </div>
                 </div>
               </div>
@@ -56,19 +69,17 @@ const ClassDetail: React.FC = () => {
               <div>
                 <h2 className="font-headline-sm text-headline-sm text-on-surface mb-4">Mô tả lớp học</h2>
                 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-line">
-                  {currentClass.description}
+                  Chi tiết lớp học: {currentClass.title}. Môn học: {currentClass.subject}. Hình thức học: {currentClass.learningMode}. Yêu cầu: Gia sư có kinh nghiệm.
                 </p>
               </div>
               <hr className="border-outline-variant" />
               <div>
                 <h2 className="font-headline-sm text-headline-sm text-on-surface mb-4">Yêu cầu khóa học</h2>
                 <ul className="space-y-3">
-                  {(currentClass.requirements || []).map((req, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-body-md text-on-surface-variant">
+                    <li className="flex items-start gap-3 text-body-md text-on-surface-variant">
                       <span className="material-symbols-outlined text-primary">check_circle</span>
-                      <span>{req}</span>
+                      <span>Có chứng chỉ hoặc kinh nghiệm</span>
                     </li>
-                  ))}
                 </ul>
               </div>
             </section>
@@ -83,24 +94,16 @@ const ClassDetail: React.FC = () => {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="font-headline-sm text-headline-sm text-on-surface">{currentClass.tutorName}</h3>
-                      <p className="text-primary font-label-md text-label-md uppercase tracking-wider">{currentClass.tutorDesc}</p>
+                      <p className="text-primary font-label-md text-label-md uppercase tracking-wider">Phụ huynh</p>
                     </div>
                     <button className="px-4 py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary-container/10 transition-colors">Xem hồ sơ</button>
                   </div>
                   <div className="flex gap-4 mb-4">
-                    {currentClass.tutorVerified && (
-                      <div className="bg-surface-container-low px-3 py-1 rounded-lg flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                        <span className="font-label-sm text-label-sm">Đã xác minh</span>
-                      </div>
-                    )}
-                    <div className="bg-surface-container-low px-3 py-1 rounded-lg flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">history</span>
-                      <span className="font-label-sm text-label-sm">{currentClass.tutorExperience || '8 năm kinh nghiệm'}</span>
+                      <span className="font-label-sm text-label-sm">Đã xác minh eKYC</span>
                     </div>
                   </div>
                   <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                    Với {currentClass.tutorExperience || 'nhiều năm kinh nghiệm'} trong giảng dạy, {currentClass.tutorName} có phương pháp sư phạm hiện đại, giúp học sinh nắm vững cốt lõi bài học, khơi dậy niềm say mê và tăng điểm số đáng kể.
+                    Phụ huynh {currentClass.parentName} đang tìm gia sư cho con. Vui lòng liên hệ để trao đổi thêm chi tiết.
                   </p>
                 </div>
               </div>
@@ -113,8 +116,8 @@ const ClassDetail: React.FC = () => {
               <div>
                 <span className="text-on-surface-variant font-label-sm text-label-sm block mb-1">Học phí mỗi ca</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-headline-lg text-headline-lg text-primary">{currentClass.price}</span>
-                  <span className="text-on-surface-variant font-body-sm text-body-sm">/ ca ({currentClass.duration || '120 phút'})</span>
+                  <span className="font-headline-lg text-headline-lg text-primary">{currentClass.pricePerSession?.toLocaleString()}đ</span>
+                  <span className="text-on-surface-variant font-body-sm text-body-sm">/ ca</span>
                 </div>
               </div>
               <div className="space-y-4">
@@ -133,12 +136,12 @@ const ClassDetail: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-label-md text-label-md text-on-surface">Giờ học</p>
-                    <p className="text-on-surface-variant font-body-sm text-body-sm">{currentClass.sessionTime}</p>
+                    <p className="text-on-surface-variant font-body-sm text-body-sm">Theo thỏa thuận</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-3 bg-surface rounded-lg border border-outline-variant/30">
                   <div className="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[20px]">{currentClass.locationType === 'computer' || currentClass.locationType === 'videocam' ? 'computer' : 'location_on'}</span>
+                    <span className="material-symbols-outlined text-[20px]">{currentClass.learningMode === 'ONLINE' ? 'computer' : 'location_on'}</span>
                   </div>
                   <div>
                     <p className="font-label-md text-label-md text-on-surface">Hình thức</p>
@@ -165,7 +168,7 @@ const ClassDetail: React.FC = () => {
               <div className="pt-4 border-t border-outline-variant space-y-3">
                 <div className="flex justify-between font-label-md text-label-md">
                   <span className="text-on-surface-variant">Lộ trình học</span>
-                  <span className="text-on-surface">{currentClass.totalSessions || '24 ca'}</span>
+                  <span className="text-on-surface">Theo thỏa thuận</span>
                 </div>
                 <div className="flex justify-between font-label-md text-label-md">
                   <span className="text-on-surface-variant">Tài liệu tặng kèm</span>

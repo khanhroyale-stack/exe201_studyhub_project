@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
-
-// --- MOCK DATA ---
-const MOCK_ACCOUNTS = [
-  { id: 'A001', name: 'Nguyễn Thị Thu', email: 'thu.nguyen@example.com', role: 'Gia sư', status: 'Hoạt động', joinedAt: '12/10/2023', avatar: 'https://i.pravatar.cc/150?u=thu' },
-  { id: 'A002', name: 'Trần Minh Tuấn', email: 'tuan.tran@example.com', role: 'Phụ huynh', status: 'Hoạt động', joinedAt: '15/10/2023', avatar: 'https://i.pravatar.cc/150?u=tuan' },
-  { id: 'A003', name: 'Lê Anh Khoa', email: 'khoa.le@example.com', role: 'Gia sư', status: 'Bị khóa', joinedAt: '01/11/2023', avatar: 'https://i.pravatar.cc/150?u=khoa' },
-  { id: 'A004', name: 'Phạm Mai Hương', email: 'huong.pham@example.com', role: 'Phụ huynh', status: 'Hoạt động', joinedAt: '20/11/2023', avatar: 'https://i.pravatar.cc/150?u=huong' },
-  { id: 'A005', name: 'Vũ Đức Phát', email: 'phat.vu@example.com', role: 'Gia sư', status: 'Chờ duyệt', joinedAt: '05/12/2023', avatar: 'https://i.pravatar.cc/150?u=phat' },
-];
+import React, { useState, useEffect } from 'react';
+import { adminApi } from '../../services/adminApi';
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'ekyc' | 'accounts'>('accounts');
   const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await adminApi.getUsers();
+        setUsers(data);
+      } catch (error) {
+        console.error('Error fetching admin users:', error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   return (
     <div className="max-w-[1440px] mx-auto pb-20 animate-fade-in">
@@ -89,11 +94,11 @@ const AdminUsers: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {MOCK_ACCOUNTS.map((acc) => (
+                  {users.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase())).map((acc) => (
                     <tr key={acc.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={acc.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100" />
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-primary ring-2 ring-slate-100">{acc.name.charAt(0)}</div>
                           <div>
                             <p className="text-sm font-bold text-[#0f172a] group-hover:text-primary transition-colors">{acc.name}</p>
                             <p className="text-xs text-slate-500 font-medium">{acc.email}</p>
@@ -127,7 +132,7 @@ const AdminUsers: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500 font-medium">
-                        {acc.joinedAt}
+                        {acc.joinDate}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

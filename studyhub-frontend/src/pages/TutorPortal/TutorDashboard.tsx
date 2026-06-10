@@ -1,8 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CURRENT_TUTOR, MOCK_TUTOR_APPLICATIONS, MOCK_TUTOR_SCHEDULE, MOCK_TUTOR_REVIEWS } from '../../constants/mockTutorData';
+import { tutorPortalApi } from '../../services/tutorPortalApi';
+import { TutorFeedback, UnifiedClass, LessonSchedule } from '../../types/shared';
+const CURRENT_TUTOR = {
+  name: 'Nguyễn Hoàng Nam',
+  pendingApplicationsCount: 2
+};
 
 const TutorDashboard: React.FC = () => {
+  const [reviews, setReviews] = useState<TutorFeedback[]>([]);
+  const [schedule, setSchedule] = useState<LessonSchedule[]>([]);
+  const [expectedIncome, setExpectedIncome] = useState(0);
+  const [taughtHours, setTaughtHours] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const revs = await tutorPortalApi.getReviews();
+        setReviews(revs.slice(0, 3)); // Top 3
+
+        const sched = await tutorPortalApi.getSchedule();
+        setSchedule(sched.slice(0, 3)); // Next 3
+
+        const billing = await tutorPortalApi.getBilling();
+        const income = billing.reduce((sum, b) => sum + (b.totalRevenue || 0), 0);
+        const sessions = billing.reduce((sum, b) => sum + (b.totalSessions || 0), 0);
+        setExpectedIncome(income);
+        setTaughtHours(sessions * 1.5); // Assuming 1.5 hrs per session
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <div className="flex flex-col gap-8 animate-fade-in">
       {/* Header */}
@@ -25,7 +55,7 @@ const TutorDashboard: React.FC = () => {
         <div className="md:col-span-2 p-6 glass border border-white/20 rounded-3xl flex items-center justify-between relative overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <div className="relative z-10">
             <span className="font-semibold text-sm text-on-surface-variant uppercase tracking-wider">Thu nhập dự kiến (Tháng này)</span>
-            <p className="font-bold text-4xl mt-2 text-primary">{CURRENT_TUTOR.expectedIncome.toLocaleString('vi-VN')}đ</p>
+            <p className="font-bold text-4xl mt-2 text-primary">{expectedIncome.toLocaleString('vi-VN')}đ</p>
           </div>
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center relative z-10">
             <span className="material-symbols-outlined text-4xl text-primary">account_balance_wallet</span>
@@ -36,7 +66,7 @@ const TutorDashboard: React.FC = () => {
         <div className="md:col-span-1 p-6 glass border border-white/20 rounded-3xl flex flex-col gap-2 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <span className="font-semibold text-sm text-on-surface-variant uppercase tracking-wider">Giờ đã dạy</span>
           <div className="flex items-baseline gap-2 mt-auto">
-            <span className="font-bold text-4xl text-primary">{CURRENT_TUTOR.taughtHours}</span>
+            <span className="font-bold text-4xl text-primary">{taughtHours}</span>
             <span className="font-medium text-xs text-on-surface-variant">giờ</span>
           </div>
         </div>
@@ -63,23 +93,9 @@ const TutorDashboard: React.FC = () => {
               <Link to="/tutor/classes" className="text-primary text-sm font-semibold hover:underline">Xem tất cả</Link>
             </div>
             <div className="flex flex-col gap-4">
-              {MOCK_TUTOR_APPLICATIONS.map((app, index) => (
-                <div key={app.id} className="flex items-center justify-between p-4 glass border border-white/30 rounded-2xl hover:shadow-md hover:-translate-y-1 transition-all animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${app.colorClass}`}>
-                      {app.initial}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-on-surface">{app.studentName}</h3>
-                      <p className="text-sm text-on-surface-variant">{app.detail}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold hover:bg-primary-container transition-colors">Nhận lớp</button>
-                    <button className="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-semibold hover:bg-surface-container transition-colors">Từ chối</button>
-                  </div>
-                </div>
-              ))}
+              <div className="text-on-surface-variant text-center py-4 italic">
+                Chức năng đang cập nhật (Quản lý hồ sơ trên Portal)
+              </div>
             </div>
           </section>
 
@@ -90,18 +106,19 @@ const TutorDashboard: React.FC = () => {
               <Link to="/tutor/schedule" className="text-primary text-sm font-semibold hover:underline">Xem lịch trình</Link>
             </div>
             <div className="flex flex-col gap-4">
-              {MOCK_TUTOR_SCHEDULE.map((sch, index) => (
-                <div key={sch.id} className="flex items-start gap-4 animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+              {schedule.map((sch, index) => (
+                <div key={sch.lessonId} className="flex items-start gap-4 animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
                   <div className="w-16 flex flex-col items-center justify-center glass bg-surface-container/50 rounded-2xl p-2 shrink-0">
-                    <span className="text-xs font-semibold text-on-surface-variant">{sch.time.split(',')[0]}</span>
-                    <span className="text-lg font-bold text-primary">{sch.time.split(',')[1].trim()}</span>
+                    <span className="text-xs font-semibold text-on-surface-variant">{new Date(sch.date).toLocaleDateString('vi-VN', { weekday: 'short' })}</span>
+                    <span className="text-lg font-bold text-primary">{sch.startTime}</span>
                   </div>
-                  <div className={`flex-1 p-4 rounded-2xl border backdrop-blur-sm ${sch.isPrimary ? 'bg-primary/10 border-primary/20 shadow-sm' : 'glass border-white/20'}`}>
-                    <h3 className="font-semibold text-on-surface">{sch.title}</h3>
-                    {sch.detail && <p className="text-sm text-on-surface-variant mt-1">{sch.detail}</p>}
+                  <div className={`flex-1 p-4 rounded-2xl border backdrop-blur-sm glass border-white/20`}>
+                    <h3 className="font-semibold text-on-surface">{sch.className}</h3>
+                    <p className="text-sm text-on-surface-variant mt-1">{sch.subject} - {sch.status}</p>
                   </div>
                 </div>
               ))}
+              {schedule.length === 0 && <div className="text-center text-on-surface-variant py-4 italic">Không có lịch học nào sắp tới.</div>}
             </div>
           </section>
         </div>
@@ -114,17 +131,18 @@ const TutorDashboard: React.FC = () => {
               <h2 className="font-semibold text-xl text-on-surface">Đánh giá mới nhất</h2>
             </div>
             <div className="flex flex-col gap-4">
-              {MOCK_TUTOR_REVIEWS.map((rev, index) => (
+              {reviews.map((rev, index) => (
                 <div key={rev.id} className="p-4 glass bg-surface-container/30 rounded-2xl border border-white/30 animate-slide-up hover:-translate-y-1 transition-transform shadow-sm" style={{ animationDelay: `${index * 50}ms` }}>
                   <div className="flex items-center gap-1 mb-2">
                     {[...Array(5)].map((_, i) => (
                       <span key={i} className={`material-symbols-outlined text-sm ${i < rev.rating ? 'text-amber-400' : 'text-outline-variant'}`} style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     ))}
                   </div>
-                  <p className="text-sm text-on-surface italic mb-3">{rev.content}</p>
-                  <p className="text-xs font-semibold text-on-surface-variant">{rev.author}</p>
+                  <p className="text-sm text-on-surface italic mb-3">{rev.comment}</p>
+                  <p className="text-xs font-semibold text-on-surface-variant">{rev.parentName}</p>
                 </div>
               ))}
+              {reviews.length === 0 && <div className="text-center text-on-surface-variant py-4 italic">Chưa có đánh giá nào.</div>}
             </div>
             <button className="w-full mt-4 py-2 border border-outline-variant rounded-lg text-sm font-semibold text-primary hover:bg-primary-fixed/20 transition-colors">
               Xem tất cả đánh giá

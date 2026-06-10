@@ -1,6 +1,16 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MOCK_TUTORS } from '../../constants/mockData';
+const MOCK_TUTORS = [
+  {
+    id: 1,
+    name: 'Thầy Nguyễn Hoàng Nam',
+    title: 'Gia sư chuyên Toán - Lý - Hóa',
+    avatar: 'https://i.pravatar.cc/150?u=nam',
+    rating: 4.9,
+    price: '200.000đ',
+    tags: ['Toán', 'Vật lý', 'Hóa học', 'Luyện thi ĐH']
+  }
+];
 
 const TutorDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

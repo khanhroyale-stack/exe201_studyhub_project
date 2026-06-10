@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, UnifiedApplication, ApplicationStatus, PostStatus, ClassStatus, UnifiedClass } from '../../types/shared';
+import { parentPortalApi } from '../../services/parentPortalApi';
+import { UnifiedPost, UnifiedApplication, ApplicationStatus } from '../../types/shared';
 
 const ApplicantReview: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -10,65 +10,39 @@ const ApplicantReview: React.FC = () => {
   const [applicants, setApplicants] = useState<UnifiedApplication[]>([]);
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    const post = allPosts.find(p => p.id === postId) || null;
-    setCurrentPost(post);
+    const fetchData = async () => {
+      try {
+        const posts = await parentPortalApi.getJobPostings();
+        const post = posts.find(p => p.id === postId) || null;
+        setCurrentPost(post);
 
-    if (post) {
-      const allApps = mockDb.getApplications();
-      setApplicants(allApps.filter(a => a.postId === post.id));
-    }
+        if (post) {
+          const apps = await parentPortalApi.getApplicantsByJob(post.id);
+          setApplicants(apps);
+        }
+      } catch (error) {
+        console.error('Error fetching applicants:', error);
+      }
+    };
+    if (postId) fetchData();
   }, [postId]);
 
-  const handleAccept = (applicantId: string) => {
+  const handleAccept = async (applicantId: string) => {
     if (!currentPost) return;
 
-    // 1. Update Application status
-    const allApps = mockDb.getApplications();
-    const updatedApps = allApps.map(a => {
-      if (a.postId === currentPost.id) {
-        return a.id === applicantId ? { ...a, status: ApplicationStatus.ACCEPTED } : { ...a, status: ApplicationStatus.REJECTED };
-      }
-      return a;
-    });
-    mockDb.saveApplications(updatedApps);
-
-    // 2. Mark Post as CLOSED
-    const allPosts = mockDb.getPosts();
-    const updatedPosts = allPosts.map(p => p.id === currentPost.id ? { ...p, status: PostStatus.CLOSED } : p);
-    mockDb.savePosts(updatedPosts);
-
-    // 3. Create a Class for them
-    const acceptedApp = updatedApps.find(a => a.id === applicantId);
-    if (acceptedApp) {
-      const currentClasses = mockDb.getClasses();
-      const newClass: UnifiedClass = {
-        id: `c${Date.now()}`,
-        postId: currentPost.id,
-        className: currentPost.title,
-        parentId: currentPost.parentId,
-        parentName: currentPost.parentName,
-        tutorId: acceptedApp.tutorId,
-        tutorName: acceptedApp.tutorName,
-        tutorAvatar: acceptedApp.tutorAvatar,
-        schedule: currentPost.schedule,
-        status: ClassStatus.TRIAL_WAITING,
-        progress: 0,
-        pricePerSession: currentPost.pricePerSession,
-        learningMode: currentPost.learningMode,
-      };
-      mockDb.saveClasses([newClass, ...currentClasses]);
+    try {
+      await parentPortalApi.acceptApplication(applicantId);
+      alert('Đã chấp nhận gia sư! Chuyển hướng đến Quản lý lớp học...');
+      navigate('/parent/classes');
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra.');
     }
-
-    alert('Đã chấp nhận gia sư! Chuyển hướng đến Quản lý lớp học...');
-    navigate('/parent/classes');
   };
 
-  const handleReject = (applicantId: string) => {
-    const allApps = mockDb.getApplications();
-    const updatedApps = allApps.map(a => a.id === applicantId ? { ...a, status: ApplicationStatus.REJECTED } : a);
-    mockDb.saveApplications(updatedApps);
-    setApplicants(updatedApps.filter(a => a.postId === currentPost?.id));
+  const handleReject = async (applicantId: string) => {
+    // Currently no standalone reject API, usually auto-rejected or handled via accept
+    alert('Tính năng từ chối riêng lẻ sẽ được cập nhật!');
   };
 
   if (!currentPost) return <div className="p-8">Không tìm thấy bài đăng.</div>;

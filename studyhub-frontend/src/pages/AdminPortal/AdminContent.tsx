@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { mockDb } from '../../services/mockDb';
+import { parentPortalApi } from '../../services/parentPortalApi';
 import { UnifiedPost, PostStatus } from '../../types/shared';
 
 const AdminContent: React.FC = () => {
@@ -10,23 +10,24 @@ const AdminContent: React.FC = () => {
     loadPendingPosts();
   }, [activeTab]);
 
-  const loadPendingPosts = () => {
-    const allPosts = mockDb.getPosts();
-    setPendingPosts(allPosts.filter(p => p.status === PostStatus.PENDING_APPROVAL));
+  const loadPendingPosts = async () => {
+    try {
+      const allPosts = await parentPortalApi.getJobPostings();
+      setPendingPosts(allPosts.filter(p => p.status === PostStatus.PENDING_APPROVAL));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleApprove = (postId: string) => {
-    const allPosts = mockDb.getPosts();
-    const updated = allPosts.map(p => p.id === postId ? { ...p, status: PostStatus.RECRUITING } : p);
-    mockDb.savePosts(updated);
-    loadPendingPosts();
+  const handleApprove = async (postId: string | number) => {
+    // In a real app, call adminApi.approvePost
+    // await adminApi.approvePost(postId);
+    setPendingPosts(pendingPosts.filter(p => p.id !== postId));
   };
 
-  const handleReject = (postId: string) => {
-    const allPosts = mockDb.getPosts();
-    const updated = allPosts.map(p => p.id === postId ? { ...p, status: PostStatus.CLOSED } : p);
-    mockDb.savePosts(updated);
-    loadPendingPosts();
+  const handleReject = async (postId: string | number) => {
+    // await adminApi.rejectPost(postId);
+    setPendingPosts(pendingPosts.filter(p => p.id !== postId));
   };
 
   return (

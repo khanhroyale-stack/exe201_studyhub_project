@@ -1,6 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CURRENT_PARENT } from '../../constants/mockParentData';
+const CURRENT_PARENT = {
+  name: 'Elena',
+  avatar: 'https://i.pravatar.cc/150?u=elena',
+  classesWaiting: 2
+};
 
 const navGroups = [
   {

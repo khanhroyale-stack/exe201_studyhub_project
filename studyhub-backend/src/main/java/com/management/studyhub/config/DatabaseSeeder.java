@@ -9,11 +9,32 @@ import com.management.studyhub.repository.TutorProfileRepository;
 import com.management.studyhub.entity.Testimonial;
 import com.management.studyhub.repository.TestimonialRepository;
 import com.management.studyhub.repository.UserRepository;
+import com.management.studyhub.entity.JobPosting;
+import com.management.studyhub.entity.ClassSession;
+import com.management.studyhub.entity.TutorApplication;
+import com.management.studyhub.entity.Parent;
+import com.management.studyhub.entity.CommissionRecord;
+import com.management.studyhub.entity.ParentFeedback;
+import com.management.studyhub.entity.TutorRequest;
+import com.management.studyhub.entity.enums.ApplicationStatus;
+import com.management.studyhub.entity.enums.CommissionStatus;
+import com.management.studyhub.entity.enums.RequestStatus;
+import com.management.studyhub.repository.JobPostingRepository;
+import com.management.studyhub.repository.ClassSessionRepository;
+import com.management.studyhub.repository.TutorApplicationRepository;
+import com.management.studyhub.repository.LessonLogRepository;
+import com.management.studyhub.repository.CommissionRecordRepository;
+import com.management.studyhub.repository.ParentFeedbackRepository;
+import com.management.studyhub.repository.ParentRepository;
+import com.management.studyhub.repository.TutorRequestRepository;
+import com.management.studyhub.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -26,6 +47,15 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final com.management.studyhub.repository.SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JobPostingRepository jobPostingRepository;
+    private final ClassSessionRepository classSessionRepository;
+    private final ParentRepository parentRepository;
+    private final TutorApplicationRepository tutorApplicationRepository;
+    private final TutorRequestRepository tutorRequestRepository;
+    private final CommissionRecordRepository commissionRecordRepository;
+    private final ParentFeedbackRepository parentFeedbackRepository;
+    private final LessonLogRepository lessonLogRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -39,6 +69,226 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         if (testimonialRepository.count() == 0) {
             seedTestimonials();
+        }
+        if (jobPostingRepository.count() == 0) {
+            seedTutorPortalData();
+        }
+    }
+
+    private void seedTutorPortalData() {
+        // Find existing users and profiles
+        User parentUser = userRepository.findAll().stream().filter(u -> u.getRole() == UserRole.PARENT).findFirst().orElse(null);
+        TutorProfile tutor1 = tutorProfileRepository.findAll().stream().filter(t -> t.getFullName().equals("Thầy Nguyễn Hoàng Nam")).findFirst().orElse(null);
+        com.management.studyhub.entity.Subject mathSubject = subjectRepository.findAll().stream().filter(s -> s.getName().equals("Toán học")).findFirst().orElse(null);
+
+        if (parentUser != null && tutor1 != null) {
+            Parent parent = new Parent();
+            parent.setUser(parentUser);
+            parent.setName("Phụ huynh Nguyễn Văn A");
+            parent.setEmail(parentUser.getEmail());
+            parent.setPhone("0901234567");
+            parent.setAvatar("https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random");
+            parent.setBudgetSpentThisMonth(1500000.0);
+            parent.setClassesWaiting(2);
+            parent = parentRepository.save(parent);
+
+            // Seed Job Postings
+            JobPosting jp1 = new JobPosting();
+            jp1.setParent(parent);
+            jp1.setTitle("Cần tìm gia sư Toán 10 khu vực Cầu Giấy");
+            jp1.setSubject("Toán học");
+            jp1.setDescription("Cháu nhà tôi đang học lớp 10, học lực khá cần luyện nâng cao để thi hsg. Yêu cầu sinh viên hoặc giáo viên.");
+            jp1.setPostedAt(LocalDateTime.now().minusDays(2));
+            jp1.setStatus("RECRUITING");
+            jp1.setLocation("Quận Cầu Giấy, HN");
+            jp1.setSchedule("Tối Thứ 3, 5");
+            jp1.setTutorGenderPreference("ANY");
+            jp1.setPricePerSession(250000.0);
+            jp1.setApplicantsCount(5);
+            jp1.setLearningMode("OFFLINE");
+            jobPostingRepository.save(jp1);
+
+            JobPosting jp2 = new JobPosting();
+            jp2.setParent(parent);
+            jp2.setTitle("Luyện thi IELTS 6.5 cấp tốc");
+            jp2.setSubject("Tiếng Anh");
+            jp2.setDescription("Mục tiêu IELTS 6.5 trong 3 tháng. Học qua Zoom.");
+            jp2.setPostedAt(LocalDateTime.now().minusDays(1));
+            jp2.setStatus("RECRUITING");
+            jp2.setLocation("Học trực tuyến");
+            jp2.setSchedule("T7, CN");
+            jp2.setTutorGenderPreference("ANY");
+            jp2.setPricePerSession(400000.0);
+            jp2.setApplicantsCount(2);
+            jp2.setLearningMode("ONLINE");
+            jp2 = jobPostingRepository.save(jp2);
+
+            // Tutors apply to jp1
+            TutorApplication appJp1 = new TutorApplication();
+            appJp1.setTutor(tutor1);
+            appJp1.setJobPosting(jp1);
+            appJp1.setSenderRole(UserRole.TUTOR);
+            appJp1.setStatus(ApplicationStatus.PENDING);
+            appJp1.setMessage("Chào chị, tôi đã có kinh nghiệm dạy Toán lớp 10, mong được hợp tác.");
+            appJp1.setCreatedAt(LocalDateTime.now().minusDays(1));
+            appJp1 = tutorApplicationRepository.save(appJp1);
+
+            // Seed some chat messages for appJp1
+            com.management.studyhub.entity.ChatMessage msg1 = new com.management.studyhub.entity.ChatMessage();
+            msg1.setApplication(appJp1);
+            msg1.setSender(tutor1.getUser());
+            msg1.setMessageContent("Chào chị, tôi rất quan tâm đến lớp Toán 10 của bé.");
+            msg1.setSentAt(LocalDateTime.now().minusHours(20));
+            chatMessageRepository.save(msg1);
+
+            com.management.studyhub.entity.ChatMessage msg2 = new com.management.studyhub.entity.ChatMessage();
+            msg2.setApplication(appJp1);
+            msg2.setSender(parentUser);
+            msg2.setMessageContent("Chào bạn, bạn có thể dạy thử 1 buổi trước không?");
+            msg2.setSentAt(LocalDateTime.now().minusHours(19));
+            chatMessageRepository.save(msg2);
+
+            com.management.studyhub.entity.ChatMessage msg3 = new com.management.studyhub.entity.ChatMessage();
+            msg3.setApplication(appJp1);
+            msg3.setSender(tutor1.getUser());
+            msg3.setMessageContent("Dạ được ạ, tuần này thứ 5 mình bắt đầu luôn nhé?");
+            msg3.setSentAt(LocalDateTime.now().minusHours(18));
+            chatMessageRepository.save(msg3);
+
+            // Seed Class Sessions for Tutor 1
+            ClassSession cs1 = new ClassSession();
+            cs1.setParent(parent);
+            cs1.setClassName("Luyện thi Đại học Khối A");
+            cs1.setTutorName(tutor1.getFullName());
+            cs1.setTutorAvatar(tutor1.getAvatarUrl());
+            cs1.setTutorProfile(tutor1);
+            cs1.setSchedule("Thứ 2 - Thứ 4 (18:00 - 20:00)");
+            cs1.setStatus("OFFICIAL");
+            cs1.setNextSessionDate(LocalDateTime.now().plusDays(1));
+            cs1.setProgress(30);
+            classSessionRepository.save(cs1);
+
+            ClassSession cs2 = new ClassSession();
+            cs2.setParent(parent);
+            cs2.setClassName("Toán 11 Cơ bản");
+            cs2.setTutorName(tutor1.getFullName());
+            cs2.setTutorAvatar(tutor1.getAvatarUrl());
+            cs2.setTutorProfile(tutor1);
+            cs2.setSchedule("Thứ 7 (14:00 - 16:00)");
+            cs2.setStatus("COMPLETED");
+            cs2.setNextSessionDate(LocalDateTime.now().minusDays(5));
+            cs2.setProgress(100);
+            classSessionRepository.save(cs2);
+
+            // Seed LessonLog for the current week for cs1 (Thứ 2, Thứ 4)
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startOfWeek = now.minusDays(now.getDayOfWeek().getValue() - 1).withHour(0).withMinute(0);
+            
+            // Thứ 2
+            com.management.studyhub.entity.LessonLog ll1 = new com.management.studyhub.entity.LessonLog();
+            ll1.setClassSession(cs1);
+            ll1.setScheduledDate(startOfWeek.withHour(18).withMinute(0));
+            ll1.setStartTime(java.time.LocalTime.of(18, 0));
+            ll1.setEndTime(java.time.LocalTime.of(20, 0));
+            ll1.setStatus(com.management.studyhub.entity.enums.LessonStatus.PRESENT);
+            lessonLogRepository.save(ll1);
+
+            // Thứ 4
+            com.management.studyhub.entity.LessonLog ll2 = new com.management.studyhub.entity.LessonLog();
+            ll2.setClassSession(cs1);
+            ll2.setScheduledDate(startOfWeek.plusDays(2).withHour(18).withMinute(0));
+            ll2.setStartTime(java.time.LocalTime.of(18, 0));
+            ll2.setEndTime(java.time.LocalTime.of(20, 0));
+            ll2.setStatus(com.management.studyhub.entity.enums.LessonStatus.SCHEDULED);
+            lessonLogRepository.save(ll2);
+            
+            // Lớp khác giả lập cho T4 và T7 để đầy đủ giao diện
+            ClassSession cs3 = new ClassSession();
+            cs3.setParent(parent);
+            cs3.setClassName("Vật lý 12 - Luyện thi");
+            cs3.setTutorName(tutor1.getFullName());
+            cs3.setTutorProfile(tutor1);
+            cs3.setSchedule("Thứ 4 (19:00 - 21:00)");
+            cs3.setStatus("IN_PROGRESS");
+            classSessionRepository.save(cs3);
+            
+            com.management.studyhub.entity.LessonLog ll3 = new com.management.studyhub.entity.LessonLog();
+            ll3.setClassSession(cs3);
+            ll3.setScheduledDate(startOfWeek.plusDays(2).withHour(19).withMinute(0));
+            ll3.setStartTime(java.time.LocalTime.of(19, 0));
+            ll3.setEndTime(java.time.LocalTime.of(21, 0));
+            ll3.setStatus(com.management.studyhub.entity.enums.LessonStatus.SCHEDULED);
+            lessonLogRepository.save(ll3);
+            
+            ClassSession cs4 = new ClassSession();
+            cs4.setParent(parent);
+            cs4.setClassName("Hóa 11 - Cơ bản");
+            cs4.setTutorName(tutor1.getFullName());
+            cs4.setTutorProfile(tutor1);
+            cs4.setSchedule("Thứ 7 (20:00 - 21:30)");
+            cs4.setStatus("IN_PROGRESS");
+            classSessionRepository.save(cs4);
+            
+            com.management.studyhub.entity.LessonLog ll4 = new com.management.studyhub.entity.LessonLog();
+            ll4.setClassSession(cs4);
+            ll4.setScheduledDate(startOfWeek.plusDays(5).withHour(20).withMinute(0));
+            ll4.setStartTime(java.time.LocalTime.of(20, 0));
+            ll4.setEndTime(java.time.LocalTime.of(21, 30));
+            ll4.setStatus(com.management.studyhub.entity.enums.LessonStatus.SCHEDULED);
+            lessonLogRepository.save(ll4);
+
+            // Seed Tutor Application and Commission Record
+            TutorRequest tr = new TutorRequest();
+            tr.setParent(parentUser);
+            tr.setSubject(mathSubject);
+            tr.setGrade("12");
+            tr.setFeePerSession(new BigDecimal("300000"));
+            tr.setScheduleDetails("Thứ 2, 4");
+            tr.setDescription("Luyện thi");
+            tr.setStatus(RequestStatus.OPEN);
+            tr = tutorRequestRepository.save(tr);
+
+            TutorApplication app = new TutorApplication();
+            app.setTutor(tutor1);
+            app.setRequest(tr);
+            app.setSenderRole(UserRole.TUTOR);
+            app.setStatus(ApplicationStatus.ACCEPTED);
+            app.setMessage("Tôi có kinh nghiệm luyện thi ĐH 5 năm.");
+            app.setCreatedAt(LocalDateTime.now().minusMonths(1));
+            app = tutorApplicationRepository.save(app);
+
+            CommissionRecord cr = new CommissionRecord();
+            cr.setApplication(app);
+            cr.setAmount(new BigDecimal("360000")); // e.g. 10% of 3.6M revenue
+            cr.setSessionsCount(12);
+            cr.setPricePerSession(new BigDecimal("300000"));
+            cr.setStatus(CommissionStatus.UNPAID);
+            commissionRecordRepository.save(cr);
+            
+            CommissionRecord cr2 = new CommissionRecord();
+            cr2.setApplication(app);
+            cr2.setAmount(new BigDecimal("200000"));
+            cr2.setSessionsCount(10);
+            cr2.setPricePerSession(new BigDecimal("200000"));
+            cr2.setStatus(CommissionStatus.PAID);
+            commissionRecordRepository.save(cr2);
+
+            // Seed Parent Feedbacks (Reviews)
+            ParentFeedback pf1 = new ParentFeedback();
+            pf1.setClassSession(cs2);
+            pf1.setTutorId(String.valueOf(tutor1.getId()));
+            pf1.setRating(5);
+            pf1.setComment("Thầy Nam dạy rất nhiệt tình, con tôi đã tiến bộ rõ rệt chỉ sau 2 tháng.");
+            pf1.setCreatedAt(LocalDateTime.now().minusDays(10));
+            parentFeedbackRepository.save(pf1);
+
+            ParentFeedback pf2 = new ParentFeedback();
+            pf2.setClassSession(cs1);
+            pf2.setTutorId(String.valueOf(tutor1.getId()));
+            pf2.setRating(4);
+            pf2.setComment("Phương pháp giảng dạy hiệu quả, tuy nhiên đôi khi thầy hơi nghiêm khắc.");
+            pf2.setCreatedAt(LocalDateTime.now().minusDays(2));
+            parentFeedbackRepository.save(pf2);
         }
     }
 

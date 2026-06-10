@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { messagesApi } from '../../services/messagesApi';
 
 const MOCK_CONVERSATIONS = [
   {
-    id: 'C001',
+    id: 1,
     name: 'Nguyễn Văn Tuấn',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNEz7db2HdV_2w9FRNxhVtDuOjzgBJUU0_mxhaT51dcjMHNdFC4lj1cBqvSvrManfaDVjr6lE6QdurQR6vM70xpD881fVYnnizFzfa45H7iZ1B3UlWdWiz_erIQpXKh3iuwKNxMaJtSzS4sVg17Zc5urpJ2481nX1DwVsI7Xi2GANvKdmGZVqdGEmdxwU6pPDdc6y5Dsd1SaW1SO3SXTdiRvRq4-kB9tvBy7bLgaLGL7bZbiTA-0p6gRCrW1CsjJUuHrPEZqXCwpNW',
     role: 'Tutor',
@@ -36,10 +37,33 @@ const Messages: React.FC = () => {
   const { role } = useAuth();
   const [activeConv, setActiveConv] = useState(MOCK_CONVERSATIONS[0]);
   const [msgText, setMsgText] = useState('');
+  const [messages, setMessages] = useState<any[]>([]);
 
-  // Lọc ra mock data dựa theo role đang đăng nhập để hiển thị cho hợp lý
   const filteredConvs = MOCK_CONVERSATIONS.filter(c => role === 'tutor' ? c.role === 'Parent' : c.role === 'Tutor');
   const displayConv = filteredConvs.length > 0 ? filteredConvs[0] : activeConv;
+
+  useEffect(() => {
+    const fetchMsgs = async () => {
+      try {
+        const data = await messagesApi.getMessages(Number(displayConv.id));
+        setMessages(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchMsgs();
+  }, [displayConv.id]);
+
+  const handleSend = async () => {
+    if (!msgText.trim()) return;
+    try {
+      const newMsg = await messagesApi.sendMessage(Number(displayConv.id), role === 'tutor' ? 2 : 1, msgText);
+      setMessages(prev => [...prev, newMsg]);
+      setMsgText('');
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className="h-[calc(100vh-120px)] glass border border-white/20 rounded-3xl overflow-hidden flex shadow-xl animate-fade-in relative z-10">
@@ -121,13 +145,14 @@ const Messages: React.FC = () => {
           <div className="text-center font-body-sm text-body-sm text-on-surface-variant my-4">
             <span className="bg-surface-container-high/50 px-3 py-1 rounded-full text-xs">Hôm nay</span>
           </div>
-          {MOCK_MESSAGES.map((msg, index) => {
-            const isMe = msg.senderId === 'me';
+          {messages.length === 0 && <div className="text-center text-on-surface-variant italic">Chưa có tin nhắn nào.</div>}
+          {messages.map((msg, index) => {
+            const isMe = (role === 'tutor' && msg.senderId === 2) || (role === 'parent' && msg.senderId === 1) || (!role && index % 2 === 0);
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-slide-up`} style={{ animationDelay: `${index * 50}ms` }}>
                 <div className={`max-w-[70%] rounded-2xl px-5 py-3 shadow-sm ${isMe ? 'bg-primary text-on-primary rounded-tr-sm bg-gradient-to-br from-primary to-primary-dark' : 'bg-surface-container text-on-surface rounded-tl-sm border border-outline-variant/50'}`}>
-                  <p className="font-body-md text-body-md">{msg.text}</p>
-                  <span className={`font-body-sm text-[10px] mt-1.5 block ${isMe ? 'text-on-primary/80 text-right' : 'text-on-surface-variant'}`}>{msg.time}</span>
+                  <p className="font-body-md text-body-md">{msg.content}</p>
+                  <span className={`font-body-sm text-[10px] mt-1.5 block ${isMe ? 'text-on-primary/80 text-right' : 'text-on-surface-variant'}`}>{new Date(msg.sentAt).toLocaleTimeString('vi-VN')}</span>
                 </div>
               </div>
             );
@@ -150,7 +175,7 @@ const Messages: React.FC = () => {
             <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-xl transition-all shrink-0">
               <span className="material-symbols-outlined">sentiment_satisfied</span>
             </button>
-            <button className="p-2.5 bg-primary text-on-primary rounded-xl hover:bg-primary-dark transition-all shrink-0 flex items-center justify-center shadow-md active:scale-95">
+            <button onClick={handleSend} className="p-2.5 bg-primary text-on-primary rounded-xl hover:bg-primary-dark transition-all shrink-0 flex items-center justify-center shadow-md active:scale-95">
               <span className="material-symbols-outlined text-[20px]">send</span>
             </button>
           </div>

@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { CURRENT_PARENT } from '../../constants/mockParentData';
+const CURRENT_PARENT = {
+  name: 'Elena',
+  avatar: 'https://i.pravatar.cc/150?u=elena',
+  phone: '0901234567',
+  address: '123 Đường Nguyễn Trãi, Quận 1, TP.HCM',
+  email: 'elena@example.com'
+};
 
 const Settings: React.FC = () => {
   const [showToast, setShowToast] = useState(false);

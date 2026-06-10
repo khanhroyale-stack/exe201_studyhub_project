@@ -1,8 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CURRENT_PARENT } from '../constants/mockParentData';
-import { CURRENT_TUTOR } from '../constants/mockTutorData';
+const CURRENT_PARENT = {
+  name: 'Elena',
+  avatar: 'https://i.pravatar.cc/150?u=elena',
+  email: 'elena@example.com'
+};
+const CURRENT_TUTOR = {
+  name: 'Nguyễn Hoàng Nam',
+  avatar: 'https://i.pravatar.cc/150?u=nam',
+  email: 'nam@example.com'
+};
 import StudyHubLogo from './StudyHubLogo';
 
 const Navbar: React.FC = () => {

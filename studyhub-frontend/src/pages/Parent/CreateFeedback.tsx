@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { parentPortalApi } from '../../services/parentPortalApi';
 
 const CreateFeedback: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { classId, className, tutorName, tutorAvatar } = location.state || {};
+
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [comment, setComment] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!classId) {
+      alert('Vui lòng chọn lớp học để đánh giá!');
+      navigate('/parent/feedback');
+    }
+  }, [classId, navigate]);
 
   const tags = ['Nhiệt tình', 'Dễ hiểu', 'Chuyên môn cao'];
 
@@ -16,18 +27,25 @@ const CreateFeedback: React.FC = () => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       alert('Vui lòng chọn số sao đánh giá!');
       return;
     }
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await parentPortalApi.createFeedback({
+        classId,
+        rating,
+        comment: `${comment} ${selectedTags.length > 0 ? `[Tags: ${selectedTags.join(', ')}]` : ''}`
+      });
       alert('Cảm ơn bạn đã gửi đánh giá!');
       navigate('/parent/feedback');
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra.');
+    }
   };
 
   return (
@@ -49,14 +67,20 @@ const CreateFeedback: React.FC = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-outline-variant">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <img alt="Nguyễn Văn A Profile" className="w-20 h-20 rounded-full border-2 border-primary/20 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzza6qvyD3khNsXliBTJAumKMazYwZaw41JQp2_KHeFGKR_XtnC2LibU6kZEStw7l_D_ZP46m4jbiRlzbWgOWJUx7wlcWj7qiWNji_9xQvZ0_4ansciGcnLePLzBe7zgDgJ5GREyRpzdeZibdbegTJijD9lDOJKdgvzUCmgEBYXK2VUG-o1mxPuTJ2zlmnF5UdIMks56OuCU2acCfnEy0vMaaUWmGfrZ200C6hLjfPJpx2v1eEuaKccb-NaYwvJx6nQFJn9ATTBn9I" />
+                {tutorAvatar ? (
+                  <img alt={tutorName} className="w-20 h-20 rounded-full border-2 border-primary/20 object-cover" src={tutorAvatar} />
+                ) : (
+                  <div className="w-20 h-20 rounded-full border-2 border-primary/20 bg-primary flex items-center justify-center text-white font-bold text-2xl">
+                    {tutorName?.charAt(0) || 'G'}
+                  </div>
+                )}
                 <div className="absolute -bottom-1 -right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-surface"></div>
               </div>
               <div>
-                <h2 className="font-semibold text-xl text-on-surface">Nguyễn Văn A</h2>
+                <h2 className="font-semibold text-xl text-on-surface">{tutorName || 'Gia sư'}</h2>
                 <p className="text-primary font-semibold text-sm flex items-center gap-1 mt-1">
                   <span className="material-symbols-outlined text-[18px]">menu_book</span>
-                  Toán lớp 12 - Ôn thi THPT
+                  {className || 'Lớp học'}
                 </p>
               </div>
             </div>

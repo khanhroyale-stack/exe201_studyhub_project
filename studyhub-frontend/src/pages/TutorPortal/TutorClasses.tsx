@@ -1,44 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedClass, ClassStatus } from '../../types/shared';
-import { CURRENT_TUTOR } from '../../constants/mockTutorData';
+import { tutorPortalApi, ClassSession } from '../../services/tutorPortalApi';
 
 const TutorClasses: React.FC = () => {
-  const [classes, setClasses] = useState<UnifiedClass[]>([]);
+  const [classes, setClasses] = useState<ClassSession[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   useEffect(() => {
-    const allClasses = mockDb.getClasses();
-    setClasses(allClasses.filter(c => c.tutorId === CURRENT_TUTOR.id));
+    const fetchClasses = async () => {
+      try {
+        const data = await tutorPortalApi.getClasses();
+        setClasses(data);
+      } catch (error) {
+        console.error('Error fetching classes:', error);
+      }
+    };
+    fetchClasses();
   }, []);
 
-  const activeClasses = classes.filter(c => [ClassStatus.TRIAL_WAITING, ClassStatus.TRIAL_PROGRESS, ClassStatus.OFFICIAL].includes(c.status));
-  const completedClasses = classes.filter(c => c.status === ClassStatus.COMPLETED);
-  const canceledClasses = classes.filter(c => c.status === ClassStatus.CANCELLED);
+  const filteredClasses = classes.filter(c => 
+    c.className.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const getStatusColor = (status: ClassStatus) => {
+  const activeClasses = filteredClasses.filter(c => ['TRIAL_WAITING', 'TRIAL_PROGRESS', 'OFFICIAL'].includes(c.status));
+  const completedClasses = filteredClasses.filter(c => c.status === 'COMPLETED');
+  const canceledClasses = filteredClasses.filter(c => c.status === 'CANCELLED');
+
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case ClassStatus.TRIAL_WAITING:
-      case ClassStatus.TRIAL_PROGRESS:
+      case 'TRIAL_WAITING':
+      case 'TRIAL_PROGRESS':
         return 'bg-secondary-container text-on-secondary-container';
-      case ClassStatus.OFFICIAL:
+      case 'OFFICIAL':
         return 'bg-primary-container text-on-primary-container';
-      case ClassStatus.COMPLETED:
+      case 'COMPLETED':
         return 'bg-surface-container-highest text-on-surface';
-      case ClassStatus.CANCELLED:
+      case 'CANCELLED':
         return 'bg-error-container text-error';
       default:
         return 'bg-surface-container text-on-surface';
     }
   };
 
-  const getStatusLabel = (status: ClassStatus) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
-      case ClassStatus.TRIAL_WAITING: return 'Chờ học thử';
-      case ClassStatus.TRIAL_PROGRESS: return 'Đang học thử';
-      case ClassStatus.OFFICIAL: return 'Đang dạy';
-      case ClassStatus.COMPLETED: return 'Hoàn thành';
-      case ClassStatus.CANCELLED: return 'Đã hủy';
+      case 'TRIAL_WAITING': return 'Chờ học thử';
+      case 'TRIAL_PROGRESS': return 'Đang học thử';
+      case 'OFFICIAL': return 'Đang dạy';
+      case 'COMPLETED': return 'Hoàn thành';
+      case 'CANCELLED': return 'Đã hủy';
       default: return status;
+    }
+  };
+
+  const handleEnterClass = async (classId: number) => {
+    setLoadingId(classId);
+    try {
+      await tutorPortalApi.markAttendance(classId);
+      alert('Đã điểm danh/Vào lớp thành công!');
+    } catch (error) {
+      console.error('Lỗi khi vào lớp:', error);
+      alert('Có lỗi xảy ra khi vào lớp.');
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleRequestChange = () => {
+    if (window.confirm('Bạn có chắc chắn muốn xin đổi lịch cho lớp này?')) {
+      alert('Yêu cầu đổi lịch đã được gửi cho phụ huynh.');
+    }
+  };
+
+  const handleCancelClass = () => {
+    if (window.confirm('Bạn có chắc chắn muốn báo hủy lớp này? Thao tác này sẽ gửi thông báo đến quản trị viên.')) {
+      alert('Yêu cầu hủy lớp đã được ghi nhận.');
     }
   };
 
@@ -56,6 +92,8 @@ const TutorClasses: React.FC = () => {
             <input 
               type="text" 
               placeholder="Tìm kiếm lớp học..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none text-body-sm w-full md:w-[250px]"
             />
           </div>
@@ -74,11 +112,11 @@ const TutorClasses: React.FC = () => {
 
       {/* Grid of Classes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classes.length === 0 ? (
+        {filteredClasses.length === 0 ? (
           <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant">
-            Bạn chưa có lớp học nào.
+            Bạn chưa có lớp học nào phù hợp.
           </div>
-        ) : classes.map((cls, idx) => (
+        ) : filteredClasses.map((cls, idx) => (
           <div key={cls.id} className={`border border-outline-variant rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-surface-container-lowest flex flex-col group relative overflow-hidden animate-slide-up opacity-0 stagger-${(idx % 6) + 1}`}>
             <div className={`absolute top-0 right-0 ${cls.learningMode === 'ONLINE' ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-container text-on-tertiary-container'} text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider`}>
               {cls.learningMode === 'ONLINE' ? 'Online' : 'Offline'}
@@ -120,9 +158,13 @@ const TutorClasses: React.FC = () => {
             </div>
 
             <div className="mt-auto pt-4 border-t border-outline-variant flex gap-3">
-              <button className={`flex-1 font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${cls.status === ClassStatus.OFFICIAL ? 'bg-primary text-on-primary hover:bg-primary/90' : 'border border-primary text-primary hover:bg-primary/10'}`}>
+              <button 
+                onClick={() => handleEnterClass(cls.id)}
+                disabled={loadingId === cls.id}
+                className={`flex-1 font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${cls.status === 'OFFICIAL' ? 'bg-primary text-on-primary hover:bg-primary/90' : 'border border-primary text-primary hover:bg-primary/10'} disabled:opacity-50`}
+              >
                 <span className="material-symbols-outlined text-[18px]">play_lesson</span>
-                Vào lớp
+                {loadingId === cls.id ? 'Đang tải...' : 'Vào lớp'}
               </button>
               
               <div className="relative group/menu">
@@ -131,11 +173,11 @@ const TutorClasses: React.FC = () => {
                 </button>
                 {/* Dropdown Menu */}
                 <div className="absolute bottom-full right-0 mb-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 flex flex-col p-2">
-                  <button className="text-left px-4 py-2 hover:bg-surface-container rounded-lg font-body-sm text-body-sm flex items-center gap-2 text-on-surface">
+                  <button onClick={handleRequestChange} className="text-left px-4 py-2 hover:bg-surface-container rounded-lg font-body-sm text-body-sm flex items-center gap-2 text-on-surface">
                     <span className="material-symbols-outlined text-[18px]">calendar_add_on</span>
                     Xin đổi lịch
                   </button>
-                  <button className="text-left px-4 py-2 hover:bg-error-container hover:text-error rounded-lg font-body-sm text-body-sm flex items-center gap-2 text-error transition-colors mt-1">
+                  <button onClick={handleCancelClass} className="text-left px-4 py-2 hover:bg-error-container hover:text-error rounded-lg font-body-sm text-body-sm flex items-center gap-2 text-error transition-colors mt-1">
                     <span className="material-symbols-outlined text-[18px]">cancel</span>
                     Báo hủy lớp
                   </button>

@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus, ApplicationStatus } from '../../types/shared';
+import { parentPortalApi } from '../../services/parentPortalApi';
+import { UnifiedPost, PostStatus } from '../../types/shared';
 
 const PostManagement: React.FC = () => {
   const [posts, setPosts] = useState<UnifiedPost[]>([]);
   const [newApplicantsCount, setNewApplicantsCount] = useState(0);
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    setPosts(allPosts);
-
-    const allApps = mockDb.getApplications();
-    const newApps = allApps.filter(a => a.status === ApplicationStatus.PENDING);
-    setNewApplicantsCount(newApps.length);
+    const fetchPosts = async () => {
+      try {
+        const data = await parentPortalApi.getJobPostings();
+        setPosts(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchPosts();
   }, []);
 
   const totalPosts = posts.length;
@@ -90,7 +93,7 @@ const PostManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {posts.map((post) => {
-                const appsForPost = mockDb.getApplications().filter(a => a.postId === post.id).length;
+                const appsForPost = 0; // Not fetching apps count here to avoid N+1, just put 0 for now.
                 return (
                   <tr key={post.id} className={`hover:bg-surface-container transition-colors group ${post.status === PostStatus.CLOSED ? 'opacity-75' : ''}`}>
                     <td className="px-6 py-4">

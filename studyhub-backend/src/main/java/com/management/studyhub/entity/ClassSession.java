@@ -16,9 +16,15 @@ public class ClassSession {
     @JoinColumn(name = "parent_id")
     private Parent parent;
 
+    // FK to TutorProfile — nullable so backward-compatible with String tutorName.
+    // When parent side approves an application, they set this FK.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tutor_profile_id", nullable = true)
+    private TutorProfile tutorProfile;
+
     private String className;
     
-    // Instead of full relationships for now to match UI easily
+    // String tutorName kept for backward-compatibility (used by seeder & display)
     private String tutorName;
     private String tutorAvatar;
     

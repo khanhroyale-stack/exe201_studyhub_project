@@ -1,47 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, UnifiedApplication, ApplicationStatus } from '../../types/shared';
-import { CURRENT_TUTOR } from '../../constants/mockTutorData';
+import { tutorPortalApi, JobPosting } from '../../services/tutorPortalApi';
+const CURRENT_TUTOR = {
+  id: 'tutor_001',
+  name: 'Nguyễn Hoàng Nam',
+  fullName: 'Nguyễn Hoàng Nam',
+  title: 'Giáo viên Toán cấp 3',
+  avatar: 'https://i.pravatar.cc/150?u=nam'
+};
 
 const TutorApplyClass: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  const [post, setPost] = useState<UnifiedPost | null>(null);
+  const [post, setPost] = useState<JobPosting | null>(null);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    const found = allPosts.find(p => p.id === postId);
-    if (found) {
-      setPost(found);
-    }
+    const fetchPost = async () => {
+      try {
+        if (postId) {
+          const data = await tutorPortalApi.getJobPostingById(Number(postId));
+          setPost(data);
+        }
+      } catch (error) {
+        console.error("Error fetching post:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
   }, [postId]);
 
-  const handleSubmit = () => {
-    if (!post) return;
-    const newApp: UnifiedApplication = {
-      id: `a${Date.now()}`,
-      postId: post.id,
-      tutorId: CURRENT_TUTOR.id,
-      tutorName: CURRENT_TUTOR.name,
-      tutorAvatar: CURRENT_TUTOR.avatar,
-      tutorTitle: CURRENT_TUTOR.title,
-      tutorRating: 5.0,
-      appliedAt: new Date().toISOString(),
-      status: ApplicationStatus.PENDING,
-      message: message
-    };
-
-    const apps = mockDb.getApplications();
-    mockDb.saveApplications([newApp, ...apps]);
-
-    alert('Hồ sơ ứng tuyển đã được gửi!');
-    navigate('/tutor/applications');
+  const handleSubmit = async () => {
+    if (!post || !postId) return;
+    if (message.length < 50) {
+      alert("Vui lòng viết thư ngỏ dài hơn một chút (ít nhất 50 ký tự).");
+      return;
+    }
+    
+    setSubmitting(true);
+    try {
+      await tutorPortalApi.applyForJob(Number(postId), message);
+      alert('Hồ sơ ứng tuyển đã được gửi thành công!');
+      navigate('/tutor/search-classes');
+    } catch (error) {
+      console.error("Error applying:", error);
+      alert('Có lỗi xảy ra khi gửi đơn ứng tuyển!');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  if (loading) {
+    return <div className="p-8 text-center text-on-surface-variant">Đang tải...</div>;
+  }
+
   if (!post) {
-    return <div className="p-8">Đang tải...</div>;
+    return <div className="p-8 text-center text-on-surface-variant">Không tìm thấy bài đăng.</div>;
   }
 
   return (
@@ -127,7 +144,13 @@ const TutorApplyClass: React.FC = () => {
         </label>
         <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
           <Link to="/tutor/search-classes" className="px-6 py-3 rounded-xl border border-outline-variant text-body-md font-medium text-on-surface hover:bg-white/50 transition-colors text-center active:scale-95">Hủy</Link>
-          <button onClick={handleSubmit} className="px-6 py-3 bg-primary text-on-primary rounded-xl text-body-md font-medium hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95">Gửi hồ sơ ứng tuyển</button>
+          <button 
+            onClick={handleSubmit} 
+            disabled={submitting}
+            className="px-6 py-3 bg-primary text-on-primary rounded-xl text-body-md font-medium hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50"
+          >
+            {submitting ? 'Đang gửi...' : 'Gửi hồ sơ ứng tuyển'}
+          </button>
         </div>
       </section>
     </div>

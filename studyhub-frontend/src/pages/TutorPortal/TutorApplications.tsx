@@ -1,28 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedApplication, ApplicationStatus } from '../../types/shared';
-import { CURRENT_TUTOR } from '../../constants/mockTutorData';
+import { tutorPortalApi } from '../../services/tutorPortalApi';
+import { ApplicationStatus } from '../../types/shared';
 
 const TutorApplications: React.FC = () => {
-  const [applications, setApplications] = useState<(UnifiedApplication & { postTitle?: string, parentName?: string })[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
 
   useEffect(() => {
-    const allApps = mockDb.getApplications();
-    const myApps = allApps.filter(a => a.tutorId === CURRENT_TUTOR.id);
-    
-    const allPosts = mockDb.getPosts();
-    
-    const appsWithPostInfo = myApps.map(app => {
-      const post = allPosts.find(p => p.id === app.postId);
-      return {
-        ...app,
-        postTitle: post?.title || 'Lớp học đã bị xóa',
-        parentName: post?.parentName || 'Không rõ',
-      };
-    });
-
-    setApplications(appsWithPostInfo);
+    const fetchData = async () => {
+      try {
+        const apps = await tutorPortalApi.getApplications();
+        setApplications(apps);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      }
+    };
+    fetchData();
   }, []);
 
   return (
@@ -54,10 +47,10 @@ const TutorApplications: React.FC = () => {
               ) : applications.map((app) => (
                 <tr key={app.id} className="hover:bg-surface-container transition-colors group">
                   <td className="px-6 py-4">
-                    <span className="font-semibold text-sm text-on-surface block">{app.postTitle}</span>
+                    <span className="font-semibold text-sm text-on-surface block">{app.tutorTitle}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-normal text-sm text-on-surface">{app.parentName}</span>
+                    <span className="font-normal text-sm text-on-surface">{app.tutorName}</span>
                   </td>
                   <td className="px-6 py-4 font-normal text-sm text-on-surface-variant">
                     {new Date(app.appliedAt).toLocaleDateString('vi-VN')}

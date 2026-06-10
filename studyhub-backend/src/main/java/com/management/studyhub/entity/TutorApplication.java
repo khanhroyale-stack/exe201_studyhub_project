@@ -21,6 +21,9 @@ public class TutorApplication {
     @ManyToOne @JoinColumn(name = "request_id")
     private TutorRequest request;
 
+    @ManyToOne @JoinColumn(name = "job_posting_id")
+    private JobPosting jobPosting;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
     private UserRole senderRole; // Lưu ý: Dùng UserRole (PARENT/TUTOR) // TUTOR, PARENT

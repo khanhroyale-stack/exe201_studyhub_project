@@ -1,6 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { adminApi } from '../../services/adminApi';
 
 const AdminDashboard: React.FC = () => {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    newUsersToday: 0,
+    activeClasses: 0,
+    totalRevenue: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await adminApi.getDashboardStats();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+      }
+    };
+    fetchStats();
+  }, []);
   return (
     <div className="max-w-[1440px] mx-auto pb-20">
       <div className="mb-8 flex justify-between items-end">
@@ -31,7 +50,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Tổng số người dùng</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">14,890</div>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{stats.totalUsers.toLocaleString()}</div>
         </div>
 
         {/* Card 2 */}
@@ -45,8 +64,8 @@ const AdminDashboard: React.FC = () => {
               +12.4%
             </div>
           </div>
-          <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Bài đăng tìm gia sư mới</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">345</div>
+          <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Người dùng mới hôm nay</h3>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{stats.newUsersToday.toLocaleString()}</div>
         </div>
 
         {/* Card 3 */}
@@ -60,8 +79,8 @@ const AdminDashboard: React.FC = () => {
               +5.1%
             </div>
           </div>
-          <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Kết nối thành công</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">1,284</div>
+          <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Lớp đang hoạt động</h3>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{stats.activeClasses.toLocaleString()}</div>
         </div>
 
         {/* Card 4 */}
@@ -75,8 +94,8 @@ const AdminDashboard: React.FC = () => {
               +15.3%
             </div>
           </div>
-          <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Doanh thu phí nền tảng</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">84.2tr</div>
+          <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Doanh thu nền tảng</h3>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{(stats.totalRevenue).toLocaleString()}đ</div>
         </div>
       </div>
 

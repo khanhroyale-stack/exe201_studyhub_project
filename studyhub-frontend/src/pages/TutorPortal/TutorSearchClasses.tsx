@@ -1,16 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus } from '../../types/shared';
+import { tutorPortalApi, JobPosting, Subject } from '../../services/tutorPortalApi';
 
 const TutorSearchClasses: React.FC = () => {
-  const [posts, setPosts] = useState<UnifiedPost[]>([]);
+  const [posts, setPosts] = useState<JobPosting[]>([]);
+  const [subjectsList, setSubjectsList] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [filters, setFilters] = useState({
+    subjects: [] as string[],
+    learningMode: 'ALL',
+    minPrice: '' as string | number,
+    maxPrice: '' as string | number,
+    sortBy: 'newest'
+  });
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    // Only show posts that have been approved and are recruiting
-    setPosts(allPosts.filter(p => p.status === PostStatus.RECRUITING));
+    tutorPortalApi.getSubjects().then(setSubjectsList).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const data = await tutorPortalApi.getJobPostings({
+          subjects: filters.subjects.length > 0 ? filters.subjects : undefined,
+          learningMode: filters.learningMode,
+          minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
+          maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
+          sortBy: filters.sortBy
+        });
+        setPosts(data);
+      } catch (error) {
+        console.error('Error fetching job postings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    // Add debounce to prevent too many requests
+    const timer = setTimeout(() => {
+      fetchPosts();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters]);
+
+  const handleSubjectChange = (subjectName: string) => {
+    setFilters(prev => {
+      const isSelected = prev.subjects.includes(subjectName);
+      if (isSelected) {
+        return { ...prev, subjects: prev.subjects.filter(s => s !== subjectName) };
+      } else {
+        return { ...prev, subjects: [...prev.subjects, subjectName] };
+      }
+    });
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      subjects: [],
+      learningMode: 'ALL',
+      minPrice: '',
+      maxPrice: '',
+      sortBy: 'newest'
+    });
+  };
 
   return (
     <div className="animate-fade-in">
@@ -21,10 +74,13 @@ const TutorSearchClasses: React.FC = () => {
         </div>
         <div className="hidden lg:flex items-center gap-2 text-label-md font-label-md text-on-surface-variant">
           <span>Sắp xếp theo:</span>
-          <select className="bg-surface-container-lowest border border-outline-variant rounded-md py-1.5 pl-3 pr-8 focus:border-primary focus:ring-0 cursor-pointer">
-            <option>Mới nhất</option>
-            <option>Học phí cao nhất</option>
-            <option>Gần tôi nhất</option>
+          <select 
+            value={filters.sortBy}
+            onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+            className="bg-surface-container-lowest border border-outline-variant rounded-md py-1.5 pl-3 pr-8 focus:border-primary focus:ring-0 cursor-pointer"
+          >
+            <option value="newest">Mới nhất</option>
+            <option value="highest_price">Học phí cao nhất</option>
           </select>
         </div>
       </div>
@@ -33,7 +89,7 @@ const TutorSearchClasses: React.FC = () => {
         <div className="w-full lg:w-72 glass border border-white/20 rounded-2xl p-6 shrink-0 sticky top-[96px] shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-headline-sm font-headline-sm text-on-background">Bộ lọc</h3>
-            <button className="text-label-sm font-label-sm text-primary hover:underline">Xóa tất cả</button>
+            <button onClick={handleClearFilters} className="text-label-sm font-label-sm text-primary hover:underline">Xóa tất cả</button>
           </div>
           {/* Môn học */}
           <div className="mb-6 border-b border-outline-variant pb-6">
@@ -41,24 +97,20 @@ const TutorSearchClasses: React.FC = () => {
               Môn học
               <span className="material-symbols-outlined text-[20px] text-on-surface-variant">keyboard_arrow_up</span>
             </h4>
-            <div className="space-y-2.5">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox" />
-                <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Toán học</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input defaultChecked className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox" />
-                <span className="text-body-sm font-medium text-on-surface group-hover:text-on-surface transition-colors">Tiếng Anh</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox" />
-                <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Vật lý</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox" />
-                <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Hóa học</span>
-              </label>
-              <button className="text-label-sm font-label-sm text-primary mt-1 hover:underline">Xem thêm</button>
+            <div className="space-y-2.5 max-h-48 overflow-y-auto custom-scrollbar">
+              {subjectsList.map(subject => (
+                <label key={subject.id} className="flex items-center gap-2 cursor-pointer group">
+                  <input 
+                    checked={filters.subjects.includes(subject.name)}
+                    onChange={() => handleSubjectChange(subject.name)}
+                    className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" 
+                    type="checkbox" 
+                  />
+                  <span className={`text-body-sm transition-colors ${filters.subjects.includes(subject.name) ? 'font-medium text-on-surface' : 'text-on-surface-variant group-hover:text-on-surface'}`}>
+                    {subject.name}
+                  </span>
+                </label>
+              ))}
             </div>
           </div>
           {/* Hình thức */}
@@ -66,15 +118,27 @@ const TutorSearchClasses: React.FC = () => {
             <h4 className="text-label-md font-label-md text-on-surface mb-3">Hình thức học</h4>
             <div className="flex gap-2">
               <label className="flex-1 text-center cursor-pointer">
-                <input defaultChecked className="peer sr-only" name="format" type="radio" />
+                <input 
+                  checked={filters.learningMode === 'ALL'}
+                  onChange={() => setFilters(prev => ({ ...prev, learningMode: 'ALL' }))}
+                  className="peer sr-only" name="format" type="radio" 
+                />
                 <div className="px-3 py-2 rounded-lg border border-outline-variant text-body-sm text-on-surface-variant peer-checked:bg-primary-fixed peer-checked:text-on-primary-fixed peer-checked:border-primary peer-checked:font-medium transition-all">Tất cả</div>
               </label>
               <label className="flex-1 text-center cursor-pointer">
-                <input className="peer sr-only" name="format" type="radio" />
+                <input 
+                  checked={filters.learningMode === 'ONLINE'}
+                  onChange={() => setFilters(prev => ({ ...prev, learningMode: 'ONLINE' }))}
+                  className="peer sr-only" name="format" type="radio" 
+                />
                 <div className="px-3 py-2 rounded-lg border border-outline-variant text-body-sm text-on-surface-variant peer-checked:bg-primary-fixed peer-checked:text-on-primary-fixed peer-checked:border-primary peer-checked:font-medium transition-all">Online</div>
               </label>
               <label className="flex-1 text-center cursor-pointer">
-                <input className="peer sr-only" name="format" type="radio" />
+                <input 
+                  checked={filters.learningMode === 'OFFLINE'}
+                  onChange={() => setFilters(prev => ({ ...prev, learningMode: 'OFFLINE' }))}
+                  className="peer sr-only" name="format" type="radio" 
+                />
                 <div className="px-3 py-2 rounded-lg border border-outline-variant text-body-sm text-on-surface-variant peer-checked:bg-primary-fixed peer-checked:text-on-primary-fixed peer-checked:border-primary peer-checked:font-medium transition-all">Offline</div>
               </label>
             </div>
@@ -83,15 +147,29 @@ const TutorSearchClasses: React.FC = () => {
           <div className="mb-6 border-b border-outline-variant pb-6">
             <h4 className="text-label-md font-label-md text-on-surface mb-3">Khoảng học phí (VNĐ/ca)</h4>
             <div className="flex items-center gap-2">
-              <input className="w-full bg-surface border border-outline-variant rounded-md py-1.5 px-3 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Tối thiểu" type="text" />
+              <input 
+                value={filters.minPrice}
+                onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+                className="w-full bg-surface border border-outline-variant rounded-md py-1.5 px-3 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" 
+                placeholder="Tối thiểu" type="number" 
+              />
               <span className="text-on-surface-variant">-</span>
-              <input className="w-full bg-surface border border-outline-variant rounded-md py-1.5 px-3 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Tối đa" type="text" />
+              <input 
+                value={filters.maxPrice}
+                onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                className="w-full bg-surface border border-outline-variant rounded-md py-1.5 px-3 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" 
+                placeholder="Tối đa" type="number" 
+              />
             </div>
           </div>
         </div>
         {/* Class List Grid */}
         <div className="flex-1 w-full grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up stagger-2">
-          {posts.length === 0 ? (
+          {loading ? (
+            <div className="col-span-1 xl:col-span-2 text-center py-10 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant">
+              Đang tải danh sách lớp học...
+            </div>
+          ) : posts.length === 0 ? (
             <div className="col-span-1 xl:col-span-2 text-center py-10 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant">
               Hiện tại không có lớp học nào đang tuyển gia sư.
             </div>

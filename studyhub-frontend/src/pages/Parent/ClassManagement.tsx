@@ -1,7 +1,21 @@
-import React from 'react';
-import { MOCK_CLASSES } from '../../constants/mockParentData';
+import React, { useState, useEffect } from 'react';
+import { parentPortalApi } from '../../services/parentPortalApi';
+import { UnifiedClass } from '../../types/shared';
 
 const ClassManagement: React.FC = () => {
+  const [classes, setClasses] = useState<UnifiedClass[]>([]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const data = await parentPortalApi.getClasses();
+        setClasses(data);
+      } catch (error) {
+        console.error('Error fetching classes:', error);
+      }
+    };
+    fetchClasses();
+  }, []);
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'TRIAL_WAITING':
@@ -84,7 +98,7 @@ const ClassManagement: React.FC = () => {
             </div>
             
             <div className="mt-6 space-y-4">
-              {MOCK_CLASSES.map((session, idx) => (
+              {classes.map((session, idx) => (
                 <div key={session.id} className={`flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-slide-up opacity-0 stagger-${(idx % 6) + 1}`}>
                   <div className={`flex flex-col items-center justify-center w-16 h-16 rounded-lg text-primary shrink-0 ${session.status === 'COMPLETED' ? 'bg-surface-container-high' : 'bg-primary-container/20 border border-primary/20'}`}>
                     <span className="font-bold text-sm">18:00</span>

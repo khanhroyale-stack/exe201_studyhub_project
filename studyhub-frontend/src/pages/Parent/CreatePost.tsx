@@ -1,45 +1,75 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus } from '../../types/shared';
-import { CURRENT_PARENT } from '../../constants/mockParentData';
+import { useAuth } from '../../context/AuthContext';
 
 const CreatePost: React.FC = () => {
+  const { userId } = useAuth();
   const [isOffline, setIsOffline] = useState(true);
   const [subject, setSubject] = useState('');
+  const [classLevel, setClassLevel] = useState('');
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [price, setPrice] = useState('');
   const [req, setReq] = useState('');
+  const [city, setCity] = useState('Hà Nội');
+  const [detailedAddress, setDetailedAddress] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const toggleDay = (day: string) => {
+    setSelectedDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !price) {
-      alert('Vui lòng điền đầy đủ môn học và mức lương');
+    if (!userId) {
+      alert('Không tìm thấy thông tin người dùng!');
+      return;
+    }
+    if (!subject || !price || !classLevel || selectedDays.length === 0) {
+      alert('Vui lòng điền đầy đủ môn học, lớp, thời gian rảnh và mức lương');
       return;
     }
     
-    const newPost: UnifiedPost = {
-      id: `jp${Date.now()}`,
-      parentId: CURRENT_PARENT.id,
-      parentName: CURRENT_PARENT.name,
-      parentAvatar: CURRENT_PARENT.avatar,
-      title: `Tìm gia sư ${subject}`,
+    const priceNum = parseInt(price.replace(/,/g, ''), 10);
+    if (isNaN(priceNum) || priceNum > 1000000 || priceNum < 50000) {
+      alert('Học phí phải nằm trong khoảng từ 50,000 đến 1,000,000 VNĐ/ca!');
+      return;
+    }
+    
+    const newPost = {
+      title: `Tìm gia sư ${subject} - ${classLevel}`,
       subject: subject,
+      classLevel: classLevel,
       description: req || 'Cần tìm gia sư.',
-      postedAt: new Date().toISOString(),
-      status: PostStatus.PENDING_APPROVAL,
-      location: isOffline ? 'Hà Nội' : 'Học Online',
-      schedule: '2 buổi/tuần',
-      pricePerSession: parseInt(price, 10) || 0,
+      status: 'PENDING_APPROVAL',
+      location: isOffline ? city : 'Học Online',
+      detailedAddress: isOffline ? detailedAddress : '',
+      schedule: selectedDays.join(', '),
+      pricePerSession: priceNum,
       learningMode: isOffline ? 'OFFLINE' : 'ONLINE',
       requirement: req
     };
 
-    const currentPosts = mockDb.getPosts();
-    mockDb.savePosts([newPost, ...currentPosts]);
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/posts?parentId=${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPost)
+      });
 
-    alert('Đăng tin thành công! Bài đăng của bạn đang chờ Admin duyệt.');
-    navigate('/parent/posts');
+      if (response.ok) {
+        alert('Đăng tin thành công! Bài đăng của bạn đang chờ Admin duyệt.');
+        navigate('/parent/posts');
+      } else {
+        alert('Có lỗi xảy ra khi đăng tin. Vui lòng thử lại.');
+      }
+    } catch (error) {
+      console.error('Error posting job:', error);
+      alert('Không thể kết nối đến máy chủ.');
+    }
   };
 
   return (
@@ -79,8 +109,12 @@ const CreatePost: React.FC = () => {
               <div className="space-y-2">
                 <label className="font-semibold text-sm text-on-surface block">Lớp</label>
                 <div className="relative">
-                  <select className="w-full appearance-none bg-surface border border-outline-variant rounded-lg px-4 py-3 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base">
-                    <option disabled selected value="">Chọn lớp</option>
+                  <select 
+                    value={classLevel} 
+                    onChange={e => setClassLevel(e.target.value)}
+                    className="w-full appearance-none bg-surface border border-outline-variant rounded-lg px-4 py-3 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base"
+                  >
+                    <option disabled value="">Chọn lớp</option>
                     <optgroup label="Tiểu học">
                       <option>Lớp 1</option><option>Lớp 2</option><option>Lớp 3</option><option>Lớp 4</option><option>Lớp 5</option>
                     </optgroup>
@@ -102,7 +136,12 @@ const CreatePost: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
                 {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'].map(day => (
                   <label key={day} className="flex flex-col items-center gap-2 cursor-pointer group">
-                    <input className="peer hidden" type="checkbox" />
+                    <input 
+                      className="peer hidden" 
+                      type="checkbox" 
+                      checked={selectedDays.includes(day)}
+                      onChange={() => toggleDay(day)}
+                    />
                     <div className="w-full py-3 px-1 text-center rounded-lg border border-outline-variant bg-surface group-hover:bg-surface-container transition-all peer-checked:bg-primary-fixed peer-checked:border-primary peer-checked:text-on-primary-fixed">
                       <span className="font-medium text-xs">{day}</span>
                     </div>
@@ -144,7 +183,11 @@ const CreatePost: React.FC = () => {
                 <div className="space-y-2">
                   <label className="font-semibold text-sm text-on-surface block">Thành phố</label>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-surface border border-outline-variant rounded-lg px-4 py-3 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base">
+                    <select 
+                      value={city}
+                      onChange={e => setCity(e.target.value)}
+                      className="w-full appearance-none bg-surface border border-outline-variant rounded-lg px-4 py-3 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base"
+                    >
                       <option>Hà Nội</option>
                       <option>TP. Hồ Chí Minh</option>
                       <option>Đà Nẵng</option>
@@ -154,7 +197,13 @@ const CreatePost: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="font-semibold text-sm text-on-surface block">Địa chỉ chi tiết</label>
-                  <input className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base" placeholder="Số nhà, tên đường..." type="text" />
+                  <input 
+                    value={detailedAddress}
+                    onChange={e => setDetailedAddress(e.target.value)}
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal text-base" 
+                    placeholder="Số nhà, tên đường..." 
+                    type="text" 
+                  />
                 </div>
               </div>
             )}

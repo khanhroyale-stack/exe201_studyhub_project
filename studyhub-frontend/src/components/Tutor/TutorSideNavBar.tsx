@@ -24,12 +24,7 @@ const navGroups = [
   {
     label: 'Việc làm',
     items: [
-      {
-        to: '/tutor/search-classes',
-        icon: 'search',
-        label: 'Tìm lớp',
-        sublabel: 'Gồm lời mời & đã ứng tuyển',
-      },
+
       {
         to: '/tutor/classes',
         icon: 'school',

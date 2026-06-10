@@ -1,8 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CURRENT_TUTOR, MOCK_TUTOR_APPLICATIONS, MOCK_TUTOR_SCHEDULE, MOCK_TUTOR_REVIEWS } from '../../constants/mockTutorData';
+import { useAuth } from '../../context/AuthContext';
+import { CURRENT_TUTOR, MOCK_TUTOR_SCHEDULE, MOCK_TUTOR_REVIEWS } from '../../constants/mockTutorData';
+
+interface EnrollmentDto {
+  id: number;
+  courseId: number;
+  courseTitle: string;
+  tutorName: string;
+  parentName: string;
+  studentName: string;
+  studentGrade: string;
+  studentLevel: string;
+  notes: string;
+  status: string;
+}
 
 const TutorDashboard: React.FC = () => {
+  const { tutorId } = useAuth();
+  const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
+
+  const fetchEnrollments = () => {
+    if (!tutorId) return;
+    fetch(`http://localhost:8080/api/enrollments/tutor/${tutorId}`)
+      .then(res => res.json())
+      .then(data => setEnrollments(Array.isArray(data) ? data.filter((e: EnrollmentDto) => e.status === 'PENDING') : []))
+      .catch(err => console.error(err));
+  };
+
+  useEffect(() => { fetchEnrollments(); }, [tutorId]);
+
+  const handleApprove = async (id: number) => {
+    await fetch(`http://localhost:8080/api/enrollments/${id}/approve`, { method: 'PUT' });
+    fetchEnrollments();
+  };
+
+  const handleReject = async (id: number) => {
+    await fetch(`http://localhost:8080/api/enrollments/${id}/reject`, { method: 'PUT' });
+    fetchEnrollments();
+  };
   return (
     <div className="flex flex-col gap-8 animate-fade-in">
       {/* Header */}
@@ -56,27 +92,32 @@ const TutorDashboard: React.FC = () => {
         {/* Left Column: Applications and Schedule */}
         <div className="lg:col-span-2 flex flex-col gap-8 animate-slide-up stagger-2">
           
-          {/* Applications */}
+          {/* Enrollment Requests */}
           <section className="glass border border-white/20 rounded-3xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-semibold text-xl text-on-surface">Hồ sơ chờ bạn duyệt</h2>
-              <Link to="/tutor/classes" className="text-primary text-sm font-semibold hover:underline">Xem tất cả</Link>
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold text-xl text-on-surface">Yêu cầu đăng ký lớp</h2>
+                {enrollments.length > 0 && (
+                  <span className="px-2 py-0.5 bg-error text-white text-xs font-bold rounded-full">{enrollments.length}</span>
+                )}
+              </div>
             </div>
             <div className="flex flex-col gap-4">
-              {MOCK_TUTOR_APPLICATIONS.map((app, index) => (
-                <div key={app.id} className="flex items-center justify-between p-4 glass border border-white/30 rounded-2xl hover:shadow-md hover:-translate-y-1 transition-all animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${app.colorClass}`}>
-                      {app.initial}
+              {enrollments.length === 0 ? (
+                <p className="text-on-surface-variant text-sm text-center py-4">Không có yêu cầu nào đang chờ duyệt.</p>
+              ) : enrollments.map((enroll, index) => (
+                <div key={enroll.id} className="p-4 glass border border-white/30 rounded-2xl hover:shadow-md hover:-translate-y-1 transition-all animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-grow">
+                      <p className="font-semibold text-on-surface text-sm">{enroll.studentName} <span className="text-on-surface-variant font-normal">({enroll.studentGrade || 'N/A'})</span></p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">Lớp: <span className="font-medium text-on-surface">{enroll.courseTitle}</span></p>
+                      {enroll.studentLevel && <p className="text-xs text-on-surface-variant">Lực học: {enroll.studentLevel}</p>}
+                      {enroll.notes && <p className="text-xs text-on-surface-variant mt-1 italic">"{enroll.notes}"</p>}
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-on-surface">{app.studentName}</h3>
-                      <p className="text-sm text-on-surface-variant">{app.detail}</p>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <button onClick={() => handleApprove(enroll.id)} className="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary-container transition-colors">Chấp nhận</button>
+                      <button onClick={() => handleReject(enroll.id)} className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-xs font-semibold hover:bg-surface-container transition-colors">Từ chối</button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold hover:bg-primary-container transition-colors">Nhận lớp</button>
-                    <button className="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-semibold hover:bg-surface-container transition-colors">Từ chối</button>
                   </div>
                 </div>
               ))}

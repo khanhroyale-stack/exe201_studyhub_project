@@ -55,6 +55,10 @@ const Navbar: React.FC = () => {
     { to: '/tutors', label: 'Gia sư', icon: 'person_search' },
   ];
 
+  if (role === 'tutor') {
+    navLinks.push({ to: '/tutor/search-classes', label: 'Tìm lớp', icon: 'search' });
+  }
+
   const userAvatar = avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=random`;
 
   return (

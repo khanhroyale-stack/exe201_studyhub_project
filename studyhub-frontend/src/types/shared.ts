@@ -31,10 +31,12 @@ export interface UnifiedPost {
   parentAvatar: string;
   title: string;
   subject: string;
+  classLevel?: string;
   description: string;
   postedAt: string;
   status: PostStatus;
   location: string;
+  detailedAddress?: string;
   schedule: string;
   pricePerSession: number;
   learningMode: 'ONLINE' | 'OFFLINE';

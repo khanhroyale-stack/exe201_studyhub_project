@@ -8,6 +8,7 @@ export interface ClassDto {
   tutorName: string;
   tutorDesc: string;
   tutorAvatar: string;
+  tutorAddress?: string;
   price: string; // e.g. '350.000đ/ca'
   image: string;
   description?: string;
@@ -15,6 +16,8 @@ export interface ClassDto {
   requirements?: string[];
   tutorExperience?: string;
   tutorVerified?: boolean;
+  tutorUniversity?: string;
+  tutorMajor?: string;
   duration?: string; // e.g. '120 phút'
   sessionTime?: string; // e.g. '18:30 - 20:30'
   totalSessions?: string; // e.g. '24 ca'

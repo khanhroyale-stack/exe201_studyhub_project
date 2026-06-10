@@ -17,4 +17,5 @@ public class AuthResponseDTO {
     private String name;
     private String avatar;
     private Long tutorId;
+    private Long userId;
 }

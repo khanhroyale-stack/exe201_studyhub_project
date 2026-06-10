@@ -18,6 +18,8 @@ public class JobPosting {
 
     private String title;
     private String subject;
+    private String classLevel;
+    
     
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -28,6 +30,7 @@ public class JobPosting {
     private String status; // RECRUITING, CLOSED, PRIORITY
     
     private String location;
+    private String detailedAddress;
     private String schedule;
     
     @Column(length = 20)

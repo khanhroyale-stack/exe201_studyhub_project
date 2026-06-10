@@ -43,7 +43,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
-        return new AuthResponseDTO(token, user.getRole(), user.getEmail(), user.getFullName(), user.getAvatarUrl(), tutorId);
+        return new AuthResponseDTO(token, user.getRole(), user.getEmail(), user.getFullName(), user.getAvatarUrl(), tutorId, user.getId());
     }
 
     public AuthResponseDTO register(RegisterDTO request) {
@@ -78,6 +78,6 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
-        return new AuthResponseDTO(token, user.getRole(), user.getEmail(), user.getFullName(), user.getAvatarUrl(), tutorId);
+        return new AuthResponseDTO(token, user.getRole(), user.getEmail(), user.getFullName(), user.getAvatarUrl(), tutorId, user.getId());
     }
 }

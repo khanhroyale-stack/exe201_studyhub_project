@@ -25,6 +25,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final TestimonialRepository testimonialRepository;
     private final com.management.studyhub.repository.SubjectRepository subjectRepository;
     private final UserRepository userRepository;
+    private final com.management.studyhub.repository.ParentRepository parentRepository;
+    private final com.management.studyhub.repository.JobPostingRepository jobPostingRepository;
     private final PasswordEncoder passwordEncoder;
     private final com.management.studyhub.repository.ClassSessionRepository classSessionRepository;
 
@@ -44,6 +46,48 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (classSessionRepository.count() == 0) {
             seedClassSessions();
         }
+        if (jobPostingRepository.count() == 0) {
+            seedJobPostings();
+        }
+    }
+
+    private void seedJobPostings() {
+        com.management.studyhub.entity.Parent parent = parentRepository.findById(1L).orElse(null);
+        if (parent == null) return;
+
+        com.management.studyhub.entity.JobPosting jp1 = new com.management.studyhub.entity.JobPosting();
+        jp1.setParent(parent);
+        jp1.setTitle("Tìm gia sư Tiếng Anh - Lớp 10");
+        jp1.setSubject("Tiếng Anh");
+        jp1.setClassLevel("Lớp 10");
+        jp1.setDescription("Cần tìm sinh viên sư phạm Anh hoặc ngoại ngữ, phát âm chuẩn, có kinh nghiệm dạy học sinh mất gốc.");
+        jp1.setPostedAt(java.time.LocalDateTime.now().minusDays(1));
+        jp1.setStatus("RECRUITING");
+        jp1.setLocation("Hà Nội");
+        jp1.setDetailedAddress("Số 12, Ngõ 34, Cầu Giấy");
+        jp1.setSchedule("Thứ 3, Thứ 5");
+        jp1.setPricePerSession(250000.0);
+        jp1.setLearningMode("OFFLINE");
+        jp1.setRequirement("Gia sư nữ");
+        jp1.setApplicantsCount(2);
+        jobPostingRepository.save(jp1);
+
+        com.management.studyhub.entity.JobPosting jp2 = new com.management.studyhub.entity.JobPosting();
+        jp2.setParent(parent);
+        jp2.setTitle("Tìm gia sư Toán học - Lớp 12");
+        jp2.setSubject("Toán học");
+        jp2.setClassLevel("Lớp 12");
+        jp2.setDescription("Học sinh khá, cần ôn thi đại học mục tiêu 8+.");
+        jp2.setPostedAt(java.time.LocalDateTime.now().minusHours(5));
+        jp2.setStatus("RECRUITING");
+        jp2.setLocation("Học Online");
+        jp2.setDetailedAddress("");
+        jp2.setSchedule("Thứ 2, Thứ 4, Thứ 6");
+        jp2.setPricePerSession(200000.0);
+        jp2.setLearningMode("ONLINE");
+        jp2.setRequirement("Không");
+        jp2.setApplicantsCount(5);
+        jobPostingRepository.save(jp2);
     }
 
     private void seedClassSessions() {
@@ -142,7 +186,20 @@ public class DatabaseSeeder implements CommandLineRunner {
             createUser("admin@gmail.com", UserRole.ADMIN, "Admin System", null);
         }
         if (!userRepository.existsByEmail("parent@gmail.com")) {
-            createUser("parent@gmail.com", UserRole.PARENT, "Phụ huynh Học sinh", null);
+            createUser("parent@gmail.com", UserRole.PARENT, "Phụ huynh Học sinh", "https://ui-avatars.com/api/?name=Phu+huynh&background=random");
+        }
+        
+        if (parentRepository.count() == 0) {
+            User parentUser = userRepository.findByEmail("parent@gmail.com").orElse(null);
+            if (parentUser != null) {
+                com.management.studyhub.entity.Parent parent = new com.management.studyhub.entity.Parent();
+                parent.setUser(parentUser);
+                parent.setName(parentUser.getFullName());
+                parent.setEmail(parentUser.getEmail());
+                parent.setPhone("0901234567");
+                parent.setAvatar(parentUser.getAvatarUrl());
+                parentRepository.save(parent);
+            }
         }
 
         List<com.management.studyhub.entity.Subject> subjects = subjectRepository.findAll();

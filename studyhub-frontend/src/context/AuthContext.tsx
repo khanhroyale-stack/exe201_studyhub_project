@@ -8,7 +8,9 @@ interface AuthContextType {
   name: string | null;
   email: string | null;
   avatar: string | null;
-  login: (token: string, role: Role, name: string | null, email: string | null, avatar: string | null) => void;
+  tutorId: number | null;
+  userId: number | null;
+  login: (token: string, role: Role, name: string | null, email: string | null, avatar: string | null, tutorId: number | null, userId: number | null) => void;
   logout: () => void;
   updateProfile: (name: string | null, avatar: string | null) => void;
 }
@@ -32,19 +34,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [avatar, setAvatar] = useState<string | null>(() => {
     return localStorage.getItem('sh_avatar') || null;
   });
+  const [tutorId, setTutorId] = useState<number | null>(() => {
+    const val = localStorage.getItem('sh_tutorId');
+    return val ? parseInt(val) : null;
+  });
+  const [userId, setUserId] = useState<number | null>(() => {
+    const val = localStorage.getItem('sh_userId');
+    return val ? parseInt(val) : null;
+  });
 
-  const login = useCallback((token: string, userRole: Role, userName: string | null, userEmail: string | null, userAvatar: string | null) => {
+  const login = useCallback((token: string, userRole: Role, userName: string | null, userEmail: string | null, userAvatar: string | null, tId: number | null, uId: number | null) => {
     setIsLoggedIn(true);
     setRole(userRole);
     setName(userName);
     setEmail(userEmail);
     setAvatar(userAvatar);
+    setTutorId(tId);
+    setUserId(uId);
     localStorage.setItem('sh_logged_in', 'true');
     localStorage.setItem('sh_role', userRole ?? '');
     localStorage.setItem('sh_token', token);
     if (userName) localStorage.setItem('sh_name', userName);
     if (userEmail) localStorage.setItem('sh_email', userEmail);
     if (userAvatar) localStorage.setItem('sh_avatar', userAvatar);
+    if (tId) localStorage.setItem('sh_tutorId', tId.toString());
+    if (uId) localStorage.setItem('sh_userId', uId.toString());
   }, []);
 
   const updateProfile = useCallback((newName: string | null, newAvatar: string | null) => {
@@ -64,16 +78,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setName(null);
     setEmail(null);
     setAvatar(null);
+    setTutorId(null);
+    setUserId(null);
     localStorage.removeItem('sh_logged_in');
     localStorage.removeItem('sh_role');
     localStorage.removeItem('sh_token');
     localStorage.removeItem('sh_name');
     localStorage.removeItem('sh_email');
     localStorage.removeItem('sh_avatar');
+    localStorage.removeItem('sh_tutorId');
+    localStorage.removeItem('sh_userId');
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, role, name, email, avatar, login, logout, updateProfile }}>
+    <AuthContext.Provider value={{ isLoggedIn, role, name, email, avatar, tutorId, userId, login, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

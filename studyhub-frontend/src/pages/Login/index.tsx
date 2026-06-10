@@ -32,11 +32,13 @@ const Login: React.FC = () => {
     try {
       const response = await authApi.login({ email, password });
       login(
-        response.token, 
-        response.role.toLowerCase() as 'admin' | 'parent' | 'tutor', 
-        response.name || null, 
-        response.email || null, 
-        response.avatar || null
+        response.token,
+        response.role.toLowerCase() as any,
+        response.name || 'Người dùng',
+        response.email,
+        response.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        response.tutorId || null,
+        response.userId || null
       );
       if (response.tutorId) {
         localStorage.setItem('sh_tutor_id', response.tutorId.toString());

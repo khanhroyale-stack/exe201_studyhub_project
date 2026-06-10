@@ -12,6 +12,7 @@ public class CourseDto {
     private String price;
     private String image;
     private String schedule;
+    private String status;
     
     // Convert to String for frontend compatibility
     private String rating; 
@@ -21,6 +22,11 @@ public class CourseDto {
     private String tutorName;
     private String tutorDesc;
     private String tutorAvatar;
+    private String tutorAddress;
+    private String tutorExperience;
+    private Boolean tutorVerified;
+    private String tutorUniversity;
+    private String tutorMajor;
 
     // Subject info
     private Integer subjectId;

@@ -21,6 +21,9 @@ public class Course {
     private String price;
     private String image;
     private String schedule;
+    
+    // Status can be: PENDING_APPROVAL, ACTIVE, REJECTED
+    private String status;
 
     private Double rating;
     private Integer reviewCount;

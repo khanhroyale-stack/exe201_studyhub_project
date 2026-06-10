@@ -28,7 +28,9 @@ const ClassList: React.FC = () => {
     if (selectedSubjectIds.length > 0) {
       queryParams.append('subjectIds', selectedSubjectIds.join(','));
     }
-    queryParams.append('maxPrice', maxPrice.toString());
+    if (maxPrice < 1000000) {
+      queryParams.append('maxPrice', maxPrice.toString());
+    }
     if (teachingMethod !== 'ALL') {
       queryParams.append('teachingMethod', teachingMethod);
     }
@@ -58,6 +60,9 @@ const ClassList: React.FC = () => {
            });
         } else if (sortBy === 'rating') {
            sortedData.sort((a, b) => parseFloat(b.rating || '0') - parseFloat(a.rating || '0'));
+        } else if (sortBy === 'newest') {
+           // Database returns by ID asc, so reverse it to get newest first
+           sortedData.reverse();
         }
         setClasses(sortedData);
       })
@@ -288,9 +293,16 @@ const ClassList: React.FC = () => {
                   {/* Tutor row */}
                   <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-4 border border-slate-100">
                     <img alt="Tutor" className="w-8 h-8 rounded-full object-cover ring-2 ring-white" src={cls.tutorAvatar} />
-                    <div>
-                      <p className="text-xs font-bold text-[#0f172a]">{cls.tutorName}</p>
-                      <p className="text-xs text-slate-400">{cls.tutorDesc}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-[#0f172a] truncate">{cls.tutorName}</p>
+                      {cls.tutorAddress ? (
+                        <p className="text-[10px] text-slate-500 truncate flex items-center gap-0.5 mt-0.5">
+                          <span className="material-symbols-outlined text-[12px]">location_on</span>
+                          {cls.tutorAddress}
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-slate-500 truncate mt-0.5">{cls.tutorDesc}</p>
+                      )}
                     </div>
                   </div>
 

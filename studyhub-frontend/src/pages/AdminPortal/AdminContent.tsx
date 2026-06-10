@@ -1,32 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus } from '../../types/shared';
+import { UnifiedPost } from '../../types/shared';
 
 const AdminContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'master-data' | 'moderation' | 'disputes' | 'financial'>('moderation');
   const [pendingPosts, setPendingPosts] = useState<UnifiedPost[]>([]);
+  const [pendingCourses, setPendingCourses] = useState<any[]>([]);
 
   useEffect(() => {
     loadPendingPosts();
+    loadPendingCourses();
   }, [activeTab]);
 
-  const loadPendingPosts = () => {
-    const allPosts = mockDb.getPosts();
-    setPendingPosts(allPosts.filter(p => p.status === PostStatus.PENDING_APPROVAL));
+  const loadPendingPosts = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/posts/admin/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setPendingPosts(data);
+      }
+    } catch (error) {
+      console.error('Error fetching pending posts:', error);
+    }
   };
 
-  const handleApprove = (postId: string) => {
-    const allPosts = mockDb.getPosts();
-    const updated = allPosts.map(p => p.id === postId ? { ...p, status: PostStatus.RECRUITING } : p);
-    mockDb.savePosts(updated);
-    loadPendingPosts();
+  const loadPendingCourses = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/courses/admin/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setPendingCourses(data);
+      }
+    } catch (error) {
+      console.error('Error fetching pending courses:', error);
+    }
   };
 
-  const handleReject = (postId: string) => {
-    const allPosts = mockDb.getPosts();
-    const updated = allPosts.map(p => p.id === postId ? { ...p, status: PostStatus.CLOSED } : p);
-    mockDb.savePosts(updated);
-    loadPendingPosts();
+  const handleApprove = async (postId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/posts/admin/${postId}/approve`, {
+        method: 'PUT'
+      });
+      if (response.ok) {
+        loadPendingPosts();
+      } else {
+        alert('Có lỗi xảy ra khi duyệt bài.');
+      }
+    } catch (error) {
+      console.error('Error approving post:', error);
+    }
+  };
+
+  const handleReject = async (postId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/posts/admin/${postId}/reject`, {
+        method: 'PUT'
+      });
+      if (response.ok) {
+        loadPendingPosts();
+      } else {
+        alert('Có lỗi xảy ra khi từ chối bài.');
+      }
+    } catch (error) {
+      console.error('Error rejecting post:', error);
+    }
+  };
+
+  const handleApproveCourse = async (courseId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/courses/admin/${courseId}/approve`, { method: 'PUT' });
+      if (response.ok) loadPendingCourses();
+      else alert('Có lỗi xảy ra khi duyệt khoá học.');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRejectCourse = async (courseId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/courses/admin/${courseId}/reject`, { method: 'PUT' });
+      if (response.ok) loadPendingCourses();
+      else alert('Có lỗi xảy ra khi từ chối khoá học.');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -92,9 +148,11 @@ const AdminContent: React.FC = () => {
 
       {/* TAB CONTENT: Content Moderation */}
       {activeTab === 'moderation' && (
-        <div className="flex flex-col gap-6 animate-slide-up stagger-1">
-          <div className="flex justify-between items-center">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Bài đăng chờ duyệt ({pendingPosts.length})</h2>
+        <div className="flex flex-col gap-10 animate-slide-up stagger-1">
+          {/* PARENT POSTS */}
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="font-headline-md text-headline-md text-on-surface">Bài đăng Phụ huynh chờ duyệt ({pendingPosts.length})</h2>
             <div className="flex gap-2">
               <select className="glass border border-white/20 rounded-xl px-3 py-2 font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
                 <option>Sắp xếp: Mới nhất</option>
@@ -126,6 +184,39 @@ const AdminContent: React.FC = () => {
               ))}
             </div>
           )}
+          </div>
+
+          {/* TUTOR COURSES */}
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="font-headline-md text-headline-md text-on-surface">Lớp học Gia sư chờ duyệt ({pendingCourses.length})</h2>
+            </div>
+            
+            {pendingCourses.length === 0 ? (
+              <div className="text-center py-12 text-on-surface-variant">Không có lớp học nào cần duyệt.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {pendingCourses.map(course => (
+                  <div key={course.id} className="glass border border-white/20 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all duration-300 relative group hover:-translate-y-1">
+                    <div>
+                      <h4 className="font-headline-sm text-headline-sm text-on-surface">{course.title}</h4>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Gia sư: {course.tutorName}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="bg-primary-container/10 text-primary px-2 py-1 rounded font-label-sm text-label-sm">{course.subjectName}</span>
+                      <span className="bg-surface-container-high text-on-surface px-2 py-1 rounded font-label-sm text-label-sm">{course.locationType}</span>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-on-surface line-clamp-3">{course.description}</p>
+                    <p className="font-label-md text-label-md text-primary mt-2">{course.price}đ / ca</p>
+                    <div className="mt-auto pt-4 border-t border-outline-variant flex gap-3">
+                      <button onClick={() => handleRejectCourse(course.id)} className="flex-1 bg-surface-container-lowest text-error hover:bg-error-container/20 font-label-md text-label-md py-2 rounded-lg transition-colors border border-error/50">Từ chối</button>
+                      <button onClick={() => handleApproveCourse(course.id)} className="flex-1 bg-primary text-on-primary hover:bg-primary/90 font-label-md text-label-md py-2 rounded-lg transition-colors">Duyệt khóa học</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

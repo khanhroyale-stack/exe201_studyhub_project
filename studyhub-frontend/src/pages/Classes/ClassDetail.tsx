@@ -1,16 +1,77 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_CLASSES } from '../../constants/mockData';
+import { ClassDto } from '../../types/class';
 
 const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isLoggedIn, role } = useAuth();
-  const classId = id ? parseInt(id, 10) : 1;
+  const { isLoggedIn, role, userId } = useAuth();
+  const [currentClass, setCurrentClass] = useState<ClassDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Registration Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [registerForm, setRegisterForm] = useState({
+    studentName: '',
+    studentGrade: '',
+    studentLevel: '',
+    notes: ''
+  });
 
-  // Find class details based on ID, fallback to the first mock class if not found
-  const currentClass = MOCK_CLASSES.find(c => c.id === classId) || MOCK_CLASSES[0];
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId) {
+      alert('Không tìm thấy thông tin phụ huynh. Vui lòng đăng nhập lại.');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/enrollments?parentId=${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId: id,
+          ...registerForm
+        })
+      });
+      
+      if (response.ok) {
+        alert('Đăng ký lớp học thành công! Yêu cầu của bạn đang chờ Gia sư duyệt.');
+        setIsModalOpen(false);
+        navigate('/parent/classes');
+      } else {
+        alert('Có lỗi xảy ra, vui lòng thử lại.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra khi kết nối máy chủ.');
+    }
+  };
+
+  useEffect(() => {
+    fetch(`http://localhost:8080/api/courses/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then(data => {
+        setCurrentClass(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Đang tải...</div>;
+  }
+
+  if (!currentClass) {
+    return <div className="min-h-screen flex items-center justify-center">Không tìm thấy lớp học.</div>;
+  }
 
   return (
     <div className="bg-background text-on-surface">
@@ -29,8 +90,12 @@ const ClassDetail: React.FC = () => {
           <div className="lg:col-span-8 space-y-8">
             {/* Hero Section Card */}
             <section className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
-              <div className="relative h-[320px] w-full">
-                <img className="w-full h-full object-cover" src={currentClass.image} alt={currentClass.title} />
+              <div className="relative h-[320px] w-full bg-slate-100 flex items-center justify-center">
+                {currentClass.image ? (
+                  <img className="w-full h-full object-cover" src={currentClass.image} alt={currentClass.title} />
+                ) : (
+                  <span className="material-symbols-outlined text-6xl text-slate-300">school</span>
+                )}
               </div>
               <div className="p-8">
                 <h1 className="font-headline-lg text-headline-lg text-on-surface mb-4">{currentClass.title}</h1>
@@ -87,7 +152,7 @@ const ClassDetail: React.FC = () => {
                     </div>
                     <button className="px-4 py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary-container/10 transition-colors">Xem hồ sơ</button>
                   </div>
-                  <div className="flex gap-4 mb-4">
+                  <div className="flex gap-4 mb-4 flex-wrap">
                     {currentClass.tutorVerified && (
                       <div className="bg-surface-container-low px-3 py-1 rounded-lg flex items-center gap-1">
                         <span className="material-symbols-outlined text-[16px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
@@ -96,11 +161,23 @@ const ClassDetail: React.FC = () => {
                     )}
                     <div className="bg-surface-container-low px-3 py-1 rounded-lg flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px]">history</span>
-                      <span className="font-label-sm text-label-sm">{currentClass.tutorExperience || '8 năm kinh nghiệm'}</span>
+                      <span className="font-label-sm text-label-sm">{currentClass.tutorExperience || 'Chưa cập nhật'}</span>
                     </div>
+                    {currentClass.tutorUniversity && (
+                      <div className="bg-surface-container-low px-3 py-1 rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">school</span>
+                        <span className="font-label-sm text-label-sm">{currentClass.tutorUniversity}</span>
+                      </div>
+                    )}
+                    {currentClass.tutorMajor && (
+                      <div className="bg-surface-container-low px-3 py-1 rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                        <span className="font-label-sm text-label-sm">{currentClass.tutorMajor}</span>
+                      </div>
+                    )}
                   </div>
                   <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                    Với {currentClass.tutorExperience || 'nhiều năm kinh nghiệm'} trong giảng dạy, {currentClass.tutorName} có phương pháp sư phạm hiện đại, giúp học sinh nắm vững cốt lõi bài học, khơi dậy niềm say mê và tăng điểm số đáng kể.
+                    {currentClass.tutorDesc}
                   </p>
                 </div>
               </div>
@@ -151,8 +228,7 @@ const ClassDetail: React.FC = () => {
                   alert('Vui lòng đăng nhập để đăng ký lớp học này!');
                   navigate('/login');
                 } else if (role === 'parent') {
-                  alert('Đăng ký lớp học thành công! Chuyển hướng đến Quản lý lớp học...');
-                  navigate('/parent/classes');
+                  setIsModalOpen(true);
                 } else {
                   alert('Tính năng này dành cho phụ huynh. Gia sư vui lòng sử dụng tính năng Ứng tuyển.');
                 }
@@ -183,6 +259,50 @@ const ClassDetail: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Registration Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-surface w-full max-w-md rounded-2xl p-6 shadow-xl">
+            <h3 className="font-headline-sm text-headline-sm text-on-surface mb-4">Đăng ký vào lớp</h3>
+            <p className="text-body-md text-on-surface-variant mb-6">
+              Vui lòng cung cấp một số thông tin cơ bản về học sinh để gia sư tiện nắm bắt và xếp lớp.
+            </p>
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div>
+                <label className="block text-label-md font-medium text-on-surface mb-1">Họ tên học sinh <span className="text-red-500">*</span></label>
+                <input required type="text" className="w-full px-4 py-3 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Ví dụ: Nguyễn Văn A" value={registerForm.studentName} onChange={e => setRegisterForm({...registerForm, studentName: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-label-md font-medium text-on-surface mb-1">Học sinh lớp <span className="text-red-500">*</span></label>
+                  <input required type="text" className="w-full px-4 py-3 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Ví dụ: Lớp 10" value={registerForm.studentGrade} onChange={e => setRegisterForm({...registerForm, studentGrade: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-label-md font-medium text-on-surface mb-1">Lực học hiện tại</label>
+                  <select className="w-full px-4 py-3 border border-outline-variant rounded-lg focus:outline-none focus:border-primary bg-surface" value={registerForm.studentLevel} onChange={e => setRegisterForm({...registerForm, studentLevel: e.target.value})}>
+                    <option value="">Chọn lực học</option>
+                    <option value="Yếu/Kém">Yếu/Kém</option>
+                    <option value="Trung bình">Trung bình</option>
+                    <option value="Khá">Khá</option>
+                    <option value="Giỏi">Giỏi</option>
+                    <option value="Mất gốc">Mất gốc</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-label-md font-medium text-on-surface mb-1">Lời nhắn cho Gia sư</label>
+                <textarea rows={3} className="w-full px-4 py-3 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" placeholder="Ví dụ: Mong muốn giáo viên nghiêm khắc..." value={registerForm.notes} onChange={e => setRegisterForm({...registerForm, notes: e.target.value})}></textarea>
+              </div>
+              
+              <div className="flex gap-4 pt-4">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 border border-outline text-on-surface rounded-xl hover:bg-surface-variant font-label-md">Hủy bỏ</button>
+                <button type="submit" className="flex-1 py-3 bg-primary text-on-primary rounded-xl hover:bg-primary-container font-label-md">Gửi yêu cầu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

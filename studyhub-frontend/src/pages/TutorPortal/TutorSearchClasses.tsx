@@ -6,10 +6,23 @@ import { UnifiedPost, PostStatus } from '../../types/shared';
 const TutorSearchClasses: React.FC = () => {
   const [posts, setPosts] = useState<UnifiedPost[]>([]);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    // Only show posts that have been approved and are recruiting
-    setPosts(allPosts.filter(p => p.status === PostStatus.RECRUITING));
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/posts');
+        if (response.ok) {
+          const data = await response.json();
+          setPosts(data);
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
   }, []);
 
   return (
@@ -91,7 +104,11 @@ const TutorSearchClasses: React.FC = () => {
         </div>
         {/* Class List Grid */}
         <div className="flex-1 w-full grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up stagger-2">
-          {posts.length === 0 ? (
+          {loading ? (
+            <div className="col-span-1 xl:col-span-2 text-center py-10 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant">
+              Đang tải danh sách lớp học...
+            </div>
+          ) : posts.length === 0 ? (
             <div className="col-span-1 xl:col-span-2 text-center py-10 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant">
               Hiện tại không có lớp học nào đang tuyển gia sư.
             </div>
@@ -110,7 +127,9 @@ const TutorSearchClasses: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <span className="material-symbols-outlined text-outline text-[20px] mt-0.5">{post.learningMode === 'ONLINE' ? 'laptop_mac' : 'location_on'}</span>
                   <div>
-                    <p className="text-body-sm font-medium text-on-surface">{post.location}</p>
+                    <p className="text-body-sm font-medium text-on-surface">
+                      {post.learningMode === 'ONLINE' ? 'Học Online' : (post.detailedAddress ? `${post.detailedAddress}, ${post.location}` : post.location)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mb-2">

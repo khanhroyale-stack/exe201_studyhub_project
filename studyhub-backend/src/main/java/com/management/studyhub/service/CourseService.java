@@ -7,4 +7,11 @@ import java.util.List;
 public interface CourseService {
     List<CourseDto> getFeaturedCourses();
     List<CourseDto> getAllCourses(List<Integer> subjectIds, Double maxPrice, String teachingMethod, List<String> grades, String keyword);
+    
+    // Tutor Course Posting Workflow
+    CourseDto createCourse(Long tutorId, CourseDto courseDto);
+    List<CourseDto> getPendingCourses();
+    CourseDto approveCourse(Long id);
+    CourseDto rejectCourse(Long id);
+    CourseDto getCourseById(Long id);
 }

@@ -12,6 +12,7 @@ export interface AuthResponse {
   name?: string;
   avatar?: string;
   tutorId?: number;
+  userId?: number;
 }
 
 export interface RegisterRequest {

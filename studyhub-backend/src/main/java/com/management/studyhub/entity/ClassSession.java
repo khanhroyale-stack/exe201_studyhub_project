@@ -30,6 +30,8 @@ public class ClassSession {
     
     private String schedule;
     
+    private Double pricePerSession;
+    
     @Column(length = 20)
     private String status; // IN_PROGRESS, COMPLETED, CANCELLED
     

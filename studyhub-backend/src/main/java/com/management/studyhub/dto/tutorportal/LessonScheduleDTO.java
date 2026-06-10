@@ -1,7 +1,7 @@
 package com.management.studyhub.dto.tutorportal;
 
 import lombok.Data;
-import lombok.Data;
+
 
 @Data
 public class LessonScheduleDTO {

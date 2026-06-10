@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ClassSessionRepository extends JpaRepository<ClassSession, Long> {
     List<ClassSession> findByTutorName(String tutorName);
+    List<ClassSession> findByParent(com.management.studyhub.entity.Parent parent);
 }

@@ -31,6 +31,7 @@ public class ClassSession {
 
     // Denormalized for easy display
     private String tutorName;
+    @Column(columnDefinition = "LONGTEXT")
     private String tutorAvatar;
     private String parentName;
 

@@ -78,7 +78,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedJobPostings() {
-        User parent = userRepository.findByEmail("parent@gmail.com").orElse(null);
+        User parentUser = userRepository.findByEmail("parent@gmail.com").orElse(null);
+        com.management.studyhub.entity.Parent parent = parentUser != null ? parentRepository.findByUserId(parentUser.getId()).orElse(null) : null;
         if (parent != null) {
             com.management.studyhub.entity.JobPosting jp = new com.management.studyhub.entity.JobPosting();
             jp.setParent(parent);
@@ -89,10 +90,10 @@ public class DatabaseSeeder implements CommandLineRunner {
             jp.setLocation("Hà Nội");
             jp.setDetailedAddress("Đống Đa, Hà Nội");
             jp.setSchedule("Tối T3, T5, T7");
-            jp.setPricePerSession(new java.math.BigDecimal("250000"));
+            jp.setPricePerSession(250000.0);
             jp.setLearningMode("OFFLINE");
             jp.setRequirement("Gia sư nữ, đang là sinh viên Ngoại Thương hoặc Sư Phạm");
-            jp.setStatus(com.management.studyhub.entity.enums.JobPostingStatus.RECRUITING);
+            jp.setStatus("RECRUITING");
             jobPostingRepository.save(jp);
         }
     }
@@ -107,30 +108,36 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (jp != null && tutor2 != null) {
             com.management.studyhub.entity.Applicant applicant = new com.management.studyhub.entity.Applicant();
             applicant.setJobPosting(jp);
-            applicant.setTutor(tutor2.getUser());
+            applicant.setTutorId(tutor2.getUser().getId().toString());
+            applicant.setTutorName(tutor2.getFullName());
+            applicant.setTutorAvatar(tutor2.getAvatarUrl());
             applicant.setMessage("Chào chị, em là sinh viên sư phạm Ngoại ngữ, IELTS 7.5. Em rất tự tin có thể giúp bé đạt mục tiêu IELTS 6.5 ạ.");
-            applicant.setStatus(com.management.studyhub.entity.enums.ApplicationStatus.PENDING);
+            applicant.setStatus("PENDING");
             applicantRepository.save(applicant);
         }
     }
 
     private void seedClassSessions() {
-        User parent = userRepository.findByEmail("parent@gmail.com").orElse(null);
-        User tutor3 = userRepository.findByEmail("tutor3@gmail.com").orElse(null);
+        User parentUser = userRepository.findByEmail("parent@gmail.com").orElse(null);
+        com.management.studyhub.entity.Parent parent = parentUser != null ? parentRepository.findByUserId(parentUser.getId()).orElse(null) : null;
+        User tutor3User = userRepository.findByEmail("tutor3@gmail.com").orElse(null);
+        TutorProfile tutor3 = tutor3User != null ? tutorProfileRepository.findAll().stream().filter(t -> t.getUser().getId().equals(tutor3User.getId())).findFirst().orElse(null) : null;
         
         if (parent != null && tutor3 != null) {
             com.management.studyhub.entity.ClassSession session = new com.management.studyhub.entity.ClassSession();
             session.setParent(parent);
-            session.setTutor(tutor3);
+            session.setTutorProfileId(tutor3.getId());
+            session.setTutorName(tutor3.getFullName());
+            session.setTutorAvatar(tutor3.getAvatarUrl());
             session.setSubject("Tiếng Anh Giao Tiếp");
-            session.setGradeLevel("Người đi làm");
+            session.setClassName("Tiếng Anh Giao Tiếp - Lớp Người đi làm");
             session.setSchedule("Tối Thứ 3, Thứ 5 (20h-21h30)");
-            session.setPricePerSession(new java.math.BigDecimal("400000"));
+            session.setPricePerSession(400000.0);
             session.setLearningMode("ONLINE");
-            session.setStatus(com.management.studyhub.entity.enums.SessionStatus.CONFIRMED);
+            session.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.CONFIRMED);
             
             // Generate mock meet link
-            session.setMeetLink("https://meet.google.com/abc-defg-hij");
+            session.setMeetingLink("https://meet.google.com/abc-defg-hij");
             
             classSessionRepository.save(session);
         }

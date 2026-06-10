@@ -18,6 +18,7 @@ public class Parent {
     private String name;
     private String email;
     private String phone;
+    @Column(columnDefinition = "LONGTEXT")
     private String avatar;
     
     private Double budgetSpentThisMonth;

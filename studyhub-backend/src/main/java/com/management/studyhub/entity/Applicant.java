@@ -18,6 +18,7 @@ public class Applicant {
 
     private String tutorId;
     private String tutorName;
+    @Column(columnDefinition = "LONGTEXT")
     private String tutorAvatar;
     private String tutorTitle;
     

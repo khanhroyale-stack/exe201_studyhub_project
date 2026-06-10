@@ -5,9 +5,10 @@ import com.management.studyhub.entity.ClassSession;
 import com.management.studyhub.entity.DirectBooking;
 import com.management.studyhub.entity.TutorProfile;
 import com.management.studyhub.entity.User;
-import com.management.studyhub.entity.enums.SessionStatus;
+import com.management.studyhub.entity.enums.ClassSessionStatus;
 import com.management.studyhub.repository.ClassSessionRepository;
 import com.management.studyhub.repository.DirectBookingRepository;
+import com.management.studyhub.repository.ParentRepository;
 import com.management.studyhub.repository.TutorProfileRepository;
 import com.management.studyhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class DirectBookingService {
     private final UserRepository userRepository;
     private final TutorProfileRepository tutorProfileRepository;
     private final ClassSessionRepository classSessionRepository;
+    private final ParentRepository parentRepository;
 
     @Transactional
     public DirectBookingDTO createBooking(DirectBookingDTO dto) {
@@ -68,15 +70,17 @@ public class DirectBookingService {
 
         // Tạo Lớp học (Class Session)
         ClassSession classSession = new ClassSession();
-        classSession.setParent(booking.getParent());
-        classSession.setTutor(booking.getTutor().getUser());
+        classSession.setParent(parentRepository.findByUserId(booking.getParent().getId()).orElse(null));
+        classSession.setTutorProfileId(booking.getTutor().getId());
+        classSession.setTutorName(booking.getTutor().getFullName());
+        classSession.setTutorAvatar(booking.getTutor().getAvatarUrl());
         classSession.setSubject(booking.getSubject());
-        classSession.setGradeLevel("Khác"); // Hoặc lấy từ subject
+        classSession.setClassName(booking.getSubject() + " - " + booking.getParent().getFullName());
         classSession.setSchedule(booking.getSchedule());
-        classSession.setPricePerSession(booking.getPricePerSession());
+        classSession.setPricePerSession(booking.getPricePerSession() != null ? booking.getPricePerSession().doubleValue() : 0.0);
         classSession.setLearningMode(booking.getLearningMode() != null ? booking.getLearningMode() : "ONLINE");
         classSession.setAddress(booking.getAddress());
-        classSession.setStatus(SessionStatus.TRIAL); // Bắt đầu học thử
+        classSession.setStatus(ClassSessionStatus.TRIAL); // Bắt đầu học thử
         classSessionRepository.save(classSession);
 
         return mapToDTO(booking);

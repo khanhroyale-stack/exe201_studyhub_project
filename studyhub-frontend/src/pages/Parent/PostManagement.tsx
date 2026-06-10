@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus, ApplicationStatus } from '../../types/shared';
+import api from '../../services/api';
+import { UnifiedPost, PostStatus } from '../../types/shared';
 
 const PostManagement: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'recruiting' | 'completed'>('all');
   const [posts, setPosts] = useState<UnifiedPost[]>([]);
-  const [newApplicantsCount, setNewApplicantsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    setPosts(allPosts);
-
-    const allApps = mockDb.getApplications();
-    const newApps = allApps.filter(a => a.status === ApplicationStatus.PENDING);
-    setNewApplicantsCount(newApps.length);
+    // Tạm hardcode id = 1
+    api.get('/job-postings/parent/1')
+      .then(res => {
+        setPosts(res.data);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
+
+  const filteredPosts = posts.filter(post => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'pending') return post.status === PostStatus.PENDING_APPROVAL;
+    if (activeTab === 'recruiting') return post.status === PostStatus.RECRUITING;
+    if (activeTab === 'completed') return post.status === PostStatus.CLOSED;
+    return true;
+  });
 
   const totalPosts = posts.length;
   const activePosts = posts.filter(p => p.status === PostStatus.RECRUITING).length;
@@ -69,7 +79,7 @@ const PostManagement: React.FC = () => {
           </div>
           <div>
             <p className="font-medium text-xs text-on-surface-variant uppercase">Ứng viên mới</p>
-            <p className="font-bold text-2xl text-on-surface">{newApplicantsCount}</p>
+            <p className="font-bold text-2xl text-on-surface">0</p>
           </div>
         </div>
       </div>
@@ -89,9 +99,12 @@ const PostManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {posts.map((post) => {
-                const appsForPost = mockDb.getApplications().filter(a => a.postId === post.id).length;
-                return (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-on-surface-variant">Đang tải...</td>
+                </tr>
+              ) : (
+                filteredPosts.map((post) => (
                   <tr key={post.id} className={`hover:bg-surface-container transition-colors group ${post.status === PostStatus.CLOSED ? 'opacity-75' : ''}`}>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-sm text-on-surface block">{post.title}</span>
@@ -125,7 +138,7 @@ const PostManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-on-surface">{appsForPost}</span>
+                        <span className="font-semibold text-sm text-on-surface">{post.applicantsCount || 0}</span>
                         <span className="font-normal text-sm text-on-surface-variant">người</span>
                       </div>
                     </td>
@@ -141,8 +154,8 @@ const PostManagement: React.FC = () => {
                       )}
                     </td>
                   </tr>
-                );
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -8,6 +8,12 @@ import com.management.studyhub.repository.CourseRepository;
 import com.management.studyhub.repository.TutorProfileRepository;
 import com.management.studyhub.entity.Testimonial;
 import com.management.studyhub.repository.TestimonialRepository;
+import com.management.studyhub.entity.Parent;
+import com.management.studyhub.entity.JobPosting;
+import com.management.studyhub.entity.ClassSession;
+import com.management.studyhub.repository.ParentRepository;
+import com.management.studyhub.repository.JobPostingRepository;
+import com.management.studyhub.repository.ClassSessionRepository;
 import com.management.studyhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -25,6 +31,9 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final TestimonialRepository testimonialRepository;
     private final com.management.studyhub.repository.SubjectRepository subjectRepository;
     private final UserRepository userRepository;
+    private final ParentRepository parentRepository;
+    private final JobPostingRepository jobPostingRepository;
+    private final ClassSessionRepository classSessionRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -39,6 +48,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         if (testimonialRepository.count() == 0) {
             seedTestimonials();
+        }
+        if (parentRepository.count() == 0) {
+            seedParentsAndPostings();
         }
     }
 
@@ -113,6 +125,46 @@ public class DatabaseSeeder implements CommandLineRunner {
         u.setPassword(passwordEncoder.encode("123456"));
         u.setRole(role);
         return userRepository.save(u);
+    }
+
+    private void seedParentsAndPostings() {
+        User parentUser = userRepository.findByEmail("parent@gmail.com").orElseGet(() -> createUser("parent@gmail.com", UserRole.PARENT));
+        
+        Parent p1 = new Parent();
+        p1.setUser(parentUser);
+        p1.setName("Nguyễn Văn A");
+        p1.setPhone("0987654321");
+        p1.setAvatar("https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random");
+        p1.setAddress("123 Đường XYZ, Quận 1, TP.HCM");
+        p1.setBudgetSpentThisMonth(1500000.0);
+        p1.setClassesWaiting(1);
+        parentRepository.save(p1);
+
+        JobPosting jp = new JobPosting();
+        jp.setParent(p1);
+        jp.setTitle("Tìm gia sư Toán lớp 12");
+        jp.setSubject("Toán học");
+        jp.setDescription("Cần tìm gia sư kinh nghiệm dạy Toán lớp 12 ôn thi đại học.");
+        jp.setPostedAt(java.time.LocalDateTime.now());
+        jp.setStatus("RECRUITING");
+        jp.setLocation("TP.HCM");
+        jp.setSchedule("2 buổi/tuần");
+        jp.setPricePerSession(250000.0);
+        jp.setApplicantsCount(3);
+        jp.setLearningMode("OFFLINE");
+        jp.setRequirement("Gia sư có kinh nghiệm");
+        jobPostingRepository.save(jp);
+
+        ClassSession cs = new ClassSession();
+        cs.setParent(p1);
+        cs.setClassName("Toán lớp 12 - Ôn thi THPT");
+        cs.setTutorName("Nguyễn Hoàng Nam");
+        cs.setTutorAvatar("https://ui-avatars.com/api/?name=Nguyen+Hoang+Nam&background=random");
+        cs.setSchedule("Thứ 2 - Thứ 4 - Thứ 6");
+        cs.setStatus("IN_PROGRESS");
+        cs.setNextSessionDate(java.time.LocalDateTime.now().plusDays(2));
+        cs.setProgress(45);
+        classSessionRepository.save(cs);
     }
 
     private void seedTutorsAndCourses() {

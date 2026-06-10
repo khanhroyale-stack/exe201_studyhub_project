@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import { CURRENT_PARENT } from '../../constants/mockParentData';
 
 const Settings: React.FC = () => {
@@ -6,7 +7,20 @@ const Settings: React.FC = () => {
   const [avatar, setAvatar] = useState(CURRENT_PARENT.avatar);
   const [fullName, setFullName] = useState(CURRENT_PARENT.name);
   const [phone, setPhone] = useState(CURRENT_PARENT.phone);
-  const [address, setAddress] = useState(CURRENT_PARENT.address);
+  const [address, setAddress] = useState(CURRENT_PARENT.address || '');
+
+  useEffect(() => {
+    // Tạm thời hardcode id = 1 theo đề xuất
+    api.get('/parents/1')
+      .then(res => {
+        const data = res.data;
+        if (data.name) setFullName(data.name);
+        if (data.phone) setPhone(data.phone);
+        if (data.avatar) setAvatar(data.avatar);
+        if (data.address) setAddress(data.address);
+      })
+      .catch(err => console.error('Failed to load profile', err));
+  }, []);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -20,10 +34,21 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    try {
+      await api.put('/parents/1', {
+        name: fullName,
+        phone,
+        avatar,
+        address
+      });
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      console.error('Failed to update profile', error);
+      alert('Có lỗi xảy ra khi lưu thay đổi!');
+    }
   };
 
   const handleSavePassword = (e: React.FormEvent) => {

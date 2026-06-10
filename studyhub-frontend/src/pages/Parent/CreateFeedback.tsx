@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import api from '../../services/api';
 
 const CreateFeedback: React.FC = () => {
   const navigate = useNavigate();
@@ -16,18 +17,26 @@ const CreateFeedback: React.FC = () => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       alert('Vui lòng chọn số sao đánh giá!');
       return;
     }
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await api.post('/reviews', {
+        parentId: 1, // hardcode for now
+        tutorId: 1, // just needs to be an id
+        rating: rating,
+        comment: comment + (selectedTags.length > 0 ? ` [Tags: ${selectedTags.join(', ')}]` : '')
+      });
       alert('Cảm ơn bạn đã gửi đánh giá!');
       navigate('/parent/feedback');
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra khi gửi đánh giá.');
+    }
   };
 
   return (

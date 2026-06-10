@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CURRENT_PARENT, MOCK_JOB_POSTINGS } from '../../constants/mockParentData';
 
 const ParentDashboard: React.FC = () => {
@@ -91,7 +92,7 @@ const ParentDashboard: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-col gap-4">
-            <div className="p-4 glass border border-white/20 rounded-3xl flex gap-4 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group animate-slide-up stagger-3">
+            <Link to="/tutors/tutor_1" className="p-4 glass border border-white/20 rounded-3xl flex gap-4 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group animate-slide-up stagger-3">
               <img alt="Tutor" className="w-16 h-16 rounded-full object-cover shrink-0 border-2 border-surface shadow-sm group-hover:border-primary/30 transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK8lhUpNKWMGZdwWdGo_4FXgZVfv-aK31m5zmy7y8iz5aXDOxZWxztDZo4o_BOMqXLIurd0OH9J4k_1g8FSatf8iIppQSW74L8s3wRv2_kyTuBfODLMUlUytLQHza3mGMHWAxV95EG7cBn1ca0ax5WPK72RNEZscgIYi38t-j1-96iByOZpte1JuR9fgKm9nvJaalo1lQnCPtb5AInRo0G8wLhrQes8UdGrCGy8ZTy2QvbpLZWIIbP9T7vlO1lyoxURHsc97jRjRSd" />
               <div className="flex flex-col gap-1 overflow-hidden">
                 <h4 className="font-semibold text-sm text-on-surface truncate group-hover:text-primary transition-colors">Trần Minh Anh</h4>
@@ -101,8 +102,8 @@ const ParentDashboard: React.FC = () => {
                   <span className="font-medium text-xs text-on-surface">4.9 (124)</span>
                 </div>
               </div>
-            </div>
-            <div className="p-4 glass border border-white/20 rounded-3xl flex gap-4 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group animate-slide-up stagger-4">
+            </Link>
+            <Link to="/tutors/tutor_2" className="p-4 glass border border-white/20 rounded-3xl flex gap-4 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group animate-slide-up stagger-4">
               <img alt="Tutor" className="w-16 h-16 rounded-full object-cover shrink-0 border-2 border-surface shadow-sm group-hover:border-primary/30 transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv5jTZIiacbQcrXMyddJos4A_F0tTGTDrn6nQYU1bvfZBUECqSNuDfuSRVRk6CHmJdNEmn1FTzLeFAZ7AJORoMVX0wf-XoYRY7T-gnwLlIhXdGvNBZr696ICRcbjAXas20ZhL7v0-Xepxv7hnth1b-6nBnmGOrcwl93tKYtdUN7Bbz81fugRnDC3tlmvblwb7p9yOAxsDMGxy4JrMLkPnDaaTC22xHjLj99TuuQZ5M8fLDX3T6HnDx4xN-MFDXzPfIykkhst8bQnNX" />
               <div className="flex flex-col gap-1 overflow-hidden">
                 <h4 className="font-semibold text-sm text-on-surface truncate group-hover:text-primary transition-colors">Nguyễn Hoàng Nam</h4>
@@ -112,8 +113,8 @@ const ParentDashboard: React.FC = () => {
                   <span className="font-medium text-xs text-on-surface">5.0 (86)</span>
                 </div>
               </div>
-            </div>
-            <button className="w-full py-4 glass border border-dashed border-outline-variant rounded-2xl text-on-surface-variant font-semibold text-sm hover:bg-surface-container-high transition-all active:scale-95 animate-slide-up stagger-5">Tìm thêm gia sư</button>
+            </Link>
+            <Link to="/tutors" className="w-full py-4 glass border border-dashed border-outline-variant rounded-2xl text-on-surface-variant text-center font-semibold text-sm hover:bg-surface-container-high transition-all active:scale-95 animate-slide-up stagger-5 block">Tìm thêm gia sư</Link>
           </div>
         </section>
       </div>

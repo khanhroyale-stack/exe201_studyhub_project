@@ -19,6 +19,7 @@ public class Parent {
     private String email;
     private String phone;
     private String avatar;
+    private String address;
     
     private Double budgetSpentThisMonth;
     private Integer classesWaiting;

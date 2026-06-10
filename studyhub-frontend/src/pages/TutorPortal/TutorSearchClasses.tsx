@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus } from '../../types/shared';
+import api from '../../services/api';
+import { UnifiedPost } from '../../types/shared';
 
 const TutorSearchClasses: React.FC = () => {
   const [posts, setPosts] = useState<UnifiedPost[]>([]);
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    // Only show posts that have been approved and are recruiting
-    setPosts(allPosts.filter(p => p.status === PostStatus.RECRUITING));
+    api.get('/job-postings')
+      .then(res => setPosts(res.data))
+      .catch(err => console.error('Failed to fetch classes', err));
   }, []);
 
   return (

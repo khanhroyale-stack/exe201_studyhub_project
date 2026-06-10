@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus } from '../../types/shared';
-import { CURRENT_PARENT } from '../../constants/mockParentData';
+import api from '../../services/api';
 
 const CreatePost: React.FC = () => {
   const [isOffline, setIsOffline] = useState(true);
@@ -11,35 +9,32 @@ const CreatePost: React.FC = () => {
   const [req, setReq] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject || !price) {
       alert('Vui lòng điền đầy đủ môn học và mức lương');
       return;
     }
     
-    const newPost: UnifiedPost = {
-      id: `jp${Date.now()}`,
-      parentId: CURRENT_PARENT.id,
-      parentName: CURRENT_PARENT.name,
-      parentAvatar: CURRENT_PARENT.avatar,
-      title: `Tìm gia sư ${subject}`,
-      subject: subject,
-      description: req || 'Cần tìm gia sư.',
-      postedAt: new Date().toISOString(),
-      status: PostStatus.PENDING_APPROVAL,
-      location: isOffline ? 'Hà Nội' : 'Học Online',
-      schedule: '2 buổi/tuần',
-      pricePerSession: parseInt(price, 10) || 0,
-      learningMode: isOffline ? 'OFFLINE' : 'ONLINE',
-      requirement: req
-    };
+    try {
+      await api.post('/job-postings', {
+        parentId: 1, // hardcode for now
+        title: `Tìm gia sư ${subject}`,
+        subject: subject,
+        description: req || 'Cần tìm gia sư.',
+        location: isOffline ? 'Hà Nội' : 'Học Online',
+        schedule: '2 buổi/tuần',
+        pricePerSession: parseInt(price, 10) || 0,
+        learningMode: isOffline ? 'OFFLINE' : 'ONLINE',
+        requirement: req
+      });
 
-    const currentPosts = mockDb.getPosts();
-    mockDb.savePosts([newPost, ...currentPosts]);
-
-    alert('Đăng tin thành công! Bài đăng của bạn đang chờ Admin duyệt.');
-    navigate('/parent/posts');
+      alert('Đăng tin thành công! Bài đăng của bạn đã được xuất bản.');
+      navigate('/parent/posts');
+    } catch (error) {
+      console.error('Lỗi khi đăng tin:', error);
+      alert('Có lỗi xảy ra, vui lòng thử lại sau.');
+    }
   };
 
   return (

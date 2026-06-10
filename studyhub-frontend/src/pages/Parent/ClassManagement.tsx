@@ -1,7 +1,18 @@
-import React from 'react';
-import { MOCK_CLASSES } from '../../constants/mockParentData';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../../services/api';
 
 const ClassManagement: React.FC = () => {
+  const [classes, setClasses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/parents/1/classes')
+      .then(res => setClasses(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'TRIAL_WAITING':
@@ -32,10 +43,10 @@ const ClassManagement: React.FC = () => {
             <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>calendar_today</span>
             Xem theo tháng
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
+          <Link to="/parent/posts/create" className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
             <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>add</span>
             Đăng ký lớp mới
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -84,7 +95,11 @@ const ClassManagement: React.FC = () => {
             </div>
             
             <div className="mt-6 space-y-4">
-              {MOCK_CLASSES.map((session, idx) => (
+              {loading ? (
+                <div className="text-center p-4">Đang tải...</div>
+              ) : classes.length === 0 ? (
+                <div className="text-center p-4 text-on-surface-variant">Bạn chưa tham gia lớp học nào.</div>
+              ) : classes.map((session, idx) => (
                 <div key={session.id} className={`flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-slide-up opacity-0 stagger-${(idx % 6) + 1}`}>
                   <div className={`flex flex-col items-center justify-center w-16 h-16 rounded-lg text-primary shrink-0 ${session.status === 'COMPLETED' ? 'bg-surface-container-high' : 'bg-primary-container/20 border border-primary/20'}`}>
                     <span className="font-bold text-sm">18:00</span>

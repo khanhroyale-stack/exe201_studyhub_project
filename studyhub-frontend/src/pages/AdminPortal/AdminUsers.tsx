@@ -21,11 +21,13 @@ const AdminUsers: React.FC = () => {
       const response = await fetch('http://localhost:8080/api/admin/ekyc/pending');
       const data = await response.json();
       setPendingTutors(data);
-      if (data.length > 0 && !selectedTutor) {
-        setSelectedTutor(data[0]);
-      } else if (data.length === 0) {
-        setSelectedTutor(null);
-      }
+      
+      setSelectedTutor(current => {
+        if (!current) return data.length > 0 ? data[0] : null;
+        const stillExists = data.some((t: any) => t.id === current.id);
+        if (!stillExists) return data.length > 0 ? data[0] : null;
+        return current;
+      });
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu eKYC:", error);
     }
@@ -57,7 +59,6 @@ const AdminUsers: React.FC = () => {
       });
       alert("Đã từ chối hồ sơ!");
       fetchPendingEkyc();
-      if (selectedTutor?.id === id) setSelectedTutor(null);
     } catch (error) {
       console.error("Lỗi khi từ chối eKYC:", error);
     }
@@ -242,6 +243,18 @@ const AdminUsers: React.FC = () => {
                             <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.fullName}</p>
                           </div>
                           <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Ngày sinh</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.birthDate || "Chưa cập nhật"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Số điện thoại</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.phoneNumber || "Chưa cập nhật"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Địa chỉ</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.address || "Chưa cập nhật"}</p>
+                          </div>
+                          <div>
                             <div className="flex justify-between items-center mb-1.5">
                               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Độ khớp khuôn mặt (AI Matching)</p>
                               <button 
@@ -285,11 +298,38 @@ const AdminUsers: React.FC = () => {
                         </div>
                         <div className="flex flex-col justify-center space-y-5 bg-slate-50 p-5 rounded-xl border border-slate-100">
                           <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Trường Đại học/Cao đẳng</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.universityName || "Chưa cập nhật"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Chuyên ngành</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.major || "Chưa cập nhật"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Kinh nghiệm</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.experienceYears !== undefined ? `${selectedTutor.experienceYears} năm` : "Chưa cập nhật"}</p>
+                          </div>
+                          <div>
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Giới thiệu bản thân</p>
                             <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.introduction || "Không có"}</p>
                           </div>
                         </div>
                       </div>
+                      
+                      {selectedTutor.certificates && selectedTutor.certificates.length > 0 && (
+                        <div className="mt-8">
+                          <h4 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">workspace_premium</span> Các chứng chỉ khác
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {selectedTutor.certificates.map((cert: string, index: number) => (
+                              <div key={index} className="aspect-[1.4/1] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                                <img src={cert} alt={`Chứng chỉ ${index + 1}`} className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -11,6 +11,7 @@ const Register: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -39,7 +40,7 @@ const Register: React.FC = () => {
     setIsSubmitting(true);
     try {
       const apiRole = roleSelect === 'student' ? 'PARENT' : 'TUTOR';
-      await authApi.register({ email, password, role: apiRole });
+      await authApi.register({ email, password, role: apiRole, fullName });
       alert('Đăng ký thành công! Vui lòng đăng nhập.');
       navigate('/login');
     } catch (error: any) {
@@ -185,6 +186,8 @@ const Register: React.FC = () => {
                 }}>person</span>
                 <input
                   id="fullName" type="text" placeholder="Nhập họ và tên của bạn" required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   onFocus={() => setFocusedField('name')}
                   onBlur={() => setFocusedField(null)}
                   style={inputStyle('name')}

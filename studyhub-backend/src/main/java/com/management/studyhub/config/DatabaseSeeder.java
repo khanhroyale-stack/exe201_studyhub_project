@@ -127,20 +127,22 @@ public class DatabaseSeeder implements CommandLineRunner {
         testimonialRepository.save(t4);
     }
 
-    private User createUser(String email, UserRole role) {
+    private User createUser(String email, UserRole role, String fullName, String avatarUrl) {
         User u = new User();
         u.setEmail(email);
         u.setPassword(passwordEncoder.encode("123456"));
         u.setRole(role);
+        u.setFullName(fullName);
+        u.setAvatarUrl(avatarUrl);
         return userRepository.save(u);
     }
 
     private void seedTutorsAndCourses() {
         if (!userRepository.existsByEmail("admin@gmail.com")) {
-            createUser("admin@gmail.com", UserRole.ADMIN);
+            createUser("admin@gmail.com", UserRole.ADMIN, "Admin System", null);
         }
         if (!userRepository.existsByEmail("parent@gmail.com")) {
-            createUser("parent@gmail.com", UserRole.PARENT);
+            createUser("parent@gmail.com", UserRole.PARENT, "Phụ huynh Học sinh", null);
         }
 
         List<com.management.studyhub.entity.Subject> subjects = subjectRepository.findAll();
@@ -157,11 +159,23 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 1
         TutorProfile t1 = new TutorProfile();
-        t1.setUser(createUser("tutor1@gmail.com", UserRole.TUTOR));
+        t1.setUser(createUser("tutor1@gmail.com", UserRole.TUTOR, "Thầy Nguyễn Hoàng Nam", "https://ui-avatars.com/api/?name=Nguyen+Hoang+Nam&background=random"));
         t1.setFullName("Thầy Nguyễn Hoàng Nam");
-        t1.setIntroduction("Thạc sĩ Toán học - ĐH Sư Phạm HN");
+        t1.setIntroduction("Thạc sĩ Toán học - ĐH Sư Phạm HN. Nhiều năm kinh nghiệm giảng dạy và luyện thi đại học môn Toán.");
         t1.setAvatarUrl("https://ui-avatars.com/api/?name=Nguyen+Hoang+Nam&background=random");
         t1.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t1.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.SUCCESS);
+        t1.setSimilarityScore(new java.math.BigDecimal("98.5"));
+        t1.setIdCardFrontUrl("https://placehold.co/600x400?text=ID+Front");
+        t1.setIdCardBackUrl("https://placehold.co/600x400?text=ID+Back");
+        t1.setBirthDate(java.time.LocalDate.of(1990, 5, 15));
+        t1.setAddress("Cầu Giấy, Hà Nội");
+        t1.setPhoneNumber("0987654321");
+        t1.setUniversityName("Đại học Sư phạm Hà Nội");
+        t1.setMajor("Sư phạm Toán học");
+        t1.setExperienceYears(5);
+        t1.setDegreeImageUrl("https://placehold.co/600x400?text=Degree");
+        t1.setCertificates(java.util.List.of("https://placehold.co/400x300?text=IELTS", "https://placehold.co/400x300?text=Certificate"));
         t1.setPrice(350000.0);
         t1.setTeachingMethod("ONLINE");
         t1.setAverageRating(4.9);
@@ -185,11 +199,22 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 2
         TutorProfile t2 = new TutorProfile();
-        t2.setUser(createUser("tutor2@gmail.com", UserRole.TUTOR));
+        t2.setUser(createUser("tutor2@gmail.com", UserRole.TUTOR, "Cô Trần Thị B", "https://ui-avatars.com/api/?name=Tran+Thi+B&background=random"));
         t2.setFullName("Cô Trần Thị B");
-        t2.setIntroduction("Thạc sĩ Vật Lý");
+        t2.setIntroduction("Thạc sĩ Vật Lý. Giảng dạy tận tâm, dễ hiểu.");
         t2.setAvatarUrl("https://ui-avatars.com/api/?name=Tran+Thi+B&background=random");
         t2.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t2.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.SUCCESS);
+        t2.setSimilarityScore(new java.math.BigDecimal("95.2"));
+        t2.setIdCardFrontUrl("https://placehold.co/600x400?text=ID+Front");
+        t2.setIdCardBackUrl("https://placehold.co/600x400?text=ID+Back");
+        t2.setBirthDate(java.time.LocalDate.of(1992, 8, 22));
+        t2.setAddress("Quận 1, TP.HCM");
+        t2.setPhoneNumber("0912345678");
+        t2.setUniversityName("Đại học Sư phạm TP.HCM");
+        t2.setMajor("Sư phạm Vật lý");
+        t2.setExperienceYears(4);
+        t2.setDegreeImageUrl("https://placehold.co/600x400?text=Degree");
         t2.setPrice(180000.0);
         t2.setTeachingMethod("ONLINE");
         t2.setAverageRating(4.8);
@@ -213,11 +238,23 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 3
         TutorProfile t3 = new TutorProfile();
-        t3.setUser(createUser("tutor3@gmail.com", UserRole.TUTOR));
+        t3.setUser(createUser("tutor3@gmail.com", UserRole.TUTOR, "Mr. David Smith", "https://ui-avatars.com/api/?name=David+Smith&background=random"));
         t3.setFullName("Mr. David Smith");
-        t3.setIntroduction("Bản ngữ (USA), IELTS 9.0");
+        t3.setIntroduction("Bản ngữ (USA), IELTS 9.0. Phương pháp giảng dạy hiện đại, hiệu quả.");
         t3.setAvatarUrl("https://ui-avatars.com/api/?name=David+Smith&background=random");
         t3.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t3.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.SUCCESS);
+        t3.setSimilarityScore(new java.math.BigDecimal("99.1"));
+        t3.setIdCardFrontUrl("https://placehold.co/600x400?text=ID+Front");
+        t3.setIdCardBackUrl("https://placehold.co/600x400?text=ID+Back");
+        t3.setBirthDate(java.time.LocalDate.of(1985, 3, 10));
+        t3.setAddress("Bình Thạnh, TP.HCM");
+        t3.setPhoneNumber("0988776655");
+        t3.setUniversityName("University of California, Berkeley");
+        t3.setMajor("English Literature");
+        t3.setExperienceYears(8);
+        t3.setDegreeImageUrl("https://placehold.co/600x400?text=Degree");
+        t3.setCertificates(java.util.List.of("https://placehold.co/400x300?text=TESOL", "https://placehold.co/400x300?text=CELTA"));
         t3.setPrice(450000.0);
         t3.setTeachingMethod("OFFLINE");
         t3.setAverageRating(5.0);
@@ -241,11 +278,22 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Course 4
         TutorProfile t4 = new TutorProfile();
-        t4.setUser(createUser("tutor4@gmail.com", UserRole.TUTOR));
+        t4.setUser(createUser("tutor4@gmail.com", UserRole.TUTOR, "Lê Minh C", "https://ui-avatars.com/api/?name=Le+Minh+C&background=random"));
         t4.setFullName("Lê Minh C");
-        t4.setIntroduction("Software Engineer at FPT");
+        t4.setIntroduction("Software Engineer at FPT. Hướng dẫn tận tình dự án thực tế.");
         t4.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Minh+C&background=random");
         t4.setStatus(com.management.studyhub.entity.enums.TutorStatus.APPROVED);
+        t4.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.SUCCESS);
+        t4.setSimilarityScore(new java.math.BigDecimal("91.8"));
+        t4.setIdCardFrontUrl("https://placehold.co/600x400?text=ID+Front");
+        t4.setIdCardBackUrl("https://placehold.co/600x400?text=ID+Back");
+        t4.setBirthDate(java.time.LocalDate.of(1998, 11, 5));
+        t4.setAddress("Quận 9, TP.HCM");
+        t4.setPhoneNumber("0909090909");
+        t4.setUniversityName("Đại học Bách Khoa TP.HCM");
+        t4.setMajor("Khoa học Máy tính");
+        t4.setExperienceYears(2);
+        t4.setDegreeImageUrl("https://placehold.co/600x400?text=Degree");
         t4.setPrice(300000.0);
         t4.setTeachingMethod("ONLINE");
         t4.setAverageRating(4.7);
@@ -269,7 +317,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 5 (Pending eKYC)
         TutorProfile tPending = new TutorProfile();
-        tPending.setUser(createUser("tutorpending@gmail.com", UserRole.TUTOR));
+        tPending.setUser(createUser("tutorpending@gmail.com", UserRole.TUTOR, "Vũ Đức Phát", "https://ui-avatars.com/api/?name=Vu+Duc+Phat&background=random"));
         tPending.setFullName("Vũ Đức Phát");
         tPending.setIntroduction("Cử nhân Sinh học - ĐH Khoa học Tự nhiên");
         tPending.setAvatarUrl("https://ui-avatars.com/api/?name=Vu+Duc+Phat&background=random");
@@ -283,7 +331,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Pending Tutor 2
         TutorProfile tPending2 = new TutorProfile();
-        tPending2.setUser(createUser("tutorpending2@gmail.com", UserRole.TUTOR));
+        tPending2.setUser(createUser("tutorpending2@gmail.com", UserRole.TUTOR, "Lê Trọng Nghĩa", "https://ui-avatars.com/api/?name=Le+Trong+Nghia&background=random"));
         tPending2.setFullName("Lê Trọng Nghĩa");
         tPending2.setIntroduction("Kỹ sư phần mềm - 3 năm kinh nghiệm");
         tPending2.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Trong+Nghia&background=random");
@@ -297,7 +345,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Pending Tutor 3
         TutorProfile tPending3 = new TutorProfile();
-        tPending3.setUser(createUser("tutorpending3@gmail.com", UserRole.TUTOR));
+        tPending3.setUser(createUser("tutorpending3@gmail.com", UserRole.TUTOR, "Hoàng Mai Ngọc", "https://ui-avatars.com/api/?name=Hoang+Mai+Ngoc&background=random"));
         tPending3.setFullName("Hoàng Mai Ngọc");
         tPending3.setIntroduction("IELTS 8.0 - Cử nhân Sư phạm Tiếng Anh");
         tPending3.setAvatarUrl("https://ui-avatars.com/api/?name=Hoang+Mai+Ngoc&background=random");
@@ -311,7 +359,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Pending Tutor 4
         TutorProfile tPending4 = new TutorProfile();
-        tPending4.setUser(createUser("tutorpending4@gmail.com", UserRole.TUTOR));
+        tPending4.setUser(createUser("tutorpending4@gmail.com", UserRole.TUTOR, "Đỗ Văn Hùng", "https://ui-avatars.com/api/?name=Do+Van+Hung&background=random"));
         tPending4.setFullName("Đỗ Văn Hùng");
         tPending4.setIntroduction("Sinh viên xuất sắc ĐH Bách Khoa");
         tPending4.setAvatarUrl("https://ui-avatars.com/api/?name=Do+Van+Hung&background=random");
@@ -322,6 +370,17 @@ public class DatabaseSeeder implements CommandLineRunner {
         tPending4.setDegreeImageUrl("https://example.com/degree.jpg");
         if (mathSubject != null) tPending4.setSubjects(java.util.Set.of(mathSubject));
         tutorProfileRepository.save(tPending4);
+
+        // Tutor for testing new eKYC feature
+        TutorProfile tTestEkyc = new TutorProfile();
+        tTestEkyc.setUser(createUser("testekyc@gmail.com", UserRole.TUTOR, "Gia sư Test eKYC", "https://ui-avatars.com/api/?name=Test+eKYC&background=random"));
+        tTestEkyc.setFullName("Gia sư Test eKYC");
+        tTestEkyc.setIntroduction("Tài khoản này dùng để test chức năng upload ảnh và eKYC");
+        tTestEkyc.setAvatarUrl("https://ui-avatars.com/api/?name=Test+eKYC&background=random");
+        tTestEkyc.setStatus(com.management.studyhub.entity.enums.TutorStatus.DRAFT);
+        tTestEkyc.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.NOT_STARTED);
+        if (itSubject != null) tTestEkyc.setSubjects(java.util.Set.of(itSubject));
+        tutorProfileRepository.save(tTestEkyc);
 
         // Course 5
         Course c5 = new Course();
@@ -355,7 +414,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 5 (Literature)
         TutorProfile t5 = new TutorProfile();
-        t5.setUser(createUser("tutor5@gmail.com", UserRole.TUTOR));
+        t5.setUser(createUser("tutor5@gmail.com", UserRole.TUTOR, "Cô Lê Hà", "https://ui-avatars.com/api/?name=Le+Ha&background=random"));
         t5.setFullName("Cô Lê Hà");
         t5.setIntroduction("Giáo viên chuyên Văn 10 năm kinh nghiệm");
         t5.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Ha&background=random");
@@ -383,7 +442,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 6 (Biology)
         TutorProfile t6 = new TutorProfile();
-        t6.setUser(createUser("tutor6@gmail.com", UserRole.TUTOR));
+        t6.setUser(createUser("tutor6@gmail.com", UserRole.TUTOR, "Thầy Vũ Dũng", "https://ui-avatars.com/api/?name=Vu+Dung&background=random"));
         t6.setFullName("Thầy Vũ Dũng");
         t6.setIntroduction("Sinh viên Y Dược loại giỏi");
         t6.setAvatarUrl("https://ui-avatars.com/api/?name=Vu+Dung&background=random");
@@ -411,7 +470,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 7 (History)
         TutorProfile t7 = new TutorProfile();
-        t7.setUser(createUser("tutor7@gmail.com", UserRole.TUTOR));
+        t7.setUser(createUser("tutor7@gmail.com", UserRole.TUTOR, "Cô Đinh Hương", "https://ui-avatars.com/api/?name=Dinh+Huong&background=random"));
         t7.setFullName("Cô Đinh Hương");
         t7.setIntroduction("Thạc sĩ Sử học");
         t7.setAvatarUrl("https://ui-avatars.com/api/?name=Dinh+Huong&background=random");
@@ -439,7 +498,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Tutor 8 (Geography)
         TutorProfile t8 = new TutorProfile();
-        t8.setUser(createUser("tutor8@gmail.com", UserRole.TUTOR));
+        t8.setUser(createUser("tutor8@gmail.com", UserRole.TUTOR, "Thầy Phan Bách", "https://ui-avatars.com/api/?name=Phan+Bach&background=random"));
         t8.setFullName("Thầy Phan Bách");
         t8.setIntroduction("Chuyên gia luyện thi Địa Lý");
         t8.setAvatarUrl("https://ui-avatars.com/api/?name=Phan+Bach&background=random");

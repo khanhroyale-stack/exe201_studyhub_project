@@ -4,6 +4,7 @@ import com.management.studyhub.entity.TutorProfile;
 import com.management.studyhub.entity.enums.EkycStatus;
 import com.management.studyhub.entity.enums.TutorStatus;
 import com.management.studyhub.repository.TutorProfileRepository;
+import com.management.studyhub.repository.UserRepository;
 import com.management.studyhub.service.EkycApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class AdminEkycController {
 
     private final TutorProfileRepository tutorProfileRepository;
+    private final UserRepository userRepository;
     private final EkycApiService ekycApiService;
 
     @GetMapping("/pending")
@@ -42,6 +44,14 @@ public class AdminEkycController {
         tutor.setEkycStatus(EkycStatus.SUCCESS);
         tutor.setStatus(TutorStatus.APPROVED);
         tutorProfileRepository.save(tutor);
+
+        // Cập nhật User tương ứng
+        if (tutor.getUser() != null) {
+            com.management.studyhub.entity.User user = tutor.getUser();
+            user.setFullName(tutor.getFullName());
+            user.setAvatarUrl(tutor.getAvatarUrl());
+            userRepository.save(user);
+        }
 
         return ResponseEntity.ok("Duyệt hồ sơ thành công");
     }

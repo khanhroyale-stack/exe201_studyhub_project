@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CURRENT_PARENT } from '../constants/mockParentData';
-import { CURRENT_TUTOR } from '../constants/mockTutorData';
 import StudyHubLogo from './StudyHubLogo';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isLoggedIn, role, logout } = useAuth();
+  const { isLoggedIn, role, name, email, avatar, logout } = useAuth();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -57,7 +55,7 @@ const Navbar: React.FC = () => {
     { to: '/tutors', label: 'Gia sư', icon: 'person_search' },
   ];
 
-  const currentUser = role === 'parent' ? CURRENT_PARENT : CURRENT_TUTOR;
+  const userAvatar = avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=random`;
 
   return (
     <header
@@ -185,14 +183,14 @@ const Navbar: React.FC = () => {
                     </div>
                   ) : (
                     <img
-                      src={currentUser?.avatar}
+                      src={userAvatar}
                       alt="Avatar"
                       className="w-8 h-8 rounded-full object-cover ring-2 ring-white"
                     />
                   )}
                   <div className="hidden sm:block text-left">
                     <p className="text-xs font-bold text-on-surface leading-tight">
-                      {role === 'admin' ? 'Quản trị viên' : currentUser?.name}
+                      {role === 'admin' ? 'Quản trị viên' : (name || 'Người dùng')}
                     </p>
                     <p className="text-[10px] text-on-surface-variant">
                       {role === 'admin' ? 'Admin' : role === 'parent' ? 'Phụ huynh' : 'Gia sư'}
@@ -214,11 +212,11 @@ const Navbar: React.FC = () => {
                             <span className="material-symbols-outlined text-white text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>admin_panel_settings</span>
                           </div>
                         ) : (
-                          <img src={currentUser?.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20 shrink-0" />
+                          <img src={userAvatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20 shrink-0" />
                         )}
                         <div className="overflow-hidden">
-                          <p className="text-sm font-bold text-on-surface truncate">{role === 'admin' ? 'Quản trị viên' : currentUser?.name}</p>
-                          <p className="text-xs text-on-surface-variant truncate">{role === 'admin' ? 'admin@studyhub.com' : (currentUser as any)?.email}</p>
+                          <p className="text-sm font-bold text-on-surface truncate">{role === 'admin' ? 'Quản trị viên' : (name || 'Người dùng')}</p>
+                          <p className="text-xs text-on-surface-variant truncate">{role === 'admin' ? 'admin@studyhub.com' : email}</p>
                         </div>
                       </div>
                     </div>

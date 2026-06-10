@@ -74,6 +74,7 @@ public class PaymentService {
         try {
             // Giả lập parse data cơ bản
             if (payload.containsKey("data")) {
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> dataList = (List<Map<String, Object>>) payload.get("data");
                 for (Map<String, Object> data : dataList) {
                     String description = (String) data.get("description");

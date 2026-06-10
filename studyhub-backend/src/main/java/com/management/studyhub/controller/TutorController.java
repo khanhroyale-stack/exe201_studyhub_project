@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+
+import com.management.studyhub.dto.TutorEkycRequestDTO;
 
 @RestController
 @RequestMapping("/api/v1/tutors")
@@ -32,5 +35,50 @@ public class TutorController {
         PageResponseDTO<TutorListDTO> response = tutorService.searchTutors(
                 keyword, subjectIds, minPrice, maxPrice, minRating, teachingMethod, sortBy, page, size);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<com.management.studyhub.entity.TutorProfile> getTutor(@PathVariable Long id) {
+        return ResponseEntity.ok(tutorService.getTutorProfile(id));
+    }
+
+    @PostMapping("/{id}/ekyc")
+    public ResponseEntity<?> updateEkycProfile(
+            @PathVariable Long id,
+            @RequestBody TutorEkycRequestDTO request) {
+        try {
+            Map<String, Object> result = tutorService.processEkyc(id, request);
+            boolean success = (boolean) result.get("success");
+            if (success) {
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.badRequest().body(result);
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "score", 0,
+                "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/verify-ekyc")
+    public ResponseEntity<?> verifyEkycScore(@RequestBody TutorEkycRequestDTO request) {
+        try {
+            Map<String, Object> result = tutorService.verifyEkyc(request);
+            boolean success = (boolean) result.get("success");
+            if (success) {
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.badRequest().body(result);
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "score", 0,
+                "message", e.getMessage()
+            ));
+        }
     }
 }

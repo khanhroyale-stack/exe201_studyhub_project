@@ -31,7 +31,16 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
     try {
       const response = await authApi.login({ email, password });
-      login(response.token, response.role.toLowerCase() as 'admin' | 'parent' | 'tutor');
+      login(
+        response.token, 
+        response.role.toLowerCase() as 'admin' | 'parent' | 'tutor', 
+        response.name || null, 
+        response.email || null, 
+        response.avatar || null
+      );
+      if (response.tutorId) {
+        localStorage.setItem('sh_tutor_id', response.tutorId.toString());
+      }
       // Navigation is handled by the useEffect above
     } catch (error: any) {
       setErrorMsg(error.response?.data || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');

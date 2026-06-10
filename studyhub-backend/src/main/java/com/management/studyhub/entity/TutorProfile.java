@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 // TutorProfile.java
@@ -25,13 +26,27 @@ public class TutorProfile {
     private LocalDate birthDate;
     private String address;
     private String phoneNumber;
+    @Column(columnDefinition = "LONGTEXT")
     private String avatarUrl;
+    
+    @Column(columnDefinition = "LONGTEXT")
     private String idCardFrontUrl;
+    
+    @Column(columnDefinition = "LONGTEXT")
     private String idCardBackUrl;
+    
     private String universityName;
     private String major;
+    
+    @Column(columnDefinition = "LONGTEXT")
     private String degreeImageUrl;
+    
     private int experienceYears;
+
+    @ElementCollection
+    @CollectionTable(name = "tutor_certificates", joinColumns = @JoinColumn(name = "tutor_profile_id"))
+    @Column(name = "certificate_url", columnDefinition = "LONGTEXT")
+    private List<String> certificates;
 
     @Column(columnDefinition = "TEXT") // Sửa NVARCHAR(MAX) thành TEXT
     private String introduction;

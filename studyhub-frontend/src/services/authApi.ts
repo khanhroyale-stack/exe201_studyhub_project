@@ -9,12 +9,16 @@ export interface AuthResponse {
   token: string;
   role: 'ADMIN' | 'PARENT' | 'TUTOR';
   email: string;
+  name?: string;
+  avatar?: string;
+  tutorId?: number;
 }
 
 export interface RegisterRequest {
   email: string;
   password?: string;
   role: 'PARENT' | 'TUTOR';
+  fullName?: string;
 }
 
 export const authApi = {

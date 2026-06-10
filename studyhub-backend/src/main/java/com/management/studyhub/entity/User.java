@@ -22,6 +22,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role; // ADMIN, PARENT, TUTOR
+    
+    private String fullName;
+    
+    @Column(columnDefinition = "LONGTEXT")
+    private String avatarUrl;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();

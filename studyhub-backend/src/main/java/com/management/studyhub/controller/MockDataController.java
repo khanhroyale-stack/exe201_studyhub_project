@@ -30,7 +30,6 @@ public class MockDataController {
     private final TutorProfileRepository tutorProfileRepository;
     private final SubjectRepository subjectRepository;
     private final com.management.studyhub.repository.ClassSessionRepository classSessionRepository;
-    private final com.management.studyhub.repository.TransactionRepository transactionRepository;
 
     @PostMapping("/init")
     @Transactional

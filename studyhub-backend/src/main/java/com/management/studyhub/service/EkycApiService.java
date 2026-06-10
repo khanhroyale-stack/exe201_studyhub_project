@@ -30,12 +30,25 @@ public class EkycApiService {
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
             body.add("api_key", API_KEY);
             body.add("api_secret", API_SECRET);
-            body.add("image_url1", avatarUrl);
-            body.add("image_url2", idCardUrl);
+            
+            if (avatarUrl != null && avatarUrl.startsWith("data:image/")) {
+                String base64 = avatarUrl.substring(avatarUrl.indexOf(",") + 1);
+                body.add("image_base64_1", base64);
+            } else {
+                body.add("image_url1", avatarUrl);
+            }
+
+            if (idCardUrl != null && idCardUrl.startsWith("data:image/")) {
+                String base64 = idCardUrl.substring(idCardUrl.indexOf(",") + 1);
+                body.add("image_base64_2", base64);
+            } else {
+                body.add("image_url2", idCardUrl);
+            }
 
             HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<Map> response = restTemplate.postForEntity(FACEPP_COMPARE_URL, requestEntity, Map.class);
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map<String, Object>> response = restTemplate.postForEntity(FACEPP_COMPARE_URL, requestEntity, (Class<Map<String, Object>>)(Class<?>)Map.class);
             
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> responseBody = response.getBody();
@@ -47,15 +60,18 @@ public class EkycApiService {
                         return new BigDecimal((String) confidenceObj);
                     }
                 } else if (responseBody.containsKey("error_message")) {
-                    log.error("Face++ API Error: {}", responseBody.get("error_message"));
-                    return null; // Return null if API returns an error message like face not found
+                    String errorMsg = (String) responseBody.get("error_message");
+                    log.error("Face++ API Error: {}", errorMsg);
+                    throw new RuntimeException("Face++ API Error: " + errorMsg);
                 }
             }
             return null;
 
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error calling Face++ API: ", e);
-            return null;
+            throw new RuntimeException("Lỗi kết nối đến dịch vụ eKYC.");
         }
     }
 }

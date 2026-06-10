@@ -14,14 +14,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.management.studyhub.dto.TutorEkycRequestDTO;
+import com.management.studyhub.entity.enums.EkycStatus;
+import com.management.studyhub.entity.enums.TutorStatus;
 
 @Service
 @RequiredArgsConstructor
 public class TutorService {
 
     private final TutorProfileRepository tutorProfileRepository;
+    private final EkycApiService ekycApiService;
 
     public PageResponseDTO<TutorListDTO> searchTutors(
             String keyword, List<Integer> subjectIds, Double minPrice, Double maxPrice,
@@ -76,5 +83,86 @@ public class TutorService {
                 .totalReviews(tutor.getTotalReviews())
                 .subjects(subjectDTOs)
                 .build();
+    }
+
+    public Map<String, Object> processEkyc(Long tutorId, TutorEkycRequestDTO request) {
+        TutorProfile tutor = tutorProfileRepository.findById(tutorId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gia sư"));
+
+        BigDecimal score = ekycApiService.compareFaces(request.getAvatarUrl(), request.getIdCardFrontUrl());
+
+        if (score == null || score.compareTo(new BigDecimal("90")) < 0) {
+            tutor.setEkycStatus(EkycStatus.FAILED);
+            tutorProfileRepository.save(tutor);
+            return Map.of(
+                "success", false, 
+                "score", score == null ? BigDecimal.ZERO : score, 
+                "message", "Khuôn mặt không khớp (Dưới 90%). Vui lòng tải lại ảnh rõ nét hơn."
+            );
+        }
+
+        tutor.setAvatarUrl(request.getAvatarUrl());
+        tutor.setIdCardFrontUrl(request.getIdCardFrontUrl());
+        tutor.setIdCardBackUrl(request.getIdCardBackUrl());
+        tutor.setSimilarityScore(score);
+        tutor.setEkycStatus(EkycStatus.PROCESSING);
+        tutor.setStatus(TutorStatus.PENDING);
+
+        // Update other fields
+        if (request.getFullName() != null) tutor.setFullName(request.getFullName());
+        if (request.getBirthDate() != null && !request.getBirthDate().isEmpty()) {
+            try {
+                tutor.setBirthDate(java.time.LocalDate.parse(request.getBirthDate()));
+            } catch (Exception e) {
+                // Ignore parse error
+            }
+        }
+        if (request.getAddress() != null) tutor.setAddress(request.getAddress());
+        if (request.getPhoneNumber() != null) tutor.setPhoneNumber(request.getPhoneNumber());
+        if (request.getUniversityName() != null) tutor.setUniversityName(request.getUniversityName());
+        if (request.getMajor() != null) tutor.setMajor(request.getMajor());
+        if (request.getExperienceYears() != null) {
+            try {
+                tutor.setExperienceYears(Integer.parseInt(request.getExperienceYears()));
+            } catch (Exception e) {
+                // Ignore or parse from string like "1 - 3 năm"
+                if (request.getExperienceYears().contains("Dưới 1 năm")) tutor.setExperienceYears(0);
+                else if (request.getExperienceYears().contains("1 - 3 năm")) tutor.setExperienceYears(2);
+                else if (request.getExperienceYears().contains("Trên 3 năm")) tutor.setExperienceYears(4);
+                else tutor.setExperienceYears(0);
+            }
+        }
+        if (request.getDegreeImageUrl() != null) tutor.setDegreeImageUrl(request.getDegreeImageUrl());
+        if (request.getCertificates() != null) tutor.setCertificates(request.getCertificates());
+
+        tutorProfileRepository.save(tutor);
+        return Map.of(
+            "success", true, 
+            "score", score, 
+            "message", "Xác thực eKYC thành công, hồ sơ đang chờ Admin duyệt."
+        );
+    }
+
+    public Map<String, Object> verifyEkyc(TutorEkycRequestDTO request) {
+        BigDecimal score = ekycApiService.compareFaces(request.getAvatarUrl(), request.getIdCardFrontUrl());
+        
+        if (score == null || score.compareTo(new BigDecimal("90")) < 0) {
+            return Map.of(
+                "success", false, 
+                "score", score == null ? BigDecimal.ZERO : score, 
+                "message", "Khuôn mặt không khớp (Dưới 90%). Vui lòng tải lại ảnh rõ nét hơn."
+            );
+        }
+
+        return Map.of(
+            "success", true, 
+            "score", score, 
+            "message", "Độ khớp khuôn mặt đạt chuẩn!"
+        );
+    }
+
+    public TutorProfile getTutorProfile(Long tutorId) {
+        return tutorProfileRepository.findById(tutorId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gia sư"));
     }
 }

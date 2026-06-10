@@ -13,6 +13,15 @@ public class Review {
     @ManyToOne @JoinColumn(name = "application_id")
     private TutorApplication application;
 
+    @ManyToOne @JoinColumn(name = "class_session_id")
+    private ClassSession classSession;
+
+    @ManyToOne @JoinColumn(name = "parent_id")
+    private Parent parent;
+
+    @ManyToOne @JoinColumn(name = "tutor_id")
+    private TutorProfile tutor;
+
     private Integer rating; // 1-5 sao
 
     @Column(columnDefinition = "TEXT") // Sửa NVARCHAR(MAX) thành TEXT

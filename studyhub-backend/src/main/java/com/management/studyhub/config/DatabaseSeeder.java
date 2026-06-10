@@ -13,20 +13,17 @@ import com.management.studyhub.entity.JobPosting;
 import com.management.studyhub.entity.ClassSession;
 import com.management.studyhub.entity.TutorApplication;
 import com.management.studyhub.entity.Parent;
+import com.management.studyhub.entity.Review;
 import com.management.studyhub.entity.CommissionRecord;
-import com.management.studyhub.entity.ParentFeedback;
-import com.management.studyhub.entity.TutorRequest;
 import com.management.studyhub.entity.enums.ApplicationStatus;
 import com.management.studyhub.entity.enums.CommissionStatus;
-import com.management.studyhub.entity.enums.RequestStatus;
 import com.management.studyhub.repository.JobPostingRepository;
 import com.management.studyhub.repository.ClassSessionRepository;
 import com.management.studyhub.repository.TutorApplicationRepository;
 import com.management.studyhub.repository.LessonLogRepository;
 import com.management.studyhub.repository.CommissionRecordRepository;
-import com.management.studyhub.repository.ParentFeedbackRepository;
+import com.management.studyhub.repository.ReviewRepository;
 import com.management.studyhub.repository.ParentRepository;
-import com.management.studyhub.repository.TutorRequestRepository;
 import com.management.studyhub.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -51,9 +48,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final ClassSessionRepository classSessionRepository;
     private final ParentRepository parentRepository;
     private final TutorApplicationRepository tutorApplicationRepository;
-    private final TutorRequestRepository tutorRequestRepository;
     private final CommissionRecordRepository commissionRecordRepository;
-    private final ParentFeedbackRepository parentFeedbackRepository;
+    private final ReviewRepository reviewRepository;
     private final LessonLogRepository lessonLogRepository;
     private final ChatMessageRepository chatMessageRepository;
 
@@ -237,20 +233,22 @@ public class DatabaseSeeder implements CommandLineRunner {
             ll4.setStatus(com.management.studyhub.entity.enums.LessonStatus.SCHEDULED);
             lessonLogRepository.save(ll4);
 
-            // Seed Tutor Application and Commission Record
-            TutorRequest tr = new TutorRequest();
-            tr.setParent(parentUser);
-            tr.setSubject(mathSubject);
-            tr.setGrade("12");
-            tr.setFeePerSession(new BigDecimal("300000"));
-            tr.setScheduleDetails("Thứ 2, 4");
-            tr.setDescription("Luyện thi");
-            tr.setStatus(RequestStatus.OPEN);
-            tr = tutorRequestRepository.save(tr);
+            // Seed JobPosting (direct invite instead of TutorRequest)
+            JobPosting directInvite = new JobPosting();
+            directInvite.setParent(parent);
+            directInvite.setSubject("Toán học");
+            directInvite.setRequirement("Luyện thi");
+            directInvite.setPricePerSession(300000.0);
+            directInvite.setSchedule("Thứ 2, 4");
+            directInvite.setStatus("RECRUITING");
+            directInvite.setPostedAt(LocalDateTime.now());
+            directInvite.setIsDirectInvite(true);
+            directInvite.setTargetTutor(tutor1);
+            directInvite = jobPostingRepository.save(directInvite);
 
             TutorApplication app = new TutorApplication();
             app.setTutor(tutor1);
-            app.setRequest(tr);
+            app.setJobPosting(directInvite);
             app.setSenderRole(UserRole.TUTOR);
             app.setStatus(ApplicationStatus.ACCEPTED);
             app.setMessage("Tôi có kinh nghiệm luyện thi ĐH 5 năm.");
@@ -274,21 +272,21 @@ public class DatabaseSeeder implements CommandLineRunner {
             commissionRecordRepository.save(cr2);
 
             // Seed Parent Feedbacks (Reviews)
-            ParentFeedback pf1 = new ParentFeedback();
+            Review pf1 = new Review();
             pf1.setClassSession(cs2);
-            pf1.setTutorId(String.valueOf(tutor1.getId()));
+            pf1.setTutor(tutor1);
+            pf1.setParent(parent);
             pf1.setRating(5);
             pf1.setComment("Thầy Nam dạy rất nhiệt tình, con tôi đã tiến bộ rõ rệt chỉ sau 2 tháng.");
-            pf1.setCreatedAt(LocalDateTime.now().minusDays(10));
-            parentFeedbackRepository.save(pf1);
+            reviewRepository.save(pf1);
 
-            ParentFeedback pf2 = new ParentFeedback();
+            Review pf2 = new Review();
             pf2.setClassSession(cs1);
-            pf2.setTutorId(String.valueOf(tutor1.getId()));
+            pf2.setTutor(tutor1);
+            pf2.setParent(parent);
             pf2.setRating(4);
             pf2.setComment("Phương pháp giảng dạy hiệu quả, tuy nhiên đôi khi thầy hơi nghiêm khắc.");
-            pf2.setCreatedAt(LocalDateTime.now().minusDays(2));
-            parentFeedbackRepository.save(pf2);
+            reviewRepository.save(pf2);
         }
     }
 

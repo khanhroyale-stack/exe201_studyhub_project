@@ -18,7 +18,7 @@ public class ParentPortalService {
     private final JobPostingRepository jobPostingRepository;
     private final TutorApplicationRepository tutorApplicationRepository;
     private final ClassSessionRepository classSessionRepository;
-    private final ParentFeedbackRepository parentFeedbackRepository;
+    private final ReviewRepository reviewRepository;
     private final ParentRepository parentRepository;
 
     // Hardcoded parent ID for now until Spring Security context is fully utilized
@@ -163,8 +163,8 @@ public class ParentPortalService {
 
     public List<ParentFeedbackDTO> getFeedbacks() {
         Parent parent = getCurrentParent();
-        return parentFeedbackRepository.findAll().stream()
-            .filter(f -> f.getClassSession() != null && f.getClassSession().getParent().getId().equals(parent.getId()))
+        return reviewRepository.findAll().stream()
+            .filter(f -> f.getClassSession() != null && f.getClassSession().getParent() != null && f.getClassSession().getParent().getId().equals(parent.getId()))
             .map(f -> {
                 ParentFeedbackDTO dto = new ParentFeedbackDTO();
                 dto.setId(f.getId());
@@ -173,19 +173,21 @@ public class ParentPortalService {
                 dto.setTutorName(f.getClassSession().getTutorName());
                 dto.setRating(f.getRating());
                 dto.setComment(f.getComment());
-                dto.setCreatedAt(f.getCreatedAt() != null ? f.getCreatedAt().toString() : "");
+                dto.setCreatedAt(""); // Review doesn't have createdAt yet, mock for now
                 return dto;
             }).collect(Collectors.toList());
     }
 
     public void createFeedback(ParentFeedbackDTO request) {
         ClassSession cs = classSessionRepository.findById(request.getClassId()).orElseThrow();
-        ParentFeedback feedback = new ParentFeedback();
-        feedback.setClassSession(cs);
-        feedback.setTutorId(String.valueOf(cs.getTutorProfile() != null ? cs.getTutorProfile().getId() : 0));
-        feedback.setRating(request.getRating());
-        feedback.setComment(request.getComment());
-        feedback.setCreatedAt(java.time.LocalDateTime.now());
-        parentFeedbackRepository.save(feedback);
+        Review review = new Review();
+        review.setClassSession(cs);
+        if (cs.getTutorProfile() != null) {
+            review.setTutor(cs.getTutorProfile());
+        }
+        review.setParent(getCurrentParent());
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        reviewRepository.save(review);
     }
 }

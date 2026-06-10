@@ -29,4 +29,7 @@ public class LessonLog {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private LessonStatus status; // SCHEDULED, PRESENT, ABSENT, CANCELLED
+
+    private String changeRequestStatus; // null, PENDING, APPROVED, REJECTED
+    private LocalDateTime newProposedTime;
 }

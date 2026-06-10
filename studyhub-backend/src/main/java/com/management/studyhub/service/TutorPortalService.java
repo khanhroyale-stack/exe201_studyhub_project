@@ -22,7 +22,7 @@ public class TutorPortalService {
     private final CourseRepository courseRepository;
     private final SubjectRepository subjectRepository;
     private final TutorProfileRepository tutorProfileRepository;
-    private final ParentFeedbackRepository parentFeedbackRepository;
+    private final ReviewRepository reviewRepository;
     private final TutorApplicationRepository tutorApplicationRepository;
     private final LessonLogRepository lessonLogRepository;
 
@@ -196,8 +196,8 @@ public class TutorPortalService {
                     dto.setStatus(cr.getStatus().name());
 
                     // className from ClassSession description or request
-                    if (cr.getApplication().getRequest() != null) {
-                        dto.setClassName(cr.getApplication().getRequest().getDescription());
+                    if (cr.getApplication().getJobPosting() != null) {
+                        dto.setClassName(cr.getApplication().getJobPosting().getTitle());
                     } else {
                         dto.setClassName("Lớp học");
                     }
@@ -224,15 +224,15 @@ public class TutorPortalService {
                 .findFirst().orElse(null);
         if (tutor == null) return List.of();
 
-        String tutorId = String.valueOf(tutor.getId());
-        return parentFeedbackRepository.findByTutorId(tutorId).stream()
-                .sorted(Comparator.comparing(ParentFeedback::getCreatedAt).reversed())
+        return reviewRepository.findByTutorId(tutor.getId()).stream()
+                // MOCK SORTING FOR NOW AS REVIEW MISSING CREATEDAT:
+                // .sorted(Comparator.comparing(Review::getCreatedAt).reversed())
                 .map(fb -> {
                     ReviewDTO dto = new ReviewDTO();
                     dto.setId(fb.getId());
                     dto.setRating(fb.getRating());
                     dto.setComment(fb.getComment());
-                    dto.setCreatedAt(fb.getCreatedAt());
+                    dto.setCreatedAt(LocalDateTime.now()); // MOCK
                     // Get parent name from class session
                     if (fb.getClassSession() != null && fb.getClassSession().getParent() != null) {
                         dto.setParentName(fb.getClassSession().getParent().getName());

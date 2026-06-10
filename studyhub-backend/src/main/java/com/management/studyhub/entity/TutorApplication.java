@@ -18,8 +18,6 @@ public class TutorApplication {
     @ManyToOne @JoinColumn(name = "tutor_id")
     private TutorProfile tutor;
 
-    @ManyToOne @JoinColumn(name = "request_id")
-    private TutorRequest request;
 
     @ManyToOne @JoinColumn(name = "job_posting_id")
     private JobPosting jobPosting;

@@ -41,4 +41,10 @@ public class JobPosting {
     
     @Column(columnDefinition = "TEXT")
     private String requirement;
+
+    private Boolean isDirectInvite;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_tutor_id")
+    private TutorProfile targetTutor;
 }

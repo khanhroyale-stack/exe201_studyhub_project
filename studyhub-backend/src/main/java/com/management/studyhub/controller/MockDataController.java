@@ -29,6 +29,8 @@ public class MockDataController {
     private final UserRepository userRepository;
     private final TutorProfileRepository tutorProfileRepository;
     private final SubjectRepository subjectRepository;
+    private final com.management.studyhub.repository.ClassSessionRepository classSessionRepository;
+    private final com.management.studyhub.repository.TransactionRepository transactionRepository;
 
     @PostMapping("/init")
     @Transactional
@@ -123,6 +125,27 @@ public class MockDataController {
         tutor.setSubjects(new HashSet<>(subjects));
 
         tutorProfileRepository.save(tutor);
+    }
+
+    @PostMapping("/payment-test-data")
+    @Transactional
+    public ResponseEntity<String> initPaymentTestData() {
+        // Tạo vài ClassSession để test luồng payment
+        com.management.studyhub.entity.ClassSession trialClass = new com.management.studyhub.entity.ClassSession();
+        trialClass.setClassName("Lớp Toán Hình Học 12");
+        trialClass.setTutorName("Nguyễn Thu Hà");
+        trialClass.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.TRIAL);
+        trialClass.setPrice(2000000.0);
+        classSessionRepository.save(trialClass);
+
+        com.management.studyhub.entity.ClassSession completedClass = new com.management.studyhub.entity.ClassSession();
+        completedClass.setClassName("Lớp Tiếng Anh Giao Tiếp");
+        completedClass.setTutorName("Mr. David Smith");
+        completedClass.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.COMPLETED);
+        completedClass.setPrice(4500000.0);
+        classSessionRepository.save(completedClass);
+
+        return ResponseEntity.ok("Đã tạo dữ liệu giả cho ClassSession để test Payment. \n- Lớp TRIAL id: " + trialClass.getId() + "\n- Lớp COMPLETED id: " + completedClass.getId());
     }
 
     @PostMapping("/fix")

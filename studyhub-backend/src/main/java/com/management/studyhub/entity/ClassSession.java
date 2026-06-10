@@ -1,5 +1,6 @@
 package com.management.studyhub.entity;
 
+import com.management.studyhub.entity.enums.ClassSessionStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -24,8 +25,11 @@ public class ClassSession {
     
     private String schedule;
     
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status; // IN_PROGRESS, COMPLETED, CANCELLED
+    private ClassSessionStatus status; // TRIAL, PENDING_PAYMENT, CONFIRMED, COMPLETED, DISBURSED
+    
+    private Double price;
     
     private LocalDateTime nextSessionDate;
     

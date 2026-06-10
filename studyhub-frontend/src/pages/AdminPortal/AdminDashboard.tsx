@@ -1,6 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const AdminDashboard: React.FC = () => {
+  const [revenue, setRevenue] = useState<number | null>(null);
+  const [metrics, setMetrics] = useState({
+    totalUsers: 0,
+    totalCourses: 0,
+    successfulConnections: 0,
+    pendingApprovals: 0
+  });
+
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/admin/reports/revenue');
+        const data = await response.json();
+        setRevenue(data.totalPlatformFee);
+        setMetrics({
+          totalUsers: data.totalUsers || 0,
+          totalCourses: data.totalCourses || 0,
+          successfulConnections: data.successfulConnections || 0,
+          pendingApprovals: data.pendingApprovals || 0
+        });
+      } catch (error) {
+        console.error("Lỗi khi tải doanh thu:", error);
+      }
+    };
+    fetchRevenue();
+    
+    // Auto refresh every 5 seconds
+    const interval = setInterval(fetchRevenue, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(1) + 'tr';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(0) + 'k';
+    }
+    return amount.toString();
+  };
+
   return (
     <div className="max-w-[1440px] mx-auto pb-20">
       <div className="mb-8 flex justify-between items-end">
@@ -31,7 +71,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Tổng số người dùng</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">14,890</div>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{metrics.totalUsers.toLocaleString()}</div>
         </div>
 
         {/* Card 2 */}
@@ -46,7 +86,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Bài đăng tìm gia sư mới</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">345</div>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{metrics.totalCourses.toLocaleString()}</div>
         </div>
 
         {/* Card 3 */}
@@ -61,7 +101,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Kết nối thành công</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">1,284</div>
+          <div className="font-headline-xl text-headline-xl text-on-surface">{metrics.successfulConnections.toLocaleString()}</div>
         </div>
 
         {/* Card 4 */}
@@ -76,7 +116,9 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <h3 className="font-body-sm text-body-sm text-on-surface-variant mb-1">Doanh thu phí nền tảng</h3>
-          <div className="font-headline-xl text-headline-xl text-on-surface">84.2tr</div>
+          <div className="font-headline-xl text-headline-xl text-on-surface">
+            {revenue !== null ? formatCurrency(revenue) : '0'}
+          </div>
         </div>
       </div>
 
@@ -133,7 +175,7 @@ const AdminDashboard: React.FC = () => {
         <div className="lg:col-span-1 flex flex-col gap-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-headline-sm text-headline-sm text-on-surface">Cần xử lý</h3>
-            <span className="bg-error text-on-error font-label-sm text-label-sm px-2 py-0.5 rounded-full">4 Chờ duyệt</span>
+            <span className="bg-error text-on-error font-label-sm text-label-sm px-2 py-0.5 rounded-full">{metrics.pendingApprovals} Chờ duyệt</span>
           </div>
 
           {/* Approval Card 1 */}

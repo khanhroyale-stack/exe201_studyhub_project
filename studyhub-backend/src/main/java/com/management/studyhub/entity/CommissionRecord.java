@@ -1,10 +1,7 @@
 package com.management.studyhub.entity;
 
-import com.management.studyhub.entity.enums.CommissionStatus;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "commission_records") @Data
@@ -13,11 +10,13 @@ public class CommissionRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne @JoinColumn(name = "application_id")
-    private TutorApplication application;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transaction_id", nullable = false)
+    private Transaction transaction;
 
-    private BigDecimal amount;
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private CommissionStatus status; // UNPAID, PAID
+    private Double totalAmount;
+    private Double platformFee;
+    private Double tutorPayout;
+
+    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
 }

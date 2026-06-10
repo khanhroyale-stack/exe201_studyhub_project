@@ -13,6 +13,7 @@ const TutorList = lazy(() => import('../pages/Tutor/TutorList'));
 const TutorDetail = lazy(() => import('../pages/Tutor/TutorDetail'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
+const TestPayment = lazy(() => import('../pages/TestPayment'));
 
 const ParentDashboard = lazy(() => import('../pages/Parent/ParentDashboard'));
 const PostManagement = lazy(() => import('../pages/Parent/PostManagement'));
@@ -40,6 +41,7 @@ const AdminDashboard = lazy(() => import('../pages/AdminPortal/AdminDashboard'))
 const AdminUsers = lazy(() => import('../pages/AdminPortal/AdminUsers'));
 const AdminContent = lazy(() => import('../pages/AdminPortal/AdminContent'));
 const AdminReports = lazy(() => import('../pages/AdminPortal/AdminReports'));
+const AdminPayouts = lazy(() => import('../pages/AdminPortal/AdminPayouts'));
 
 const SuspenseFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -60,6 +62,7 @@ const AppRouter: React.FC = () => {
         <Route path="tutors/:id" element={<TutorDetail />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="test-payment" element={<TestPayment />} />
       </Route>
 
       {/* ── Parent Dashboard Routes (shared Navbar + SideNavBar + Footer via ParentLayout) ── */}
@@ -107,6 +110,7 @@ const AppRouter: React.FC = () => {
         <Route path="users" element={<AdminUsers />} />
         <Route path="content" element={<AdminContent />} />
         <Route path="reports" element={<AdminReports />} />
+        <Route path="payouts" element={<AdminPayouts />} />
         {/* Catch-all redirect within /admin */}
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>

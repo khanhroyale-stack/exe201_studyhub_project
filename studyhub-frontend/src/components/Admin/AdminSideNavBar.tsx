@@ -26,13 +26,19 @@ const navGroups = [
     ],
   },
   {
-    label: 'Thống kê',
+    label: 'Thống kê & Tài chính',
     items: [
       {
         to: '/admin/reports',
         icon: 'bar_chart',
         label: 'Báo cáo & Phân tích',
         sublabel: 'Doanh thu & số liệu',
+      },
+      {
+        to: '/admin/payouts',
+        icon: 'account_balance',
+        label: 'Giải ngân & Lương',
+        sublabel: 'Thanh toán gia sư',
       },
     ],
   },

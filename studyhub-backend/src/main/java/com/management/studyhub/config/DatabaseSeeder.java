@@ -26,6 +26,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final com.management.studyhub.repository.SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.management.studyhub.repository.ClassSessionRepository classSessionRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -40,6 +41,25 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (testimonialRepository.count() == 0) {
             seedTestimonials();
         }
+        if (classSessionRepository.count() == 0) {
+            seedClassSessions();
+        }
+    }
+
+    private void seedClassSessions() {
+        com.management.studyhub.entity.ClassSession trialClass = new com.management.studyhub.entity.ClassSession();
+        trialClass.setClassName("Lớp Toán Hình Học 12");
+        trialClass.setTutorName("Nguyễn Thu Hà");
+        trialClass.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.TRIAL);
+        trialClass.setPrice(2000000.0);
+        classSessionRepository.save(trialClass);
+
+        com.management.studyhub.entity.ClassSession completedClass = new com.management.studyhub.entity.ClassSession();
+        completedClass.setClassName("Lớp Tiếng Anh Giao Tiếp");
+        completedClass.setTutorName("Mr. David Smith");
+        completedClass.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.COMPLETED);
+        completedClass.setPrice(4500000.0);
+        classSessionRepository.save(completedClass);
     }
 
     private void seedSubjects() {
@@ -246,6 +266,62 @@ public class DatabaseSeeder implements CommandLineRunner {
         c4.setTutor(t4);
         c4.setSubject(itSubject);
         courseRepository.save(c4);
+
+        // Tutor 5 (Pending eKYC)
+        TutorProfile tPending = new TutorProfile();
+        tPending.setUser(createUser("tutorpending@gmail.com", UserRole.TUTOR));
+        tPending.setFullName("Vũ Đức Phát");
+        tPending.setIntroduction("Cử nhân Sinh học - ĐH Khoa học Tự nhiên");
+        tPending.setAvatarUrl("https://ui-avatars.com/api/?name=Vu+Duc+Phat&background=random");
+        tPending.setStatus(com.management.studyhub.entity.enums.TutorStatus.PENDING);
+        tPending.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.PROCESSING);
+        tPending.setIdCardFrontUrl("https://example.com/cccd_front.jpg");
+        tPending.setSimilarityScore(java.math.BigDecimal.valueOf(95.5));
+        tPending.setDegreeImageUrl("https://example.com/degree.jpg");
+        if (biologySubject != null) tPending.setSubjects(java.util.Set.of(biologySubject));
+        tutorProfileRepository.save(tPending);
+
+        // Pending Tutor 2
+        TutorProfile tPending2 = new TutorProfile();
+        tPending2.setUser(createUser("tutorpending2@gmail.com", UserRole.TUTOR));
+        tPending2.setFullName("Lê Trọng Nghĩa");
+        tPending2.setIntroduction("Kỹ sư phần mềm - 3 năm kinh nghiệm");
+        tPending2.setAvatarUrl("https://ui-avatars.com/api/?name=Le+Trong+Nghia&background=random");
+        tPending2.setStatus(com.management.studyhub.entity.enums.TutorStatus.PENDING);
+        tPending2.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.PROCESSING);
+        tPending2.setIdCardFrontUrl("https://example.com/cccd_front.jpg");
+        tPending2.setSimilarityScore(java.math.BigDecimal.valueOf(89.2));
+        tPending2.setDegreeImageUrl("https://example.com/degree.jpg");
+        if (itSubject != null) tPending2.setSubjects(java.util.Set.of(itSubject));
+        tutorProfileRepository.save(tPending2);
+
+        // Pending Tutor 3
+        TutorProfile tPending3 = new TutorProfile();
+        tPending3.setUser(createUser("tutorpending3@gmail.com", UserRole.TUTOR));
+        tPending3.setFullName("Hoàng Mai Ngọc");
+        tPending3.setIntroduction("IELTS 8.0 - Cử nhân Sư phạm Tiếng Anh");
+        tPending3.setAvatarUrl("https://ui-avatars.com/api/?name=Hoang+Mai+Ngoc&background=random");
+        tPending3.setStatus(com.management.studyhub.entity.enums.TutorStatus.PENDING);
+        tPending3.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.PROCESSING);
+        tPending3.setIdCardFrontUrl("https://example.com/cccd_front.jpg");
+        tPending3.setSimilarityScore(java.math.BigDecimal.valueOf(98.1));
+        tPending3.setDegreeImageUrl("https://example.com/degree.jpg");
+        if (englishSubject != null) tPending3.setSubjects(java.util.Set.of(englishSubject));
+        tutorProfileRepository.save(tPending3);
+
+        // Pending Tutor 4
+        TutorProfile tPending4 = new TutorProfile();
+        tPending4.setUser(createUser("tutorpending4@gmail.com", UserRole.TUTOR));
+        tPending4.setFullName("Đỗ Văn Hùng");
+        tPending4.setIntroduction("Sinh viên xuất sắc ĐH Bách Khoa");
+        tPending4.setAvatarUrl("https://ui-avatars.com/api/?name=Do+Van+Hung&background=random");
+        tPending4.setStatus(com.management.studyhub.entity.enums.TutorStatus.PENDING);
+        tPending4.setEkycStatus(com.management.studyhub.entity.enums.EkycStatus.PROCESSING);
+        tPending4.setIdCardFrontUrl("https://example.com/cccd_front.jpg");
+        tPending4.setSimilarityScore(java.math.BigDecimal.valueOf(72.4));
+        tPending4.setDegreeImageUrl("https://example.com/degree.jpg");
+        if (mathSubject != null) tPending4.setSubjects(java.util.Set.of(mathSubject));
+        tutorProfileRepository.save(tPending4);
 
         // Course 5
         Course c5 = new Course();

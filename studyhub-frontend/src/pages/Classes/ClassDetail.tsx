@@ -100,7 +100,6 @@ const ClassDetail: React.FC = () => {
                   </div>
                   <div className="flex gap-4 mb-4">
                       <span className="font-label-sm text-label-sm">Đã xác minh eKYC</span>
-                    </div>
                   </div>
                   <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
                     Phụ huynh {currentClass.parentName} đang tìm gia sư cho con. Vui lòng liên hệ để trao đổi thêm chi tiết.

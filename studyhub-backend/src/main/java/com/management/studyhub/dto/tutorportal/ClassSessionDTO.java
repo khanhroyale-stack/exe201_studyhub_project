@@ -15,4 +15,6 @@ public class ClassSessionDTO {
     private Double pricePerSession;
     private String learningMode;
     private String subject;
+    private String tutorName;
+    private String tutorAvatar;
 }

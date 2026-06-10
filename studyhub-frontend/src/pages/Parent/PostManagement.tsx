@@ -1,40 +1,125 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { mockDb } from '../../services/mockDb';
-import { UnifiedPost, PostStatus, ApplicationStatus } from '../../types/shared';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import TutorProfileModal from '../../components/Shared/TutorProfileModal';
+
+interface ApplicantDTO {
+  id: number;
+  jobPostingId: number;
+  tutorId: string;
+  tutorName: string;
+  tutorAvatar: string;
+  tutorTitle: string;
+  tutorRating: number;
+  tutorReviews: number;
+  message: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  appliedAt: string;
+}
+
+interface JobPostingDTO {
+  id: number;
+  parentId: number;
+  parentName: string;
+  title: string;
+  subject: string;
+  classLevel: string;
+  description: string;
+  postedAt: string;
+  status: string; // PENDING_APPROVAL, RECRUITING, CLOSED
+  location: string;
+  detailedAddress: string;
+  schedule: string;
+  pricePerSession: number;
+  learningMode: string;
+  requirement: string;
+  applicantsCount: number;
+  applicants: ApplicantDTO[];
+}
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const PostManagement: React.FC = () => {
-  const [posts, setPosts] = useState<UnifiedPost[]>([]);
-  const [newApplicantsCount, setNewApplicantsCount] = useState(0);
+  const { userId } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'posts' | 'bookings'>('posts');
+  const [posts, setPosts] = useState<JobPostingDTO[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [accepting, setAccepting] = useState<number | null>(null);
+  const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
 
   useEffect(() => {
-    const allPosts = mockDb.getPosts();
-    setPosts(allPosts);
+    if (!userId) return;
+    
+    Promise.all([
+      fetch(`${BASE_URL}/posts/parent/${userId}`).then(res => res.json()),
+      fetch(`${BASE_URL}/bookings/parent/${userId}`).then(res => res.json())
+    ])
+      .then(([postsData, bookingsData]) => {
+        setPosts(Array.isArray(postsData) ? postsData : []);
+        setBookings(Array.isArray(bookingsData) ? bookingsData : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [userId]);
 
-    const allApps = mockDb.getApplications();
-    const newApps = allApps.filter(a => a.status === ApplicationStatus.PENDING);
-    setNewApplicantsCount(newApps.length);
-  }, []);
+  const handleAcceptApplicant = async (applicantId: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn chấp nhận gia sư này? Các ứng viên khác sẽ bị từ chối tự động và bài đăng sẽ đóng.')) return;
+    setAccepting(applicantId);
+    try {
+      const res = await fetch(`${BASE_URL}/class-sessions/accept-applicant/${applicantId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        const errBody = await res.json();
+        throw new Error(errBody.error || 'Có lỗi xảy ra');
+      }
+      
+      alert('Đã chấp nhận gia sư! Lớp học đã được tạo.');
+      navigate('/parent/classes');
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+      setAccepting(null);
+    }
+  };
+
+  const renderStars = (rating: number) => {
+    return [1, 2, 3, 4, 5].map(star => (
+      <span
+        key={star}
+        className="material-symbols-outlined text-[16px]"
+        style={{ fontVariationSettings: star <= Math.round(rating) ? "'FILL' 1" : "'FILL' 0", color: '#f59e0b' }}
+      >
+        star
+      </span>
+    ));
+  };
 
   const totalPosts = posts.length;
-  const activePosts = posts.filter(p => p.status === PostStatus.RECRUITING).length;
-  const pendingApprovalPosts = posts.filter(p => p.status === PostStatus.PENDING_APPROVAL).length;
+  const activePosts = posts.filter(p => p.status === 'RECRUITING').length;
+  const pendingApprovalPosts = posts.filter(p => p.status === 'PENDING_APPROVAL').length;
+  const newApplicantsCount = posts.reduce((sum, p) => sum + (p.applicantsCount || 0), 0);
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
+    <div className="flex flex-col gap-8 animate-fade-in pb-20">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-slide-up">
         <div>
-          <h1 className="font-bold text-3xl text-on-surface">Quản lý bài đăng</h1>
-          <p className="font-normal text-base text-on-surface-variant mt-2">Theo dõi và quản lý các yêu cầu tìm gia sư của bạn.</p>
+          <h1 className="font-bold text-3xl text-on-surface">Quản lý bài đăng & Ứng viên</h1>
+          <p className="font-normal text-base text-on-surface-variant mt-2">Theo dõi bài đăng và chọn gia sư phù hợp nhất ngay tại đây.</p>
         </div>
         <Link to="/parent/posts/create" className="bg-primary text-white px-6 py-3 rounded-lg font-semibold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-sm">
-          <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>add</span>
+          <span className="material-symbols-outlined text-[20px]">add</span>
           Tạo bài đăng mới
         </Link>
       </div>
 
-      {/* Dashboard Filters & Stats */}
+      {/* Dashboard Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up stagger-1">
         <div className="glass p-6 rounded-2xl border border-white/20 flex items-center gap-4 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
           <div className="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
@@ -68,98 +153,263 @@ const PostManagement: React.FC = () => {
             <span className="material-symbols-outlined">group</span>
           </div>
           <div>
-            <p className="font-medium text-xs text-on-surface-variant uppercase">Ứng viên mới</p>
+            <p className="font-medium text-xs text-on-surface-variant uppercase">Tổng ứng viên</p>
             <p className="font-bold text-2xl text-on-surface">{newApplicantsCount}</p>
           </div>
         </div>
       </div>
 
       {/* List of Postings */}
-      <div className="glass rounded-2xl border border-white/20 overflow-hidden animate-slide-up stagger-2">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-container-low/50 border-b border-outline-variant">
-                <th className="px-6 py-4 font-semibold text-sm text-on-surface-variant">Tiêu đề bài đăng</th>
-                <th className="px-6 py-4 font-semibold text-sm text-on-surface-variant">Môn học</th>
-                <th className="px-6 py-4 font-semibold text-sm text-on-surface-variant">Ngày đăng</th>
-                <th className="px-6 py-4 font-semibold text-sm text-on-surface-variant">Trạng thái</th>
-                <th className="px-6 py-4 font-semibold text-sm text-on-surface-variant">Ứng viên</th>
-                <th className="px-6 py-4 font-semibold text-sm text-on-surface-variant text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant">
-              {posts.map((post) => {
-                const appsForPost = mockDb.getApplications().filter(a => a.postId === post.id).length;
-                return (
-                  <tr key={post.id} className={`hover:bg-surface-container transition-colors group ${post.status === PostStatus.CLOSED ? 'opacity-75' : ''}`}>
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-sm text-on-surface block">{post.title}</span>
-                      <span className="text-[12px] text-on-surface-variant">ID: #{post.id}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-medium text-xs">
-                        {post.subject}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-normal text-sm text-on-surface-variant">
-                      {new Date(post.postedAt).toLocaleDateString('vi-VN')}
-                    </td>
-                    <td className="px-6 py-4">
-                      {post.status === PostStatus.CLOSED ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-medium text-xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
-                          Đã đóng
-                        </span>
-                      ) : post.status === PostStatus.PENDING_APPROVAL ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-800 font-medium text-xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                          Chờ duyệt
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-medium text-xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                          Đang tuyển
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-on-surface">{appsForPost}</span>
-                        <span className="font-normal text-sm text-on-surface-variant">người</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {post.status === PostStatus.RECRUITING ? (
-                        <Link to={`/parent/posts/${post.id}/applicants`} className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm">
-                          Xem ứng viên
-                        </Link>
-                      ) : (
-                        <button className="border border-outline-variant text-on-surface-variant px-4 py-2 rounded-lg font-medium text-xs hover:bg-surface-container transition-colors">
-                          Chi tiết
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {/* Pagination placeholder */}
-        <div className="px-6 py-4 glass border-t border-white/20 flex items-center justify-between">
-          <span className="font-normal text-sm text-on-surface-variant">Hiển thị 1-{posts.length} trên {posts.length} bài đăng</span>
-          <div className="flex items-center gap-2">
-            <button className="p-2 rounded-md border border-outline-variant text-on-surface-variant cursor-not-allowed">
-              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>chevron_left</span>
-            </button>
-            <button className="w-8 h-8 rounded-md bg-primary text-on-primary font-medium text-xs">1</button>
-            <button className="p-2 rounded-md border border-outline-variant text-on-surface-variant cursor-not-allowed">
-              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>chevron_right</span>
-            </button>
-          </div>
-        </div>
+      <div className="flex flex-col gap-8 animate-slide-up stagger-2">
+        <div className="flex gap-4 border-b border-outline-variant mb-6">
+        <button 
+          onClick={() => setActiveTab('posts')}
+          className={`pb-3 font-semibold transition-colors relative ${activeTab === 'posts' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+        >
+          Bài đăng của tôi
+          {activeTab === 'posts' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
+        </button>
+        <button 
+          onClick={() => setActiveTab('bookings')}
+          className={`pb-3 font-semibold transition-colors relative ${activeTab === 'bookings' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+        >
+          Lời mời đã gửi
+          {activeTab === 'bookings' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
+        </button>
       </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : activeTab === 'bookings' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+          {bookings.length === 0 ? (
+            <div className="col-span-full py-20 text-center text-on-surface-variant bg-surface rounded-2xl border border-outline-variant">
+              Bạn chưa gửi lời mời dạy nào.
+            </div>
+          ) : (
+            bookings.map(booking => (
+              <div key={booking.id} className="bg-surface rounded-2xl border border-outline-variant p-6 shadow-sm flex flex-col hover:border-primary/30 transition-colors">
+                <div className="flex items-start gap-4 mb-4">
+                  <img src={booking.tutorAvatarUrl || 'https://via.placeholder.com/150'} alt="Tutor" className="w-12 h-12 rounded-full object-cover border border-outline-variant" />
+                  <div>
+                    <h3 className="font-bold text-on-surface cursor-pointer hover:text-primary" onClick={() => setSelectedTutorId(booking.tutorId)}>{booking.tutorName}</h3>
+                    <p className="text-xs text-on-surface-variant">{new Date(booking.createdAt).toLocaleDateString('vi-VN')}</p>
+                  </div>
+                  <div className="ml-auto">
+                    {booking.status === 'PENDING' ? (
+                      <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded uppercase">Chờ phản hồi</span>
+                    ) : booking.status === 'ACCEPTED' ? (
+                      <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded uppercase">Đã đồng ý</span>
+                    ) : (
+                      <span className="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded uppercase">Đã từ chối</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2 mb-4 flex-1 text-sm text-on-surface">
+                  <div className="flex justify-between border-b border-outline-variant/30 pb-2">
+                    <span className="text-on-surface-variant">Môn học:</span>
+                    <span className="font-semibold">{booking.subject}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-outline-variant/30 pb-2">
+                    <span className="text-on-surface-variant">Lịch học:</span>
+                    <span>{booking.schedule}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-outline-variant/30 pb-2">
+                    <span className="text-on-surface-variant">Học phí:</span>
+                    <span className="font-semibold text-primary">{booking.pricePerSession.toLocaleString('vi-VN')}đ</span>
+                  </div>
+                  <div className="flex justify-between pb-2">
+                    <span className="text-on-surface-variant">Hình thức:</span>
+                    <span>{booking.learningMode === 'ONLINE' ? 'Trực tuyến' : 'Trực tiếp'}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : posts.length === 0 ? (
+          <div className="text-center py-20 glass rounded-2xl border border-outline-variant">
+            <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">article</span>
+            <p className="text-on-surface-variant">Bạn chưa tạo bài đăng nào.</p>
+          </div>
+        ) : (
+          posts.map((post) => {
+            const isClosed = post.status === 'CLOSED';
+            const pendingApplicants = post.applicants?.filter(a => a.status === 'PENDING') || [];
+            const acceptedApplicant = post.applicants?.find(a => a.status === 'ACCEPTED');
+
+            return (
+              <div key={post.id} className={`glass rounded-2xl border ${isClosed ? 'border-outline-variant/40 bg-surface/40' : 'border-outline-variant'} overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+                
+                {/* Header Bài đăng */}
+                <div className="p-6 border-b border-outline-variant flex flex-col md:flex-row justify-between gap-4 bg-surface-container-lowest/50">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-3 py-1 bg-primary-container text-on-primary-container font-semibold text-xs rounded-full">
+                        {post.subject} ({post.classLevel})
+                      </span>
+                      {post.status === 'CLOSED' ? (
+                        <span className="px-3 py-1 bg-surface-container-highest text-on-surface font-semibold text-xs rounded-full">Đã đóng</span>
+                      ) : post.status === 'PENDING_APPROVAL' ? (
+                        <span className="px-3 py-1 bg-orange-100 text-orange-800 font-semibold text-xs rounded-full">Chờ admin duyệt</span>
+                      ) : (
+                        <span className="px-3 py-1 bg-secondary-container text-on-secondary-container font-semibold text-xs rounded-full flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                          Đang tuyển gia sư
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-bold text-on-surface mb-2">{post.title}</h3>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-on-surface-variant">
+                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">payments</span> {post.pricePerSession?.toLocaleString('vi-VN')}đ/buổi</span>
+                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">{post.learningMode === 'ONLINE' ? 'laptop_mac' : 'location_on'}</span> {post.learningMode === 'ONLINE' ? 'Online' : 'Offline'}</span>
+                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> {post.schedule}</span>
+                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">schedule</span> Đăng ngày: {new Date(post.postedAt).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-4">
+                    <div className="text-center bg-surface px-4 py-2 rounded-xl border border-outline-variant">
+                      <p className="text-xs text-on-surface-variant mb-1 font-medium">Số người ứng tuyển</p>
+                      <p className="text-2xl font-bold text-primary">{post.applicantsCount || 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Danh sách Ứng viên */}
+                <div className="p-6 bg-surface-container-lowest">
+                  <h4 className="font-bold text-lg text-on-surface mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">group</span> 
+                    Danh sách ứng viên ({post.applicants?.length || 0})
+                  </h4>
+
+                  {post.applicants?.length === 0 ? (
+                    <div className="text-center py-8 text-on-surface-variant bg-surface rounded-xl border border-dashed border-outline-variant">
+                      {post.status === 'RECRUITING' 
+                        ? 'Chưa có gia sư nào nộp đơn. Đừng lo, bài đăng của bạn vẫn đang được gợi ý tới các gia sư.'
+                        : 'Bài đăng này không có ứng viên.'}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                      {/* Ưu tiên hiện người được chấp nhận lên đầu */}
+                      {acceptedApplicant && (
+                        <div className="border border-green-300 bg-green-50/50 rounded-2xl p-5 flex flex-col md:flex-row gap-5 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">
+                            ĐÃ CHỌN LÀM GIA SƯ
+                          </div>
+                          <img src={acceptedApplicant.tutorAvatar || 'https://via.placeholder.com/150'} alt="avatar" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm shrink-0" />
+                          <div className="flex-1">
+                            <h5 className="font-bold text-lg text-on-surface mb-1">{acceptedApplicant.tutorName}</h5>
+                            <div className="flex items-center gap-1 mb-2">
+                              {renderStars(acceptedApplicant.tutorRating || 5)}
+                              <span className="text-sm text-on-surface-variant ml-1">{acceptedApplicant.tutorRating ? acceptedApplicant.tutorRating.toFixed(1) : '5.0'}</span>
+                            </div>
+                            <p className="text-sm text-on-surface-variant font-medium mb-2"><span className="material-symbols-outlined text-[16px] align-middle">school</span> {acceptedApplicant.tutorTitle}</p>
+                            <div className="bg-white p-3 rounded-lg text-sm text-on-surface-variant italic border border-green-100 shadow-sm relative">
+                                <span className="material-symbols-outlined text-green-200 absolute -top-2 -left-2 text-2xl rotate-180 bg-white rounded-full">format_quote</span>
+                                {acceptedApplicant.message}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Các ứng viên đang chờ duyệt (PENDING) */}
+                      {pendingApplicants.map(app => (
+                        <div key={app.id} className="border border-outline-variant bg-surface rounded-2xl p-5 flex flex-col gap-4 hover:shadow-md transition-shadow">
+                          <div className="flex gap-4">
+                            <img src={app.tutorAvatar || 'https://via.placeholder.com/150'} alt="avatar" className="w-16 h-16 rounded-full object-cover border-2 border-surface-container-high shadow-sm shrink-0" />
+                            <div className="flex-1">
+                              <h5 className="font-bold text-lg text-on-surface">{app.tutorName}</h5>
+                              <div className="flex items-center gap-1 mb-1">
+                                {renderStars(app.tutorRating || 5)}
+                                <span className="text-sm text-on-surface-variant ml-1">{app.tutorRating ? app.tutorRating.toFixed(1) : 'Chưa có'}</span>
+                              </div>
+                              <p className="text-sm text-on-surface-variant font-medium"><span className="material-symbols-outlined text-[14px] align-middle">school</span> {app.tutorTitle}</p>
+                            </div>
+                          </div>
+                          
+                          {app.message && (
+                            <div className="bg-surface-container-lowest p-3 rounded-lg text-sm text-on-surface-variant italic border border-outline-variant/50 relative mt-2">
+                              <span className="material-symbols-outlined text-outline-variant/30 absolute -top-2 -left-2 text-2xl rotate-180 bg-surface-container-lowest rounded-full">format_quote</span>
+                              {app.message}
+                            </div>
+                          )}
+
+                          <div className="mt-auto pt-4 border-t border-outline-variant flex justify-end gap-3">
+                            <button
+                              onClick={() => setSelectedTutorId(app.tutorId)}
+                              className="px-4 py-2 rounded-xl text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">visibility</span>
+                              Xem chi tiết
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!window.confirm('Bạn chắc chắn muốn từ chối ứng viên này?')) return;
+                                try {
+                                  const res = await fetch(`${BASE_URL}/class-sessions/reject-applicant/${app.id}`, { method: 'POST' });
+                                  if (!res.ok) throw new Error();
+                                  // Xóa ứng viên khỏi giao diện sau khi từ chối
+                                  setPosts(prev => prev.map(p => {
+                                    if (p.id !== post.id) return p;
+                                    return { ...p, applicants: p.applicants.filter(a => a.id !== app.id) };
+                                  }));
+                                } catch { alert('Lỗi khi từ chối'); }
+                              }}
+                              disabled={accepting !== null}
+                              className="px-6 py-2 bg-surface border border-outline-variant text-on-surface-variant rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors disabled:opacity-50 flex items-center gap-2"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">close</span>
+                              Từ chối
+                            </button>
+                            <button
+                              onClick={() => handleAcceptApplicant(app.id)}
+                              disabled={accepting !== null}
+                              className="px-6 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                            >
+                              {accepting === app.id ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  Đang xử lý...
+                                </>
+                              ) : (
+                                <>
+                                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                  Duyệt chọn gia sư
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Ứng viên bị từ chối */}
+                      {post.applicants?.filter(a => a.status === 'REJECTED').map(app => (
+                        <div key={app.id} className="border border-outline-variant/30 bg-surface/50 rounded-2xl p-5 flex flex-row gap-4 opacity-60">
+                          <img src={app.tutorAvatar || 'https://via.placeholder.com/150'} alt="avatar" className="w-12 h-12 rounded-full object-cover border border-outline-variant shrink-0" />
+                          <div>
+                            <h5 className="font-semibold text-on-surface">{app.tutorName}</h5>
+                            <p className="text-xs text-on-surface-variant">Đã từ chối</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {selectedTutorId && (
+        <TutorProfileModal 
+          tutorId={selectedTutorId} 
+          onClose={() => setSelectedTutorId(null)} 
+        />
+      )}
     </div>
   );
 };

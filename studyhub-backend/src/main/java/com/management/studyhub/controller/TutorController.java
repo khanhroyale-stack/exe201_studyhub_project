@@ -42,6 +42,17 @@ public class TutorController {
         return ResponseEntity.ok(tutorService.getTutorProfile(id));
     }
 
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<?> getTutorByUserId(@PathVariable Long userId) {
+        try {
+            com.management.studyhub.entity.TutorProfile profile =
+                tutorService.getTutorProfileByUserId(userId);
+            return ResponseEntity.ok(profile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping("/{id}/ekyc")
     public ResponseEntity<?> updateEkycProfile(
             @PathVariable Long id,

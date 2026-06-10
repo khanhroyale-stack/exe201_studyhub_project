@@ -31,6 +31,12 @@ const navGroups = [
         label: 'Lớp đang dạy',
         sublabel: 'Quản lý lớp hiện tại',
       },
+      {
+        to: '/tutor/bookings',
+        icon: 'person_add',
+        label: 'Lời mời dạy',
+        sublabel: 'Yêu cầu từ phụ huynh',
+      },
     ],
   },
   {

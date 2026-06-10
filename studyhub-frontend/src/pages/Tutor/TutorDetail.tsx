@@ -50,17 +50,7 @@ const TutorDetail: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-12 flex flex-col lg:flex-row gap-6">
           {/* Left Column: Details */}
           <div className="flex-grow space-y-12">
-            {/* About Me */}
-            <section>
-              <h2 className="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">person</span>
-                Giới thiệu bản thân
-              </h2>
-              <div className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant space-y-4 text-on-surface-variant">
-                <p>Với hơn 5 năm tận tụy với nghề giáo, tôi đã đồng hành cùng hàng trăm học sinh trong các kỳ thi chuyển cấp và ôn thi. Phương pháp dạy của tôi không chỉ dừng lại ở việc truyền đạt công thức, mà là khơi gợi tư duy logic và cách giải quyết vấn đề có hệ thống.</p>
-                <p>Tôi đặc biệt chú trọng vào việc xây dựng nền tảng vững chắc trước khi nâng cao, giúp học sinh mất gốc lấy lại tự tin và học sinh khá giỏi đạt được điểm cao trong các kỳ thi quan trọng.</p>
-              </div>
-            </section>
+
 
             {/* Education */}
             <section>

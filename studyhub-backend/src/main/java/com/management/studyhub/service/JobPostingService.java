@@ -1,8 +1,11 @@
 package com.management.studyhub.service;
 
+import com.management.studyhub.dto.ApplicantDTO;
 import com.management.studyhub.dto.JobPostingDTO;
+import com.management.studyhub.entity.Applicant;
 import com.management.studyhub.entity.JobPosting;
 import com.management.studyhub.entity.Parent;
+import com.management.studyhub.repository.ApplicantRepository;
 import com.management.studyhub.repository.JobPostingRepository;
 import com.management.studyhub.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +21,11 @@ public class JobPostingService {
 
     private final JobPostingRepository jobPostingRepository;
     private final ParentRepository parentRepository;
+    private final ApplicantRepository applicantRepository;
 
-    public JobPostingDTO createPost(Long parentId, JobPostingDTO dto) {
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> new RuntimeException("Parent not found"));
+    public JobPostingDTO createPost(Long userId, JobPostingDTO dto) {
+        Parent parent = parentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Parent not found for user: " + userId));
 
         JobPosting job = new JobPosting();
         job.setParent(parent);
@@ -30,7 +34,7 @@ public class JobPostingService {
         job.setClassLevel(dto.getClassLevel());
         job.setDescription(dto.getDescription());
         job.setPostedAt(LocalDateTime.now());
-        job.setStatus("PENDING_APPROVAL"); // Mặc định là PENDING_APPROVAL theo luồng chờ admin duyệt
+        job.setStatus("RECRUITING"); // Hoặc PENDING_APPROVAL
         job.setLocation(dto.getLocation());
         job.setDetailedAddress(dto.getDetailedAddress());
         job.setSchedule(dto.getSchedule());
@@ -50,11 +54,36 @@ public class JobPostingService {
                 .collect(Collectors.toList());
     }
 
+    public List<JobPostingDTO> getPostsByParent(Long userId) {
+        Parent parent = parentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Parent not found for user: " + userId));
+
+        return jobPostingRepository.findByParentId(parent.getId())
+                .stream()
+                .map(post -> {
+                    JobPostingDTO dto = mapToDTO(post);
+                    // Lấy luôn danh sách ứng viên cho bài đăng này
+                    List<ApplicantDTO> applicants = applicantRepository.findByJobPostingId(post.getId())
+                            .stream()
+                            .map(this::mapApplicantToDTO)
+                            .collect(Collectors.toList());
+                    dto.setApplicants(applicants);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     public List<JobPostingDTO> getPendingPosts() {
         return jobPostingRepository.findByStatus("PENDING_APPROVAL")
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    public JobPostingDTO getPostById(Long id) {
+        return jobPostingRepository.findById(id)
+                .map(this::mapToDTO)
+                .orElseThrow(() -> new RuntimeException("Job posting not found"));
     }
 
     public void approvePost(Long id) {
@@ -69,6 +98,87 @@ public class JobPostingService {
                 .orElseThrow(() -> new RuntimeException("Job posting not found"));
         job.setStatus("CLOSED");
         jobPostingRepository.save(job);
+    }
+
+    /**
+     * Lấy danh sách ứng viên theo postId
+     */
+    public List<ApplicantDTO> getApplicantsByPost(Long postId) {
+        return applicantRepository.findByJobPostingId(postId)
+                .stream()
+                .map(this::mapApplicantToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gia sư xem các đơn mình đã nộp, kèm thông tin bài đăng
+     */
+    public List<ApplicantDTO> getMyApplications(Long tutorProfileId) {
+        return applicantRepository.findByTutorId(String.valueOf(tutorProfileId))
+                .stream()
+                .map(a -> {
+                    ApplicantDTO dto = mapApplicantToDTO(a);
+                    // Gắn thêm thông tin bài đăng vào DTO
+                    if (a.getJobPosting() != null) {
+                        JobPosting post = a.getJobPosting();
+                        dto.setPostTitle(post.getTitle());
+                        dto.setPostSubject(post.getSubject());
+                        dto.setPostClassLevel(post.getClassLevel());
+                        dto.setPostSchedule(post.getSchedule());
+                        dto.setPostPricePerSession(post.getPricePerSession());
+                        dto.setPostLearningMode(post.getLearningMode());
+                        dto.setPostStatus(post.getStatus());
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gia sư nộp đơn ứng tuyển bài đăng
+     */
+    public ApplicantDTO applyToPost(Long postId, Long tutorProfileId, String tutorName,
+                                    String tutorAvatar, String tutorTitle, String message) {
+        JobPosting post = jobPostingRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("JobPosting not found"));
+
+        // Kiểm tra đã apply chưa
+        boolean alreadyApplied = applicantRepository.findByJobPostingId(postId)
+                .stream()
+                .anyMatch(a -> String.valueOf(tutorProfileId).equals(a.getTutorId()));
+        if (alreadyApplied) throw new RuntimeException("Bạn đã nộp đơn cho bài đăng này rồi");
+
+        Applicant applicant = new Applicant();
+        applicant.setJobPosting(post);
+        applicant.setTutorId(String.valueOf(tutorProfileId));
+        applicant.setTutorName(tutorName);
+        applicant.setTutorAvatar(tutorAvatar);
+        applicant.setTutorTitle(tutorTitle);
+        applicant.setMessage(message);
+        applicant.setStatus("PENDING");
+        applicant.setAppliedAt(LocalDateTime.now());
+
+        // Tăng số ứng viên
+        post.setApplicantsCount((post.getApplicantsCount() == null ? 0 : post.getApplicantsCount()) + 1);
+        jobPostingRepository.save(post);
+
+        return mapApplicantToDTO(applicantRepository.save(applicant));
+    }
+
+    private ApplicantDTO mapApplicantToDTO(Applicant a) {
+        ApplicantDTO dto = new ApplicantDTO();
+        dto.setId(a.getId());
+        if (a.getJobPosting() != null) dto.setJobPostingId(a.getJobPosting().getId());
+        dto.setTutorId(a.getTutorId());
+        dto.setTutorName(a.getTutorName());
+        dto.setTutorAvatar(a.getTutorAvatar());
+        dto.setTutorTitle(a.getTutorTitle());
+        dto.setTutorRating(a.getTutorRating());
+        dto.setTutorReviews(a.getTutorReviews());
+        dto.setMessage(a.getMessage());
+        dto.setStatus(a.getStatus());
+        dto.setAppliedAt(a.getAppliedAt());
+        return dto;
     }
 
     private JobPostingDTO mapToDTO(JobPosting job) {
@@ -91,6 +201,7 @@ public class JobPostingService {
         dto.setPricePerSession(job.getPricePerSession());
         dto.setLearningMode(job.getLearningMode());
         dto.setRequirement(job.getRequirement());
+        dto.setApplicantsCount(job.getApplicantsCount() == null ? 0 : job.getApplicantsCount());
         return dto;
     }
 }

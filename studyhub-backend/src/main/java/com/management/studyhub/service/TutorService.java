@@ -165,4 +165,9 @@ public class TutorService {
         return tutorProfileRepository.findById(tutorId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy gia sư"));
     }
+
+    public TutorProfile getTutorProfileByUserId(Long userId) {
+        return tutorProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy profile gia sư"));
+    }
 }

@@ -24,6 +24,9 @@ public class Applicant {
     private Double tutorRating;
     private Integer tutorReviews;
     
+    @Column(length = 2000)
+    private String message;
+    
     private LocalDateTime appliedAt;
     
     @Column(length = 20)

@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface ClassSessionRepository extends JpaRepository<ClassSession, Long> {
     List<ClassSession> findByStatus(ClassSessionStatus status);
+    List<ClassSession> findByParentId(Long parentId);
+    List<ClassSession> findByTutorProfileId(Long tutorProfileId);
 }

@@ -29,6 +29,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final com.management.studyhub.repository.JobPostingRepository jobPostingRepository;
     private final PasswordEncoder passwordEncoder;
     private final com.management.studyhub.repository.ClassSessionRepository classSessionRepository;
+    private final com.management.studyhub.repository.DirectBookingRepository directBookingRepository;
+    private final com.management.studyhub.repository.ApplicantRepository applicantRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -43,67 +45,95 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (testimonialRepository.count() == 0) {
             seedTestimonials();
         }
-        if (classSessionRepository.count() == 0) {
-            seedClassSessions();
+        if (directBookingRepository.count() == 0) {
+            seedBookings();
         }
         if (jobPostingRepository.count() == 0) {
             seedJobPostings();
         }
+        if (applicantRepository.count() == 0) {
+            seedApplicants();
+        }
+        if (classSessionRepository.count() == 0) {
+            seedClassSessions();
+        }
+    }
+
+    private void seedBookings() {
+        User parent = userRepository.findByEmail("parent@gmail.com").orElse(null);
+        TutorProfile tutor1 = tutorProfileRepository.findAll().stream().filter(t -> t.getFullName().contains("Nguyễn Hoàng Nam")).findFirst().orElse(null);
+        
+        if (parent != null && tutor1 != null) {
+            com.management.studyhub.entity.DirectBooking b1 = new com.management.studyhub.entity.DirectBooking();
+            b1.setParent(parent);
+            b1.setTutor(tutor1);
+            b1.setSubject("Toán 12 - Luyện thi Đại học");
+            b1.setSchedule("Tối thứ 2, 4, 6 từ 19h30 - 21h30");
+            b1.setLearningMode("ONLINE");
+            b1.setPricePerSession(new java.math.BigDecimal("350000"));
+            b1.setParentMessage("Cháu nhà học khá nhưng hay ẩu, thầy rèn giúp cháu. Xin cảm ơn.");
+            b1.setStatus("PENDING");
+            directBookingRepository.save(b1);
+        }
     }
 
     private void seedJobPostings() {
-        com.management.studyhub.entity.Parent parent = parentRepository.findById(1L).orElse(null);
-        if (parent == null) return;
+        User parent = userRepository.findByEmail("parent@gmail.com").orElse(null);
+        if (parent != null) {
+            com.management.studyhub.entity.JobPosting jp = new com.management.studyhub.entity.JobPosting();
+            jp.setParent(parent);
+            jp.setTitle("Tìm gia sư Tiếng Anh IELTS 6.5+ cho con");
+            jp.setSubject("Tiếng Anh");
+            jp.setClassLevel("Lớp 11");
+            jp.setDescription("Cháu đang cần học để thi IELTS vào tháng 12 năm nay. Cần gia sư có kinh nghiệm.");
+            jp.setLocation("Hà Nội");
+            jp.setDetailedAddress("Đống Đa, Hà Nội");
+            jp.setSchedule("Tối T3, T5, T7");
+            jp.setPricePerSession(new java.math.BigDecimal("250000"));
+            jp.setLearningMode("OFFLINE");
+            jp.setRequirement("Gia sư nữ, đang là sinh viên Ngoại Thương hoặc Sư Phạm");
+            jp.setStatus(com.management.studyhub.entity.enums.JobPostingStatus.RECRUITING);
+            jobPostingRepository.save(jp);
+        }
+    }
 
-        com.management.studyhub.entity.JobPosting jp1 = new com.management.studyhub.entity.JobPosting();
-        jp1.setParent(parent);
-        jp1.setTitle("Tìm gia sư Tiếng Anh - Lớp 10");
-        jp1.setSubject("Tiếng Anh");
-        jp1.setClassLevel("Lớp 10");
-        jp1.setDescription("Cần tìm sinh viên sư phạm Anh hoặc ngoại ngữ, phát âm chuẩn, có kinh nghiệm dạy học sinh mất gốc.");
-        jp1.setPostedAt(java.time.LocalDateTime.now().minusDays(1));
-        jp1.setStatus("RECRUITING");
-        jp1.setLocation("Hà Nội");
-        jp1.setDetailedAddress("Số 12, Ngõ 34, Cầu Giấy");
-        jp1.setSchedule("Thứ 3, Thứ 5");
-        jp1.setPricePerSession(250000.0);
-        jp1.setLearningMode("OFFLINE");
-        jp1.setRequirement("Gia sư nữ");
-        jp1.setApplicantsCount(2);
-        jobPostingRepository.save(jp1);
-
-        com.management.studyhub.entity.JobPosting jp2 = new com.management.studyhub.entity.JobPosting();
-        jp2.setParent(parent);
-        jp2.setTitle("Tìm gia sư Toán học - Lớp 12");
-        jp2.setSubject("Toán học");
-        jp2.setClassLevel("Lớp 12");
-        jp2.setDescription("Học sinh khá, cần ôn thi đại học mục tiêu 8+.");
-        jp2.setPostedAt(java.time.LocalDateTime.now().minusHours(5));
-        jp2.setStatus("RECRUITING");
-        jp2.setLocation("Học Online");
-        jp2.setDetailedAddress("");
-        jp2.setSchedule("Thứ 2, Thứ 4, Thứ 6");
-        jp2.setPricePerSession(200000.0);
-        jp2.setLearningMode("ONLINE");
-        jp2.setRequirement("Không");
-        jp2.setApplicantsCount(5);
-        jobPostingRepository.save(jp2);
+    private void seedApplicants() {
+        com.management.studyhub.entity.JobPosting jp = jobPostingRepository.findAll().stream()
+                .filter(p -> p.getTitle().contains("IELTS 6.5+"))
+                .findFirst().orElse(null);
+        TutorProfile tutor2 = tutorProfileRepository.findAll().stream()
+                .filter(t -> t.getFullName().contains("Trần Thị B")).findFirst().orElse(null);
+        
+        if (jp != null && tutor2 != null) {
+            com.management.studyhub.entity.Applicant applicant = new com.management.studyhub.entity.Applicant();
+            applicant.setJobPosting(jp);
+            applicant.setTutor(tutor2.getUser());
+            applicant.setMessage("Chào chị, em là sinh viên sư phạm Ngoại ngữ, IELTS 7.5. Em rất tự tin có thể giúp bé đạt mục tiêu IELTS 6.5 ạ.");
+            applicant.setStatus(com.management.studyhub.entity.enums.ApplicationStatus.PENDING);
+            applicantRepository.save(applicant);
+        }
     }
 
     private void seedClassSessions() {
-        com.management.studyhub.entity.ClassSession trialClass = new com.management.studyhub.entity.ClassSession();
-        trialClass.setClassName("Lớp Toán Hình Học 12");
-        trialClass.setTutorName("Nguyễn Thu Hà");
-        trialClass.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.TRIAL);
-        trialClass.setPrice(2000000.0);
-        classSessionRepository.save(trialClass);
-
-        com.management.studyhub.entity.ClassSession completedClass = new com.management.studyhub.entity.ClassSession();
-        completedClass.setClassName("Lớp Tiếng Anh Giao Tiếp");
-        completedClass.setTutorName("Mr. David Smith");
-        completedClass.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.COMPLETED);
-        completedClass.setPrice(4500000.0);
-        classSessionRepository.save(completedClass);
+        User parent = userRepository.findByEmail("parent@gmail.com").orElse(null);
+        User tutor3 = userRepository.findByEmail("tutor3@gmail.com").orElse(null);
+        
+        if (parent != null && tutor3 != null) {
+            com.management.studyhub.entity.ClassSession session = new com.management.studyhub.entity.ClassSession();
+            session.setParent(parent);
+            session.setTutor(tutor3);
+            session.setSubject("Tiếng Anh Giao Tiếp");
+            session.setGradeLevel("Người đi làm");
+            session.setSchedule("Tối Thứ 3, Thứ 5 (20h-21h30)");
+            session.setPricePerSession(new java.math.BigDecimal("400000"));
+            session.setLearningMode("ONLINE");
+            session.setStatus(com.management.studyhub.entity.enums.SessionStatus.CONFIRMED);
+            
+            // Generate mock meet link
+            session.setMeetLink("https://meet.google.com/abc-defg-hij");
+            
+            classSessionRepository.save(session);
+        }
     }
 
     private void seedSubjects() {

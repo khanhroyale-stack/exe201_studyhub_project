@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CURRENT_PARENT } from '../../constants/mockParentData';
+import { useAuth } from '../../context/AuthContext';
 
 const navGroups = [
   {
@@ -44,37 +44,10 @@ const navGroups = [
 ];
 
 const SideNavBar: React.FC = () => {
+  const { name } = useAuth();
+
   return (
     <aside className="fixed left-0 top-[68px] bottom-0 w-[260px] flex flex-col bg-white border-r border-slate-100 z-30 shadow-[2px_0_20px_rgba(0,0,0,0.04)]">
-
-      {/* ── User Info ── */}
-      <div className="px-4 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <div className="relative shrink-0">
-            <img
-              src={CURRENT_PARENT.avatar}
-              alt="Avatar"
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20"
-            />
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
-          </div>
-          <div className="overflow-hidden">
-            <p className="font-bold text-sm text-[#0f172a] truncate">{CURRENT_PARENT.name}</p>
-            <p className="text-xs text-slate-400 font-medium">Phụ huynh học sinh</p>
-          </div>
-        </div>
-
-        {/* Quick stat */}
-        <div className="mt-3 bg-gradient-to-r from-primary/8 to-indigo-500/8 border border-primary/12 rounded-xl px-3 py-2.5 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lớp đang theo</p>
-            <p className="text-lg font-extrabold text-primary leading-tight">0{CURRENT_PARENT.classesWaiting}</p>
-          </div>
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
-          </div>
-        </div>
-      </div>
 
       {/* ── Navigation Groups ── */}
       <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">

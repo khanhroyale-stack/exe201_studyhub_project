@@ -12,13 +12,15 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne @JoinColumn(name = "application_id")
-    private TutorApplication application;
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "class_session_id")
+    private ClassSession classSession;
 
-    @ManyToOne @JoinColumn(name = "sender_id")
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "sender_id")
     private User sender;
 
-    @Column(columnDefinition = "TEXT") // Sửa NVARCHAR(MAX) thành TEXT
+    @Column(columnDefinition = "TEXT")
     private String messageContent;
 
     private LocalDateTime sentAt = LocalDateTime.now();

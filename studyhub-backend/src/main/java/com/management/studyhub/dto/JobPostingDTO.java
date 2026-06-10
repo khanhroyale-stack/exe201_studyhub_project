@@ -2,6 +2,7 @@ package com.management.studyhub.dto;
 
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class JobPostingDTO {
@@ -21,4 +22,6 @@ public class JobPostingDTO {
     private Double pricePerSession;
     private String learningMode;
     private String requirement;
+    private Integer applicantsCount;
+    private List<ApplicantDTO> applicants;
 }

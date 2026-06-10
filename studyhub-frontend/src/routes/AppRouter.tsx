@@ -34,8 +34,11 @@ const TutorCreatePost = lazy(() => import('../pages/TutorPortal/TutorCreatePost'
 const TutorClasses = lazy(() => import('../pages/TutorPortal/TutorClasses'));
 const TutorApplications = lazy(() => import('../pages/TutorPortal/TutorApplications'));
 const TutorSchedule = lazy(() => import('../pages/TutorPortal/TutorSchedule'));
+const TutorBookings = lazy(() => import('../pages/TutorPortal/TutorBookings'));
 const TutorReviews = lazy(() => import('../pages/TutorPortal/TutorReviews'));
 const TutorSettings = lazy(() => import('../pages/TutorPortal/TutorSettings'));
+
+const ClassWorkspace = lazy(() => import('../pages/Shared/ClassWorkspace'));
 
 const AdminDashboard = lazy(() => import('../pages/AdminPortal/AdminDashboard'));
 const AdminUsers = lazy(() => import('../pages/AdminPortal/AdminUsers'));
@@ -70,10 +73,12 @@ const AppRouter: React.FC = () => {
         {/* Index → Redirect to Dashboard */}
         <Route index element={<Navigate to="/parent/dashboard" replace />} />
         <Route path="dashboard" element={<ParentDashboard />} />
+        <Route path="post-management" element={<PostManagement />} />
         <Route path="posts" element={<PostManagement />} />
-        <Route path="posts/create" element={<CreatePost />} />
         <Route path="posts/:postId/applicants" element={<ApplicantReview />} />
+        <Route path="posts/create" element={<CreatePost />} />
         <Route path="classes" element={<ClassManagement />} />
+        <Route path="classes/:id/workspace" element={<ClassWorkspace />} />
         <Route path="feedback" element={<FeedbackList />} />
         <Route path="feedback/create" element={<CreateFeedback />} />
         <Route path="settings" element={<Settings />} />
@@ -91,7 +96,9 @@ const AppRouter: React.FC = () => {
         <Route path="apply-class/:postId" element={<TutorApplyClass />} />
         <Route path="create-post" element={<TutorCreatePost />} />
         <Route path="classes" element={<TutorClasses />} />
+        <Route path="classes/:id/workspace" element={<ClassWorkspace />} />
         <Route path="applications" element={<TutorApplications />} />
+        <Route path="bookings" element={<TutorBookings />} />
         <Route path="schedule" element={<TutorSchedule />} />
         <Route path="reviews" element={<TutorReviews />} />
         <Route path="offers" element={<TutorOffers />} />

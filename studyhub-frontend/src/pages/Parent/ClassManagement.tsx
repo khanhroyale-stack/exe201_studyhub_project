@@ -1,35 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-interface EnrollmentDto {
+interface ClassSessionDTO {
   id: number;
-  courseId: number;
-  courseTitle: string;
-  courseImage: string;
-  courseSchedule: string;
+  postId: number;
+  parentId: number;
+  parentName: string;
+  tutorProfileId: number;
   tutorName: string;
   tutorAvatar: string;
-  studentName: string;
-  studentGrade: string;
-  studentLevel: string;
-  notes: string;
+  className: string;
+  subject: string;
+  schedule: string;
+  learningMode: string;
+  address: string;
   status: string;
+  pricePerSession: number;
+  progress: number;
   createdAt: string;
+  nextSessionDate: string;
 }
+
+type TabType = 'active' | 'completed' | 'cancelled';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
+  TRIAL:       { label: 'Chờ học thử',   color: 'text-amber-700',  bgColor: 'bg-amber-100 border-amber-200',  icon: 'hourglass_empty' },
+  CONFIRMED:   { label: 'Đang học',       color: 'text-green-700',  bgColor: 'bg-green-100 border-green-200',  icon: 'check_circle' },
+  COMPLETED:   { label: 'Hoàn thành',     color: 'text-blue-700',   bgColor: 'bg-blue-100 border-blue-200',    icon: 'task_alt' },
+  CANCELLED:   { label: 'Đã hủy',         color: 'text-red-700',    bgColor: 'bg-red-100 border-red-200',      icon: 'cancel' },
+  DISBURSED:   { label: 'Đã giải ngân',   color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-200', icon: 'payments' },
+};
 
 const ClassManagement: React.FC = () => {
   const { userId } = useAuth();
-  const navigate = useNavigate();
-  const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
+  const [sessions, setSessions] = useState<ClassSessionDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    fetch(`http://localhost:8080/api/enrollments/parent/${userId}`)
+    fetch(`${BASE_URL}/class-sessions/parent/${userId}`)
       .then(res => res.json())
       .then(data => {
-        setEnrollments(Array.isArray(data) ? data : []);
+        setSessions(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
@@ -38,36 +55,34 @@ const ClassManagement: React.FC = () => {
       });
   }, [userId]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-bold rounded uppercase">Chờ duyệt</span>;
-      case 'APPROVED':
-        return <span className="px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-bold rounded uppercase">Đã duyệt</span>;
-      case 'REJECTED':
-        return <span className="px-2 py-0.5 bg-red-100 text-red-800 text-[10px] font-bold rounded uppercase">Bị từ chối</span>;
-      default:
-        return null;
+  const updateStatus = async (sessionId: number, newStatus: string) => {
+    setUpdatingId(sessionId);
+    try {
+      const res = await fetch(`${BASE_URL}/class-sessions/${sessionId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Cập nhật thất bại');
+      const updated: ClassSessionDTO = await res.json();
+      setSessions(prev => prev.map(s => s.id === sessionId ? updated : s));
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      setUpdatingId(null);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'hourglass_empty';
-      case 'APPROVED': return 'check_circle';
-      case 'REJECTED': return 'cancel';
-      default: return 'help';
-    }
-  };
+  const activeSessions    = sessions.filter(s => ['TRIAL', 'CONFIRMED'].includes(s.status));
+  const completedSessions = sessions.filter(s => ['COMPLETED', 'DISBURSED'].includes(s.status));
+  const cancelledSessions = sessions.filter(s => s.status === 'CANCELLED');
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'text-yellow-500';
-      case 'APPROVED': return 'text-green-500';
-      case 'REJECTED': return 'text-red-500';
-      default: return 'text-gray-400';
-    }
-  };
+  const displaySessions =
+    activeTab === 'active'    ? activeSessions :
+    activeTab === 'completed' ? completedSessions :
+    cancelledSessions;
+
+  const getConfig = (status: string) => STATUS_CONFIG[status] ?? { label: status, color: 'text-gray-600', bgColor: 'bg-gray-100 border-gray-200', icon: 'help' };
 
   return (
     <div className="max-w-[1440px] mx-auto pb-20 animate-fade-in">
@@ -75,144 +90,203 @@ const ClassManagement: React.FC = () => {
       <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="font-bold text-3xl text-on-surface mb-2">Quản lý lớp học</h1>
-          <p className="font-normal text-base text-on-surface-variant">Theo dõi trạng thái đăng ký lớp học của bạn.</p>
+          <p className="font-normal text-base text-on-surface-variant">
+            Theo dõi trạng thái và tiến độ các lớp học của bạn.
+          </p>
         </div>
-        <button
-          onClick={() => navigate('/classes')}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>
-          Đăng ký lớp mới
-        </button>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
-      ) : enrollments.length === 0 ? (
+      ) : sessions.length === 0 ? (
         <div className="text-center py-20 bg-surface-container-lowest border border-outline-variant rounded-xl">
           <span className="material-symbols-outlined text-6xl text-outline-variant mb-4 block">school</span>
-          <h2 className="font-headline-sm text-headline-sm text-on-surface mb-2">Chưa có lớp học nào</h2>
-          <p className="text-on-surface-variant text-body-md mb-6">Bạn chưa đăng ký tham gia lớp học nào. Khám phá ngay!</p>
-          <button
-            onClick={() => navigate('/classes')}
-            className="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
-          >
-            Tìm lớp học ngay
-          </button>
+          <h2 className="font-bold text-xl text-on-surface mb-2">Chưa có lớp học nào</h2>
+          <p className="text-on-surface-variant mb-6">Hãy đăng bài tuyển gia sư để bắt đầu!</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <>
           {/* Summary stats */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-yellow-700">{enrollments.filter(e => e.status === 'PENDING').length}</p>
-              <p className="text-sm text-yellow-600 font-medium">Chờ duyệt</p>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-amber-700">{activeSessions.length}</p>
+              <p className="text-sm text-amber-600 font-medium">Đang học</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-green-700">{enrollments.filter(e => e.status === 'APPROVED').length}</p>
-              <p className="text-sm text-green-600 font-medium">Đã duyệt</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-blue-700">{completedSessions.length}</p>
+              <p className="text-sm text-blue-600 font-medium">Hoàn thành</p>
             </div>
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-red-700">{enrollments.filter(e => e.status === 'REJECTED').length}</p>
-              <p className="text-sm text-red-600 font-medium">Bị từ chối</p>
+              <p className="text-2xl font-bold text-red-700">{cancelledSessions.length}</p>
+              <p className="text-sm text-red-600 font-medium">Đã hủy</p>
             </div>
           </div>
 
-          {enrollments.map((enrollment, idx) => (
-            <div
-              key={enrollment.id}
-              className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col md:flex-row gap-5 hover:shadow-md transition-all"
-            >
-              {/* Thumbnail */}
-              <div className="w-full md:w-32 h-24 rounded-xl bg-surface-container flex items-center justify-center shrink-0 overflow-hidden">
-                {enrollment.courseImage ? (
-                  <img src={enrollment.courseImage} alt={enrollment.courseTitle} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="material-symbols-outlined text-4xl text-outline-variant">school</span>
-                )}
+          {/* Tabs */}
+          <div className="flex gap-1 bg-surface-container-low rounded-xl p-1 mb-6 w-fit">
+            {([
+              { key: 'active',    label: `Đang học (${activeSessions.length})` },
+              { key: 'completed', label: `Hoàn thành (${completedSessions.length})` },
+              { key: 'cancelled', label: `Đã hủy (${cancelledSessions.length})` },
+            ] as const).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === tab.key
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Session Cards */}
+          <div className="space-y-4">
+            {displaySessions.length === 0 ? (
+              <div className="text-center py-12 text-on-surface-variant bg-surface-container-lowest border border-outline-variant rounded-xl">
+                Không có lớp học nào trong mục này.
               </div>
-
-              {/* Info */}
-              <div className="flex-grow min-w-0">
-                <div className="flex items-start gap-3 flex-wrap mb-2">
-                  {getStatusBadge(enrollment.status)}
-                  <span className={`material-symbols-outlined text-[18px] ${getStatusColor(enrollment.status)}`}>{getStatusIcon(enrollment.status)}</span>
-                </div>
-
-                <h3 className="font-bold text-lg text-on-surface mb-1 truncate">
-                  <Link to={`/classes/${enrollment.courseId}`} className="hover:text-primary transition-colors">{enrollment.courseTitle}</Link>
-                </h3>
-
-                {enrollment.tutorName && (
-                  <div className="flex items-center gap-2 mb-2">
-                    {enrollment.tutorAvatar && (
-                      <img src={enrollment.tutorAvatar} alt={enrollment.tutorName} className="w-6 h-6 rounded-full object-cover" />
-                    )}
-                    <span className="text-sm text-on-surface-variant">Gia sư: <span className="font-medium text-on-surface">{enrollment.tutorName}</span></span>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap gap-3 text-sm text-on-surface-variant">
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">person</span>
-                    Học sinh: <span className="font-medium text-on-surface ml-1">{enrollment.studentName}</span>
-                  </span>
-                  {enrollment.studentGrade && (
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">menu_book</span>
-                      {enrollment.studentGrade}
-                    </span>
-                  )}
-                  {enrollment.studentLevel && (
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
-                      {enrollment.studentLevel}
-                    </span>
-                  )}
-                  {enrollment.courseSchedule && (
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                      {enrollment.courseSchedule}
-                    </span>
-                  )}
-                </div>
-
-                {enrollment.status === 'PENDING' && (
-                  <div className="mt-3 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">info</span>
-                    Yêu cầu đang chờ gia sư xem xét và phê duyệt.
-                  </div>
-                )}
-
-                {enrollment.status === 'APPROVED' && (
-                  <div className="mt-3 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                    Gia sư đã chấp nhận! Hãy liên hệ để sắp xếp lịch học.
-                  </div>
-                )}
-
-                {enrollment.status === 'REJECTED' && (
-                  <div className="mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">cancel</span>
-                    Yêu cầu của bạn đã bị từ chối. Hãy tìm lớp học khác phù hợp hơn.
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex md:flex-col gap-2 shrink-0 justify-start md:items-end">
-                <Link
-                  to={`/classes/${enrollment.courseId}`}
-                  className="px-4 py-2 border border-primary text-primary rounded-lg text-sm font-semibold hover:bg-primary/5 transition-colors text-center"
+            ) : displaySessions.map(session => {
+              const cfg = getConfig(session.status);
+              return (
+                <div
+                  key={session.id}
+                  className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 flex flex-col md:flex-row gap-5 hover:shadow-md transition-all"
                 >
-                  Xem lớp
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+                  {/* Tutor Avatar */}
+                  <div className="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center shrink-0 overflow-hidden">
+                    {session.tutorAvatar ? (
+                      <img src={session.tutorAvatar} alt={session.tutorName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="material-symbols-outlined text-3xl text-primary">person</span>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-grow min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className={`px-2 py-0.5 border rounded-full text-[11px] font-bold flex items-center gap-1 ${cfg.bgColor} ${cfg.color}`}>
+                        <span className="material-symbols-outlined text-[14px]">{cfg.icon}</span>
+                        {cfg.label}
+                      </span>
+                      {session.learningMode && (
+                        <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[11px] font-bold rounded-full">
+                          {session.learningMode === 'ONLINE' ? '🌐 Online' : '📍 Offline'}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="font-bold text-lg text-on-surface mb-1 truncate">{session.className}</h3>
+                    {session.subject && <p className="text-sm text-on-surface-variant mb-2">Môn: <span className="font-medium text-on-surface">{session.subject}</span></p>}
+
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm text-on-surface-variant">
+                        Gia sư: <span className="font-medium text-on-surface">{session.tutorName}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 text-sm text-on-surface-variant mb-3">
+                      {session.schedule && (
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                          {session.schedule}
+                        </span>
+                      )}
+                      {session.pricePerSession && (
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">payments</span>
+                          {session.pricePerSession.toLocaleString('vi-VN')}đ/buổi
+                        </span>
+                      )}
+                      {session.address && (
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">location_on</span>
+                          {session.address}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="mb-2">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-on-surface-variant">Tiến độ</span>
+                        <span className="text-primary font-bold">{session.progress ?? 0}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all duration-500"
+                          style={{ width: `${session.progress ?? 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Status-based info banners */}
+                    {session.status === 'TRIAL' && (
+                      <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">info</span>
+                        Gia sư đã được chọn. Đang chờ sắp xếp buổi học thử.
+                      </div>
+                    )}
+                    {session.status === 'CONFIRMED' && (
+                      <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                        Lớp học đang tiến hành. Liên hệ gia sư nếu cần thay đổi lịch.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex md:flex-col gap-2 shrink-0 justify-start md:items-end">
+                    <Link
+                      to={`/parent/classes/${session.id}/workspace`}
+                      className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-sm font-bold hover:bg-primary/20 transition-colors whitespace-nowrap flex items-center justify-center gap-1 mb-2"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">meeting_room</span>
+                      Không gian Lớp học
+                    </Link>
+
+                    {session.status === 'TRIAL' && (
+                      <>
+                        <button
+                          onClick={() => updateStatus(session.id, 'CONFIRMED')}
+                          disabled={updatingId === session.id}
+                          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"
+                        >
+                          {updatingId === session.id ? 'Đang xử lý...' : '✓ Xác nhận tiếp tục'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Bạn có chắc muốn hủy lớp học này?')) updateStatus(session.id, 'CANCELLED');
+                          }}
+                          disabled={updatingId === session.id}
+                          className="px-4 py-2 border border-error text-error rounded-lg text-sm font-semibold hover:bg-error/5 transition-colors disabled:opacity-60 whitespace-nowrap"
+                        >
+                          Hủy lớp
+                        </button>
+                      </>
+                    )}
+                    {session.status === 'CONFIRMED' && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Đánh dấu lớp học này đã hoàn tất quá trình giảng dạy?')) updateStatus(session.id, 'COMPLETED');
+                        }}
+                        disabled={updatingId === session.id}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"
+                      >
+                        Kết thúc khóa học
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

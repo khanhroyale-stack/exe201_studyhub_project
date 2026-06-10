@@ -13,10 +13,20 @@ public class LessonLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne @JoinColumn(name = "application_id")
-    private TutorApplication application;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_session_id")
+    private ClassSession classSession;
 
     private LocalDateTime scheduledDate;
+    
+    private String title;
+    
+    @Column(columnDefinition = "TEXT")
+    private String content;
+    
+    @Column(columnDefinition = "TEXT")
+    private String tutorFeedback;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private LessonStatus status; // SCHEDULED, PRESENT, ABSENT, CANCELLED

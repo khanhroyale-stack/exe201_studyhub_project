@@ -3,7 +3,6 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../Navbar';
 import TutorSideNavBar from './TutorSideNavBar';
-import Footer from '../Footer';
 
 const TutorLayout: React.FC = () => {
   const { role, isLoggedIn } = useAuth();
@@ -30,11 +29,6 @@ const TutorLayout: React.FC = () => {
             <Outlet />
           </div>
         </main>
-      </div>
-
-      {/* Unified Footer (same as all other pages) */}
-      <div className={!hideSidebar ? "ml-[280px]" : ""}>
-        <Footer />
       </div>
     </div>
   );

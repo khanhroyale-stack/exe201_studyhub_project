@@ -16,12 +16,6 @@ import { useAuth } from '../../context/AuthContext';
 
 const navGroups = [
   {
-    // Không có tiêu đề — mục đứng độc lập
-    items: [
-      { to: '/tutor/dashboard', icon: 'dashboard', label: 'Tổng quan' },
-    ],
-  },
-  {
     label: 'Việc làm',
     items: [
 

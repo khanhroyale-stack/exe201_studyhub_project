@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MOCK_TUTORS } from '../../constants/mockData';
+import { tutorApi, Tutor } from '../../services/tutorApi';
 
 const TutorDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const tutorId = id ? parseInt(id, 10) : 1;
-  const tutor = MOCK_TUTORS.find(t => t.id === tutorId) || MOCK_TUTORS[0];
+  const [tutor, setTutor] = useState<Tutor | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTutor = async () => {
+      setLoading(true);
+      try {
+        const data = await tutorApi.getTutorById(tutorId);
+        setTutor(data);
+      } catch (error) {
+        console.error('Failed to fetch tutor details', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTutor();
+  }, [tutorId]);
+
+  if (loading) {
+    return (
+      <div className="bg-surface text-on-surface min-h-screen pt-[72px] flex justify-center items-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!tutor) {
+    return (
+      <div className="bg-surface text-on-surface min-h-screen pt-[72px] flex flex-col justify-center items-center">
+        <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">person_off</span>
+        <p className="text-slate-500 mb-4">Không tìm thấy thông tin gia sư.</p>
+        <button onClick={() => navigate('/tutors')} className="text-primary hover:underline">Quay lại danh sách</button>
+      </div>
+    );
+  }
+
+  const tutorTitle = `${tutor.major ? tutor.major + ' - ' : ''}${tutor.universityName || 'Gia sư'}`;
 
   return (
     <div className="bg-surface text-on-surface min-h-screen">
@@ -18,28 +54,33 @@ const TutorDetail: React.FC = () => {
               <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
                 <img 
                   className="w-full h-full object-cover" 
-                  alt={tutor.name}
-                  src={tutor.avatar} 
+                  alt={tutor.fullName}
+                  src={tutor.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(tutor.fullName) + '&background=003d9b&color=fff'} 
                 />
               </div>
               <div className="flex-grow space-y-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <h1 className="font-headline-lg text-headline-lg text-on-surface">{tutor.name}</h1>
+                  <h1 className="font-headline-lg text-headline-lg text-on-surface">{tutor.fullName}</h1>
                   <div className="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="font-label-md text-label-md">{tutor.rating}</span>
+                    <span className="font-label-md text-label-md">{tutor.averageRating?.toFixed(1) || '0.0'} ({tutor.totalReviews || 0})</span>
                   </div>
                 </div>
-                <p className="text-primary font-headline-sm text-headline-sm">{tutor.title}</p>
+                <p className="text-primary font-headline-sm text-headline-sm">{tutorTitle}</p>
                 <div className="flex flex-wrap gap-2">
-                  {tutor.tags.map((subject, index) => (
+                  {tutor.subjects?.map((subject, index) => (
                     <span key={index} className="px-4 py-1.5 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md text-label-md">
-                      {subject}
+                      {subject.name}
                     </span>
                   ))}
+                  {tutor.teachingMethod && tutor.teachingMethod !== 'ALL' && (
+                    <span className="px-4 py-1.5 bg-slate-100 text-slate-500 rounded-full font-label-md text-label-md border border-slate-200">
+                      {tutor.teachingMethod}
+                    </span>
+                  )}
                 </div>
-                <p className="text-on-surface-variant max-w-3xl font-body-lg text-body-lg">
-                  Chào bạn! Tôi là {tutor.name}, với hơn 5 năm kinh nghiệm giảng dạy. Tôi tin rằng mọi học sinh đều có thể chinh phục môn học nếu tìm được phương pháp tiếp cận phù hợp và sự kiên nhẫn từ người thầy.
+                <p className="text-on-surface-variant max-w-3xl font-body-lg text-body-lg whitespace-pre-line">
+                  {tutor.introduction || 'Chưa có thông tin giới thiệu.'}
                 </p>
               </div>
             </div>
@@ -64,8 +105,8 @@ const TutorDetail: React.FC = () => {
                     <span className="material-symbols-outlined text-on-primary-fixed-variant">history_edu</span>
                   </div>
                   <div>
-                    <h3 className="font-label-md text-label-md text-on-surface">Thạc sĩ / Cử nhân Sư phạm</h3>
-                    <p className="text-body-sm text-on-surface-variant">Đại học Sư phạm | 2018 - 2020</p>
+                    <h3 className="font-label-md text-label-md text-on-surface">{tutorTitle}</h3>
+                    <p className="text-body-sm text-on-surface-variant">Đã xác thực bằng cấp</p>
                   </div>
                 </div>
                 <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex gap-4">
@@ -73,8 +114,8 @@ const TutorDetail: React.FC = () => {
                     <span className="material-symbols-outlined text-on-primary-fixed-variant">verified</span>
                   </div>
                   <div>
-                    <h3 className="font-label-md text-label-md text-on-surface">Chứng chỉ Nghiệp vụ Sư phạm</h3>
-                    <p className="text-body-sm text-on-surface-variant">Bộ Giáo dục & Đào tạo | 2017</p>
+                    <h3 className="font-label-md text-label-md text-on-surface">Chứng chỉ / CMND</h3>
+                    <p className="text-body-sm text-on-surface-variant">Đã xác thực eKYC</p>
                   </div>
                 </div>
               </div>
@@ -89,15 +130,9 @@ const TutorDetail: React.FC = () => {
               <div className="space-y-4">
                 <div className="relative pl-8 border-l-2 border-outline-variant pb-8 last:pb-0 ml-4">
                   <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-surface"></div>
-                  <h3 className="font-label-md text-label-md text-on-surface">Gia sư cao cấp tại StudyHub</h3>
-                  <p className="text-body-sm text-primary mb-2">2021 - Hiện tại</p>
-                  <p className="text-on-surface-variant">Hỗ trợ học sinh xây dựng lộ trình học tập cá nhân hóa, tỷ lệ học sinh đỗ đạt cao.</p>
-                </div>
-                <div className="relative pl-8 border-l-2 border-outline-variant pb-8 last:pb-0 ml-4">
-                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-outline-variant border-4 border-surface"></div>
-                  <h3 className="font-label-md text-label-md text-on-surface">Giáo viên tự do</h3>
-                  <p className="text-body-sm text-primary mb-2">2018 - 2021</p>
-                  <p className="text-on-surface-variant">Giảng dạy chương trình phổ thông các cấp, bồi dưỡng học sinh.</p>
+                  <h3 className="font-label-md text-label-md text-on-surface">Gia sư trên hệ thống StudyHub</h3>
+                  <p className="text-body-sm text-primary mb-2">Đã xác minh</p>
+                  <p className="text-on-surface-variant">Giảng dạy tận tâm, có phương pháp sư phạm phù hợp với từng năng lực của học viên.</p>
                 </div>
               </div>
             </section>
@@ -159,70 +194,49 @@ const TutorDetail: React.FC = () => {
             </section>
 
             {/* Reviews */}
-            <section>
-              <div className="flex justify-between items-end mb-6">
-                <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
-                  <span className="material-symbols-outlined text-primary">reviews</span>
-                  Đánh giá từ học viên
-                </h2>
-                <span className="font-label-md text-label-md text-primary">Xem tất cả (48)</span>
-              </div>
-              <div className="space-y-6">
-                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center font-bold text-secondary">MT</div>
-                      <div>
-                        <h4 className="font-label-md text-label-md text-on-surface">Minh Tuấn</h4>
-                        <p className="text-label-sm text-on-surface-variant">Lớp 12 - Luyện thi ĐH</p>
+            {tutor.totalReviews > 0 && (
+              <section>
+                <div className="flex justify-between items-end mb-6">
+                  <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+                    <span className="material-symbols-outlined text-primary">reviews</span>
+                    Đánh giá từ học viên
+                  </h2>
+                  <span className="font-label-md text-label-md text-primary">Xem tất cả ({tutor.totalReviews})</span>
+                </div>
+                <div className="space-y-6">
+                  {/* Just some dummy reviews for now since API might not return reviews list in TutorDTO directly */}
+                  <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center font-bold text-secondary">MT</div>
+                        <div>
+                          <h4 className="font-label-md text-label-md text-on-surface">Minh Tuấn</h4>
+                          <p className="text-label-sm text-on-surface-variant">Lớp 12</p>
+                        </div>
+                      </div>
+                      <div className="flex text-tertiary-container">
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                       </div>
                     </div>
-                    <div className="flex text-tertiary-container">
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    </div>
+                    <p className="text-on-surface-variant">Giáo viên giảng dạy rất nhiệt tình và chu đáo, luôn giúp đỡ tôi những phần bài tập khó hiểu.</p>
                   </div>
-                  <p className="text-on-surface-variant">Cô dạy rất dễ hiểu, đặc biệt là phần hình học không gian vốn là nỗi khiếp sợ của mình. Nhờ cô mà mình đã tự tin hơn rất nhiều khi làm đề thi thử.</p>
                 </div>
-                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center font-bold text-secondary">HL</div>
-                      <div>
-                        <h4 className="font-label-md text-label-md text-on-surface">Hương Ly</h4>
-                        <p className="text-label-sm text-on-surface-variant">Lớp 11</p>
-                      </div>
-                    </div>
-                    <div className="flex text-tertiary-container">
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>star</span>
-                    </div>
-                  </div>
-                  <p className="text-on-surface-variant">Phương pháp giảng dạy rất logic và hiện đại. Cô luôn kiên nhẫn giải thích cho đến khi mình hiểu bài mới thôi.</p>
-                </div>
-              </div>
-            </section>
+              </section>
+            )}
           </div>
 
           {/* Right Column: Sticky CTA */}
           <aside className="w-full lg:w-[360px] flex-shrink-0">
             <div className="sticky top-[104px] bg-surface-container-lowest p-8 rounded-xl border border-outline-variant shadow-sm space-y-6">
-              <div>
-                <p className="text-on-surface-variant text-label-md font-label-md mb-1">Học phí</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-headline-md text-primary">{tutor.price}/h</span>
-                </div>
-              </div>
+              {/* Removed Price display */}
               <div className="space-y-4 pt-6 border-t border-outline-variant">
                 <div className="flex items-center gap-3 text-on-surface-variant">
                   <span className="material-symbols-outlined text-[20px]">verified_user</span>
-                  <span className="text-body-sm font-body-sm">Gia sư đã được xác thực</span>
+                  <span className="text-body-sm font-body-sm">Gia sư đã được xác thực eKYC</span>
                 </div>
                 <div className="flex items-center gap-3 text-on-surface-variant">
                   <span className="material-symbols-outlined text-[20px]">bolt</span>
@@ -230,7 +244,7 @@ const TutorDetail: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3 text-on-surface-variant">
                   <span className="material-symbols-outlined text-[20px]">videocam</span>
-                  <span className="text-body-sm font-body-sm">Dạy qua Google Meet / Zoom</span>
+                  <span className="text-body-sm font-body-sm">{tutor.teachingMethod === 'OFFLINE' ? 'Dạy trực tiếp (Offline)' : tutor.teachingMethod === 'ONLINE' ? 'Dạy qua Google Meet / Zoom' : 'Dạy cả Online và Offline'}</span>
                 </div>
               </div>
               <button onClick={() => {

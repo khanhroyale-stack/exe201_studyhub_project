@@ -114,7 +114,16 @@ public class CourseServiceImpl implements CourseService {
             dto.setTutorDesc(course.getTutor().getIntroduction() != null ? course.getTutor().getIntroduction() : "Gia sư tâm huyết");
             dto.setTutorAvatar(course.getTutor().getAvatarUrl());
             dto.setTutorAddress(course.getTutor().getAddress());
-            dto.setTutorExperience(course.getTutor().getExperienceYears() + " năm kinh nghiệm");
+            Integer exp = course.getTutor().getExperienceYears();
+            if (exp == null) {
+                dto.setTutorExperience("Chưa cập nhật kinh nghiệm");
+            } else if (exp == 0) {
+                dto.setTutorExperience("Dưới 1 năm kinh nghiệm");
+            } else if (exp <= 3) {
+                dto.setTutorExperience("1 - 3 năm kinh nghiệm");
+            } else {
+                dto.setTutorExperience("Trên 3 năm kinh nghiệm");
+            }
             dto.setTutorVerified(course.getTutor().getEkycStatus() != null && course.getTutor().getEkycStatus().name().equals("SUCCESS"));
             dto.setTutorUniversity(course.getTutor().getUniversityName());
             dto.setTutorMajor(course.getTutor().getMajor());

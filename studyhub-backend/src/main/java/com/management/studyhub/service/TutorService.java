@@ -5,6 +5,7 @@ import com.management.studyhub.dto.SubjectDTO;
 import com.management.studyhub.dto.TutorListDTO;
 import com.management.studyhub.entity.TutorProfile;
 import com.management.studyhub.repository.TutorProfileRepository;
+import com.management.studyhub.repository.SubjectRepository;
 import com.management.studyhub.repository.specification.TutorSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import com.management.studyhub.entity.enums.TutorStatus;
 public class TutorService {
 
     private final TutorProfileRepository tutorProfileRepository;
+    private final SubjectRepository subjectRepository;
     private final EkycApiService ekycApiService;
 
     public PageResponseDTO<TutorListDTO> searchTutors(
@@ -134,6 +136,10 @@ public class TutorService {
         }
         if (request.getDegreeImageUrl() != null) tutor.setDegreeImageUrl(request.getDegreeImageUrl());
         if (request.getCertificates() != null) tutor.setCertificates(request.getCertificates());
+        if (request.getIntroduction() != null) tutor.setIntroduction(request.getIntroduction());
+        if (request.getSubjectIds() != null && !request.getSubjectIds().isEmpty()) {
+            tutor.setSubjects(new java.util.HashSet<>(subjectRepository.findAllById(request.getSubjectIds())));
+        }
 
         tutorProfileRepository.save(tutor);
         return Map.of(

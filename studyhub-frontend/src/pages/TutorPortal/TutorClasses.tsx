@@ -103,21 +103,7 @@ const TutorClasses: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-amber-700">{activeClasses.length}</p>
-              <p className="text-sm text-amber-600 font-medium">Đang dạy</p>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-blue-700">{completedClasses.length}</p>
-              <p className="text-sm text-blue-600 font-medium">Hoàn thành</p>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-red-700">{cancelledClasses.length}</p>
-              <p className="text-sm text-red-600 font-medium">Đã hủy</p>
-            </div>
-          </div>
+
 
           {/* Tabs */}
           <div className="flex gap-4 border-b border-outline-variant mb-6">

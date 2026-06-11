@@ -64,5 +64,10 @@ export const tutorApi = {
 
     const response = await api.get(`/tutors?${searchParams.toString()}`);
     return response.data;
+  },
+
+  getTutorById: async (id: number): Promise<Tutor> => {
+    const response = await api.get(`/tutors/${id}`);
+    return response.data;
   }
 };

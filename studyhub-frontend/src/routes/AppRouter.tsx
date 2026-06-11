@@ -14,8 +14,8 @@ const TutorDetail = lazy(() => import('../pages/Tutor/TutorDetail'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const TestPayment = lazy(() => import('../pages/TestPayment'));
+const AboutUs = lazy(() => import('../pages/AboutUs'));
 
-const ParentDashboard = lazy(() => import('../pages/Parent/ParentDashboard'));
 const PostManagement = lazy(() => import('../pages/Parent/PostManagement'));
 const CreatePost = lazy(() => import('../pages/Parent/CreatePost'));
 const ApplicantReview = lazy(() => import('../pages/Parent/ApplicantReview'));
@@ -24,7 +24,6 @@ const FeedbackList = lazy(() => import('../pages/Parent/FeedbackList'));
 const CreateFeedback = lazy(() => import('../pages/Parent/CreateFeedback'));
 const Settings = lazy(() => import('../pages/Parent/Settings'));
 
-const TutorDashboard = lazy(() => import('../pages/TutorPortal/TutorDashboard'));
 const TutorSearchClasses = lazy(() => import('../pages/TutorPortal/TutorSearchClasses'));
 const TutorApplyClass = lazy(() => import('../pages/TutorPortal/TutorApplyClass'));
 const TutorOffers = lazy(() => import('../pages/TutorPortal/TutorOffers'));
@@ -65,14 +64,14 @@ const AppRouter: React.FC = () => {
         <Route path="tutors/:id" element={<TutorDetail />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="about-us" element={<AboutUs />} />
         <Route path="test-payment" element={<TestPayment />} />
       </Route>
 
       {/* ── Parent Dashboard Routes (shared Navbar + SideNavBar + Footer via ParentLayout) ── */}
       <Route path="/parent" element={<ParentLayout />}>
-        {/* Index → Redirect to Dashboard */}
-        <Route index element={<Navigate to="/parent/dashboard" replace />} />
-        <Route path="dashboard" element={<ParentDashboard />} />
+        {/* Index → Redirect to Posts */}
+        <Route index element={<Navigate to="/parent/posts" replace />} />
         <Route path="post-management" element={<PostManagement />} />
         <Route path="posts" element={<PostManagement />} />
         <Route path="posts/:postId/applicants" element={<ApplicantReview />} />
@@ -89,9 +88,8 @@ const AppRouter: React.FC = () => {
 
       {/* ── Tutor Dashboard Routes (shared Navbar + SideNavBar + Footer via TutorLayout) ── */}
       <Route path="/tutor" element={<TutorLayout />}>
-        {/* Index → Redirect to Dashboard */}
-        <Route index element={<Navigate to="/tutor/dashboard" replace />} />
-        <Route path="dashboard" element={<TutorDashboard />} />
+        {/* Index → Redirect to Classes */}
+        <Route index element={<Navigate to="/tutor/classes" replace />} />
         <Route path="search-classes" element={<TutorSearchClasses />} />
         <Route path="apply-class/:postId" element={<TutorApplyClass />} />
         <Route path="create-post" element={<TutorCreatePost />} />

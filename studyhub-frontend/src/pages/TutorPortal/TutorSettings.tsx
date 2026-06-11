@@ -23,6 +23,11 @@ const TutorSettings: React.FC = () => {
   const [universityName, setUniversityName] = useState<string>('');
   const [major, setMajor] = useState<string>('');
   const [experienceYears, setExperienceYears] = useState<string>('Chưa có kinh nghiệm');
+  const [introduction, setIntroduction] = useState<string>('');
+  
+  // Subjects
+  const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
 
   // Thêm state cho phần Bằng cấp và Chứng chỉ
   const [degreeFile, setDegreeFile] = useState<File | null>(null);
@@ -55,11 +60,15 @@ const TutorSettings: React.FC = () => {
             else if (data.experienceYears === 2) setExperienceYears('1 - 3 năm');
             else if (data.experienceYears >= 4) setExperienceYears('Trên 3 năm');
           }
+          if (data.introduction) setIntroduction(data.introduction);
           if (data.degreeImageUrl) {
             setDegreeFileUrl(data.degreeImageUrl);
           }
           if (data.certificates && data.certificates.length > 0) {
             setCertificateUrls(data.certificates);
+          }
+          if (data.subjects && data.subjects.length > 0) {
+            setSelectedSubjects(data.subjects.map((s: any) => s.id));
           }
 
           if (data.ekycStatus === 'SUCCESS') {
@@ -70,7 +79,21 @@ const TutorSettings: React.FC = () => {
         console.error("Lỗi lấy thông tin gia sư:", error);
       }
     };
+
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/subjects');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableSubjects(data);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy danh sách môn học:", error);
+      }
+    };
+
     fetchProfile();
+    fetchSubjects();
   }, [tutorId]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string | null>>) => {
@@ -183,6 +206,8 @@ const TutorSettings: React.FC = () => {
           universityName,
           major,
           experienceYears,
+          introduction,
+          subjectIds: selectedSubjects,
           degreeImageUrl,
           certificates: combinedCertificates
         })
@@ -458,6 +483,41 @@ const TutorSettings: React.FC = () => {
                       <option>Trên 3 năm</option>
                     </select>
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface">Môn học giảng dạy <span className="text-error">*</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {availableSubjects.map((subject) => {
+                      const isSelected = selectedSubjects.includes(subject.id);
+                      return (
+                        <button
+                          key={subject.id}
+                          type="button"
+                          disabled={isReadOnly}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedSubjects(prev => prev.filter(id => id !== subject.id));
+                            } else {
+                              setSelectedSubjects(prev => [...prev, subject.id]);
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                            isSelected
+                              ? 'bg-primary text-on-primary border-primary'
+                              : 'bg-surface border-outline-variant text-on-surface hover:bg-surface-variant'
+                          } ${isReadOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                          {subject.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface">Giới thiệu bản thân <span className="text-error">*</span></label>
+                  <textarea rows={4} className="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface disabled:opacity-70 disabled:bg-surface-container" placeholder="Chia sẻ kinh nghiệm giảng dạy, thành tích học tập và phương pháp dạy của bạn..." value={introduction} onChange={e => setIntroduction(e.target.value)} disabled={isReadOnly}></textarea>
                 </div>
                 <div className="space-y-2">
                   <label className="font-label-md text-label-md text-on-surface">Bằng cấp / Thẻ sinh viên minh chứng <span className="text-error">*</span></label>

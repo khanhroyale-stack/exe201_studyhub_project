@@ -399,12 +399,9 @@ const Homepage: React.FC = () => {
                   Gia nhập mạng lưới 3,500+ gia sư ưu tú. Quản lý lớp học thông minh, thu nhập minh bạch và nhận hỗ trợ 24/7 từ StudyHub.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <button className="bg-white text-primary px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 hover:shadow-[0_8px_30px_rgba(255,255,255,0.25)] hover:-translate-y-1 transition-all duration-300 active:scale-95 flex items-center gap-2 shadow-lg">
+                  <button onClick={() => navigate('/register')} className="bg-white text-primary px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 hover:shadow-[0_8px_30px_rgba(255,255,255,0.25)] hover:-translate-y-1 transition-all duration-300 active:scale-95 flex items-center gap-2 shadow-lg">
                     <span className="material-symbols-outlined text-[18px]">person_add</span>
                     Đăng ký trở thành gia sư
-                  </button>
-                  <button className="bg-white/10 border-2 border-white/25 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-white/20 hover:border-white/50 transition-all duration-300 active:scale-95">
-                    Tìm hiểu chính sách
                   </button>
                 </div>
               </div>

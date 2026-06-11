@@ -156,23 +156,7 @@ const TutorList: React.FC = () => {
               </div>
             </div>
 
-            {/* Price Range */}
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Học phí tối đa (VNĐ/ca)</p>
-              <input 
-                className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary" 
-                max="1000000" min="50000" step="50000" type="range" 
-                value={maxPrice}
-                onChange={e => {
-                  setMaxPrice(Number(e.target.value));
-                  setPage(0);
-                }}
-              />
-              <div className="flex justify-between mt-2 text-xs text-slate-400 font-medium">
-                <span>50k</span>
-                <span className="text-primary font-bold">{maxPrice.toLocaleString()}đ</span>
-              </div>
-            </div>
+            {/* Removed Price Range Filter */}
 
             {/* Rating */}
             <div>
@@ -299,11 +283,7 @@ const TutorList: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                      <div>
-                        <span className="text-lg font-extrabold text-primary">{tutor.price ? tutor.price.toLocaleString() : 'Thỏa thuận'}</span>
-                        <span className="text-xs text-slate-400 font-medium">{tutor.price ? 'đ/ca' : ''}</span>
-                      </div>
+                    <div className="flex items-center justify-end pt-3 border-t border-slate-100">
                       <Link
                         to={`/tutors/${tutor.id}`}
                         className="px-4 py-2 border border-primary text-primary rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition-all active:scale-95 hover:shadow-md hover:shadow-primary/25"

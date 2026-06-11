@@ -10,6 +10,9 @@ const ClassDetail: React.FC = () => {
   const [currentClass, setCurrentClass] = useState<ClassDto | null>(null);
   const [loading, setLoading] = useState(true);
   
+  // Profile Modal State
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  
   // Registration Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [registerForm, setRegisterForm] = useState({
@@ -108,10 +111,6 @@ const ClassDetail: React.FC = () => {
                     <span className="material-symbols-outlined text-tertiary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="font-label-md text-label-md">{currentClass.rating} (128 đánh giá)</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[20px]">groups</span>
-                    <span className="font-label-md text-label-md">{currentClass.currentStudents || 15}/{currentClass.maxStudents || 20} Học viên</span>
-                  </div>
                 </div>
               </div>
             </section>
@@ -119,22 +118,10 @@ const ClassDetail: React.FC = () => {
             {/* Description & Requirements */}
             <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 space-y-6">
               <div>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface mb-4">Mô tả lớp học</h2>
+                <h2 className="font-headline-sm text-headline-sm text-on-surface mb-4">Mô tả khóa học</h2>
                 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-line">
                   {currentClass.description}
                 </p>
-              </div>
-              <hr className="border-outline-variant" />
-              <div>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface mb-4">Yêu cầu khóa học</h2>
-                <ul className="space-y-3">
-                  {(currentClass.requirements || []).map((req, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-body-md text-on-surface-variant">
-                      <span className="material-symbols-outlined text-primary">check_circle</span>
-                      <span>{req}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
             </section>
 
@@ -148,9 +135,9 @@ const ClassDetail: React.FC = () => {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="font-headline-sm text-headline-sm text-on-surface">{currentClass.tutorName}</h3>
-                      <p className="text-primary font-label-md text-label-md uppercase tracking-wider">{currentClass.tutorDesc}</p>
+                      <p className="text-primary font-label-md text-label-md tracking-wider line-clamp-1">{currentClass.tutorDesc}</p>
                     </div>
-                    <button className="px-4 py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary-container/10 transition-colors">Xem hồ sơ</button>
+                    <button onClick={() => setIsProfileModalOpen(true)} className="px-4 py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary-container/10 transition-colors shrink-0">Xem hồ sơ</button>
                   </div>
                   <div className="flex gap-4 mb-4 flex-wrap">
                     {currentClass.tutorVerified && (
@@ -215,11 +202,11 @@ const ClassDetail: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-4 p-3 bg-surface rounded-lg border border-outline-variant/30">
                   <div className="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[20px]">{currentClass.locationType === 'computer' || currentClass.locationType === 'videocam' ? 'computer' : 'location_on'}</span>
+                    <span className="material-symbols-outlined text-[20px]">{currentClass.locationType === 'Chỉ Online' ? 'computer' : 'location_on'}</span>
                   </div>
                   <div>
                     <p className="font-label-md text-label-md text-on-surface">Hình thức</p>
-                    <p className="text-on-surface-variant font-body-sm text-body-sm">{currentClass.location}</p>
+                    <p className="text-on-surface-variant font-body-sm text-body-sm">{currentClass.locationType}</p>
                   </div>
                 </div>
               </div>
@@ -300,6 +287,103 @@ const ClassDetail: React.FC = () => {
                 <button type="submit" className="flex-1 py-3 bg-primary text-on-primary rounded-xl hover:bg-primary-container font-label-md">Gửi yêu cầu</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Tutor Profile Modal */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-surface w-full max-w-2xl rounded-2xl p-0 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="bg-primary/5 p-6 border-b border-primary/10 flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <img alt={currentClass.tutorName} className="w-20 h-20 rounded-full border-4 border-white shadow-sm object-cover" src={currentClass.tutorAvatar} />
+                <div>
+                  <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                    {currentClass.tutorName}
+                    {currentClass.tutorVerified && (
+                      <span className="material-symbols-outlined text-primary text-[20px]" title="Đã xác minh danh tính">verified</span>
+                    )}
+                  </h3>
+                  <div className="flex items-center gap-1 text-on-surface-variant mt-1">
+                    <span className="material-symbols-outlined text-tertiary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    <span className="font-label-md text-label-md font-bold">{currentClass.rating}</span>
+                    <span className="text-sm">({currentClass.reviewCount || 128} đánh giá)</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setIsProfileModalOpen(false)} className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-variant transition-colors">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* Thông tin cơ bản */}
+              <div>
+                <h4 className="font-label-lg text-label-lg text-on-surface mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+                  Giới thiệu bản thân
+                </h4>
+                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-line bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
+                  {currentClass.tutorDesc}
+                </p>
+              </div>
+
+              {/* Học vấn và kinh nghiệm */}
+              <div>
+                <h4 className="font-label-lg text-label-lg text-on-surface mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">school</span>
+                  Học vấn & Kinh nghiệm
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined">account_balance</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Trường</p>
+                      <p className="text-sm font-semibold text-on-surface">{currentClass.tutorUniversity || 'Chưa cập nhật'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined">menu_book</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Chuyên ngành</p>
+                      <p className="text-sm font-semibold text-on-surface">{currentClass.tutorMajor || 'Chưa cập nhật'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined">history</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Kinh nghiệm</p>
+                      <p className="text-sm font-semibold text-on-surface">{currentClass.tutorExperience || 'Chưa cập nhật'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined">verified_user</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">Xác minh danh tính</p>
+                      <p className="text-sm font-semibold text-primary">{currentClass.tutorVerified ? 'Đã xác minh (eKYC)' : 'Chưa xác minh'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-outline-variant bg-surface-container-lowest flex justify-end">
+              <button onClick={() => setIsProfileModalOpen(false)} className="px-6 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:bg-primary-container transition-colors">
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}

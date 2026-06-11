@@ -10,12 +10,12 @@ const TutorBilling: React.FC = () => {
           <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Công nợ & Thanh toán</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">Quản lý hóa đơn phí nền tảng (10%) hàng tháng.</p>
         </div>
-        <div className="glass bg-primary-container text-on-primary-container px-4 py-3 rounded-xl flex items-center gap-4 shadow-sm border border-primary/20 hover:-translate-y-1 transition-transform">
+        <div className="glass bg-green-100 text-green-800 px-4 py-3 rounded-xl flex items-center gap-4 shadow-sm border border-green-300 hover:-translate-y-1 transition-transform">
           <div>
             <p className="font-label-sm text-label-sm opacity-80">Tổng nợ cần thanh toán</p>
             <p className="font-headline-md text-headline-md font-bold">720.000đ</p>
           </div>
-          <div className="w-10 h-10 bg-primary text-on-primary rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center">
             <span className="material-symbols-outlined">account_balance_wallet</span>
           </div>
         </div>

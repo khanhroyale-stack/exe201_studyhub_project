@@ -301,6 +301,10 @@ const AdminUsers: React.FC = () => {
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Kinh nghiệm</p>
                             <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.experienceYears !== undefined ? `${selectedTutor.experienceYears} năm` : "Chưa cập nhật"}</p>
                           </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Giới thiệu bản thân</p>
+                            <p className="text-sm font-semibold text-[#0f172a]">{selectedTutor.introduction || "Chưa cập nhật"}</p>
+                          </div>
 
                         </div>
                       </div>

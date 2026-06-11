@@ -11,6 +11,7 @@ import com.management.studyhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +31,17 @@ public class MockDataController {
     private final TutorProfileRepository tutorProfileRepository;
     private final SubjectRepository subjectRepository;
     private final com.management.studyhub.repository.ClassSessionRepository classSessionRepository;
+    private final com.management.studyhub.repository.ParentRepository parentRepository;
+
+    @GetMapping("/make-all-trial")
+    @Transactional
+    public ResponseEntity<String> makeAllTrial() {
+        classSessionRepository.findAll().forEach(c -> {
+            c.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.TRIAL);
+            classSessionRepository.save(c);
+        });
+        return ResponseEntity.ok("Thành công! Toàn bộ các lớp học hiện tại đã được chuyển sang trạng thái Đang học thử (TRIAL). Bạn có thể quay lại trang web và F5 để test thanh toán.");
+    }
 
     @PostMapping("/init")
     @Transactional

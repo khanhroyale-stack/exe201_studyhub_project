@@ -21,7 +21,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api
 const ApplicantReview: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  const { name: parentName } = useAuth();
+  const {  } = useAuth();
 
   const [applicants, setApplicants] = useState<ApplicantDTO[]>([]);
   const [loading, setLoading] = useState(true);

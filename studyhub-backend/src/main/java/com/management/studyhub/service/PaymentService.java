@@ -29,7 +29,7 @@ public class PaymentService {
     private static final String ACCOUNT_NAME = "STUDYHUB";
 
     @Transactional
-    public String generatePaymentQR(Long classId) {
+    public Map<String, String> generatePaymentQR(Long classId) {
         ClassSession classSession = classSessionRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
@@ -56,7 +56,10 @@ public class PaymentService {
         String qrUrl = String.format("https://img.vietqr.io/image/%s-%s-compact2.png?amount=%d&addInfo=%s&accountName=%s",
                 BANK_BIN, ACCOUNT_NUMBER, amountStr, transactionCode, ACCOUNT_NAME);
         
-        return qrUrl;
+        return Map.of(
+            "qrUrl", qrUrl,
+            "transactionCode", transactionCode
+        );
     }
 
     public TransactionStatus getTransactionStatus(String transactionCode) {
@@ -81,16 +84,13 @@ public class PaymentService {
                     Number amount = (Number) data.get("amount");
                     
                     if (description != null) {
-                        // Tìm transaction code trong description (Mô phỏng)
-                        // Trong thực tế cần dùng Regex để extract chính xác mã "SHxxx"
-                        List<Transaction> pendingTransactions = transactionRepository.findAll().stream()
-                                .filter(t -> t.getStatus() == TransactionStatus.PENDING)
-                                .toList();
-
-                        for (Transaction t : pendingTransactions) {
-                            if (description.contains(t.getTransactionCode())) {
-                                // Kiểm tra số tiền khớp
-                                if (Math.abs(t.getAmount() - amount.doubleValue()) < 1.0) {
+                        // Tìm transaction code trong description (Mô phỏng bằng Regex)
+                        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(SH\\d{1,10})");
+                        java.util.regex.Matcher matcher = pattern.matcher(description);
+                        if (matcher.find()) {
+                            String code = matcher.group(1);
+                            transactionRepository.findByTransactionCode(code).ifPresent(t -> {
+                                if (t.getStatus() == TransactionStatus.PENDING && Math.abs(t.getAmount() - amount.doubleValue()) < 1.0) {
                                     t.setStatus(TransactionStatus.SUCCESS);
                                     transactionRepository.save(t);
                                     
@@ -109,7 +109,7 @@ public class PaymentService {
                                     
                                     log.info("Payment confirmed & Commission generated for transaction: {}", t.getTransactionCode());
                                 }
-                            }
+                            });
                         }
                     }
                 }

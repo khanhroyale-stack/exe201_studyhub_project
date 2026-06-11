@@ -18,11 +18,11 @@ public class PaymentController {
     @PostMapping("/confirm-hire/{classId}")
     public ResponseEntity<?> confirmHire(@PathVariable Long classId) {
         try {
-            String qrUrl = paymentService.generatePaymentQR(classId);
-            // In a real app, you might want to return the transactionCode as well for polling
+            Map<String, String> result = paymentService.generatePaymentQR(classId);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "qrUrl", qrUrl
+                "qrUrl", result.get("qrUrl"),
+                "transactionCode", result.get("transactionCode")
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -42,9 +42,14 @@ public class PaymentController {
     }
 
     @PostMapping("/webhook")
-    public ResponseEntity<?> handleWebhook(@RequestBody Map<String, Object> payload) {
-        // Here you would normally verify the Casso/PayOS signature header
-        // e.g., String signature = request.getHeader("Casso-Signature");
+    public ResponseEntity<?> handleWebhook(
+            @RequestHeader(value = "Casso-Signature", required = false) String signature,
+            @RequestBody Map<String, Object> payload) {
+        
+        // Simple security check (in real app, this should cryptographically verify the payload)
+        if (signature == null || signature.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Missing Signature"));
+        }
         
         paymentService.handleWebhook(payload);
         

@@ -50,6 +50,7 @@ const TutorApplyClass: React.FC = () => {
   useEffect(() => {
     if (!postId || !tutorId) {
       if (!tutorId) setError('Không tìm thấy hồ sơ gia sư. Vui lòng đăng nhập lại.');
+      setLoading(false);
       return;
     }
 

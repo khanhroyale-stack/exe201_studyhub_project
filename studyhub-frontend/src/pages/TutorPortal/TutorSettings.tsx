@@ -525,7 +525,7 @@ const TutorSettings: React.FC = () => {
                 </div>
               ) : (
                 <div className="flex-1 overflow-y-auto pr-2 space-y-3" style={{ maxHeight: '240px' }}>
-                  {certificateUrls.map((certUrl, index) => (
+                  {certificateUrls.map((_, index) => (
                     <div key={`url-${index}`} className="flex items-center justify-between p-3 border border-outline-variant rounded-lg bg-surface hover:bg-surface-container-lowest transition-colors animate-slide-up">
                       <div className="flex items-center gap-3 overflow-hidden">
                         <span className="material-symbols-outlined text-primary text-[24px]">verified</span>

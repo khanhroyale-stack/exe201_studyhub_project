@@ -55,6 +55,9 @@ public class ClassSession {
 
     private Integer progress;
 
+    @OneToMany(mappedBy = "classSession", cascade = CascadeType.ALL)
+    private java.util.List<StudyMaterial> studyMaterials;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();

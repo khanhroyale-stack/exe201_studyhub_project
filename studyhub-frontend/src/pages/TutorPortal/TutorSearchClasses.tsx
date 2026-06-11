@@ -46,8 +46,8 @@ const TutorSearchClasses: React.FC = () => {
   }, [tutorId]);
 
   // Helper để lấy trạng thái ứng tuyển của 1 bài đăng
-  const getApplicationStatus = (postId: number) => {
-    const app = myApplications.find(a => a.jobPostingId === postId);
+  const getApplicationStatus = (postId: number | string) => {
+    const app = myApplications.find(a => a.jobPostingId === Number(postId));
     return app ? app.status : null;
   };
 

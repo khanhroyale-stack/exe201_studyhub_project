@@ -14,10 +14,10 @@ public class StudyMaterial {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Liên kết với đơn ứng tuyển đã được chấp nhận (lớp học)
+    // Liên kết với lớp học
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id", nullable = false)
-    private TutorApplication application;
+    @JoinColumn(name = "class_session_id", nullable = false)
+    private ClassSession classSession;
 
     // Người tải lên (Gia sư hoặc Phụ huynh)
     @ManyToOne(fetch = FetchType.LAZY)

@@ -21,16 +21,16 @@ interface DirectBookingDTO {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const TutorBookings: React.FC = () => {
-  const { user, profile } = useAuth(); // profile is TutorProfile if role is tutor
+  const { tutorId } = useAuth();
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<DirectBookingDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // tutorId here is profile.id
-    if (!profile?.id) return;
+    if (!tutorId) return;
 
-    fetch(`${BASE_URL}/bookings/tutor/${profile.id}`)
+    fetch(`${BASE_URL}/bookings/tutor/${tutorId}`)
       .then(res => res.json())
       .then(data => {
         setBookings(data);
@@ -40,7 +40,7 @@ const TutorBookings: React.FC = () => {
         console.error(err);
         setLoading(false);
       });
-  }, [profile?.id]);
+  }, [tutorId]);
 
   const handleAction = async (id: number, action: 'accept' | 'reject') => {
     if (!window.confirm(`Bạn có chắc muốn ${action === 'accept' ? 'chấp nhận' : 'từ chối'} lời mời này?`)) return;

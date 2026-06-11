@@ -44,7 +44,7 @@ const navGroups = [
 ];
 
 const SideNavBar: React.FC = () => {
-  const { name } = useAuth();
+  const {  } = useAuth();
 
   return (
     <aside className="fixed left-0 top-[68px] bottom-0 w-[260px] flex flex-col bg-white border-r border-slate-100 z-30 shadow-[2px_0_20px_rgba(0,0,0,0.04)]">

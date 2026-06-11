@@ -39,7 +39,7 @@ interface TutorProfileModalProps {
 }
 
 const TutorProfileModal: React.FC<TutorProfileModalProps> = ({ tutorId, onClose }) => {
-  const { role, user } = useAuth();
+  const { role, userId } = useAuth();
   const [profile, setProfile] = useState<TutorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +77,7 @@ const TutorProfileModal: React.FC<TutorProfileModalProps> = ({ tutorId, onClose 
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return alert('Vui lòng đăng nhập để mời dạy!');
+    if (!userId) return alert('Vui lòng đăng nhập để mời dạy!');
     if (!bookingData.subject || !bookingData.schedule || !bookingData.pricePerSession) {
       return alert('Vui lòng điền đầy đủ Môn học, Lịch học và Học phí.');
     }
@@ -88,7 +88,7 @@ const TutorProfileModal: React.FC<TutorProfileModalProps> = ({ tutorId, onClose 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          parentId: user.id,
+          parentId: userId,
           tutorId: profile?.id,
           ...bookingData
         })
@@ -355,7 +355,7 @@ const TutorProfileModal: React.FC<TutorProfileModalProps> = ({ tutorId, onClose 
           >
             {showBooking ? 'Hủy' : 'Đóng hồ sơ'}
           </button>
-          {!showBooking && role === 'ROLE_PARENT' && (
+          {!showBooking && role === 'parent' && (
             <button 
               onClick={() => {
                 setBookingData(prev => ({ ...prev, pricePerSession: profile?.price || 0 }));

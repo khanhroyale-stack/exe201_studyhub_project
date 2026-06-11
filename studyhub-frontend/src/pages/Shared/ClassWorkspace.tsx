@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const ClassWorkspace: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { role } = useAuth();
+  const { role, userId } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('DASHBOARD'); // DASHBOARD, LOGS, BILLING
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'DASHBOARD'); // DASHBOARD, LOGS, BILLING
   const [session, setSession] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [meetingLink, setMeetingLink] = useState('');
@@ -23,6 +26,58 @@ const ClassWorkspace: React.FC = () => {
   // Thêm Log State
   const [showLogForm, setShowLogForm] = useState(false);
   const [newLog, setNewLog] = useState({ title: '', content: '', tutorFeedback: '', status: 'PRESENT' });
+
+  // Thêm Material State
+  const [showMaterialForm, setShowMaterialForm] = useState(false);
+  const [materialTitle, setMaterialTitle] = useState('');
+  const [materialFile, setMaterialFile] = useState<File | null>(null);
+  const [uploadingMaterial, setUploadingMaterial] = useState(false);
+
+  // Payment State
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [qrUrl, setQrUrl] = useState('');
+  const [transactionCode, setTransactionCode] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('PENDING');
+
+  useEffect(() => {
+    if (!showPaymentModal || !transactionCode || paymentStatus === 'SUCCESS') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/payment/status/${transactionCode}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'SUCCESS') {
+            setPaymentStatus('SUCCESS');
+            setSession((prev: any) => ({ ...prev, status: 'CONFIRMED' }));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [showPaymentModal, transactionCode, paymentStatus]);
+
+  const handleConfirmHire = async () => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/payment/confirm-hire/${id}`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setQrUrl(data.qrUrl);
+          setTransactionCode(data.transactionCode);
+          setPaymentStatus('PENDING');
+          setShowPaymentModal(true);
+        }
+      } else {
+        alert('Có lỗi xảy ra khi tạo giao dịch thanh toán.');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ.');
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -41,9 +96,14 @@ const ClassWorkspace: React.FC = () => {
       if (logRes.ok) {
         setLogs(await logRes.json());
       }
+
+      const matRes = await fetch(`${BASE_URL}/study-materials/class/${id}`);
+      if (matRes.ok) {
+        setMaterials(await matRes.json());
+      }
     } catch (err) {
       console.error(err);
-      navigate(role === 'ROLE_PARENT' ? '/parent/classes' : '/tutor/classes');
+      navigate(role === 'parent' ? '/parent/classes' : '/tutor/classes');
     } finally {
       setLoading(false);
     }
@@ -102,6 +162,40 @@ const ClassWorkspace: React.FC = () => {
     }
   };
 
+  const submitMaterial = async () => {
+    if (!materialTitle || !materialFile || !userId) {
+      alert('Vui lòng nhập tên tài liệu và chọn file đính kèm');
+      return;
+    }
+
+    setUploadingMaterial(true);
+    const formData = new FormData();
+    formData.append('uploaderId', userId.toString());
+    formData.append('title', materialTitle);
+    formData.append('file', materialFile);
+
+    try {
+      const res = await fetch(`${BASE_URL}/study-materials/class/${id}`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) {
+         const error = await res.json();
+         throw new Error(error.error || 'Lỗi server');
+      }
+      setShowMaterialForm(false);
+      setMaterialTitle('');
+      setMaterialFile(null);
+      fetchData(); // Reload materials
+      alert('Đã tải lên tài liệu thành công!');
+    } catch (err: any) {
+      alert('Lỗi upload file: ' + err.message);
+    } finally {
+      setUploadingMaterial(false);
+    }
+  };
+
+
   if (loading) return <div className="p-8 text-center">Đang tải...</div>;
   if (!session) return null;
 
@@ -135,7 +229,7 @@ const ClassWorkspace: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex border-b border-outline-variant overflow-x-auto hide-scrollbar">
-        {['DASHBOARD', 'LOGS', 'BILLING'].map(tab => (
+        {['DASHBOARD', 'LOGS', 'MATERIALS', 'BILLING'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -145,7 +239,7 @@ const ClassWorkspace: React.FC = () => {
                 : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest'
             }`}
           >
-            {tab === 'DASHBOARD' ? 'Tổng quan' : tab === 'LOGS' ? 'Nhật ký giảng dạy' : 'Học phí'}
+            {tab === 'DASHBOARD' ? 'Tổng quan' : tab === 'LOGS' ? 'Nhật ký giảng dạy' : tab === 'MATERIALS' ? 'Tài liệu học tập' : 'Học phí'}
           </button>
         ))}
       </div>
@@ -348,6 +442,79 @@ const ClassWorkspace: React.FC = () => {
           </div>
         )}
 
+        {/* MATERIALS TAB */}
+        {activeTab === 'MATERIALS' && (
+          <div className="bg-surface rounded-2xl p-6 md:p-8 border border-outline-variant shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">folder_open</span>
+                Tài liệu học tập ({materials.length} file)
+              </h3>
+              {!showMaterialForm && (
+                <button onClick={() => setShowMaterialForm(true)} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl shadow hover:bg-primary/90 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">upload_file</span> Tải lên tài liệu
+                </button>
+              )}
+            </div>
+
+            {showMaterialForm && (
+              <div className="mb-8 p-6 bg-surface-container-lowest rounded-2xl border border-primary/20 shadow-inner">
+                <h4 className="font-bold text-on-surface mb-4">Tải lên tài liệu mới</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-on-surface mb-1">Tên tài liệu <span className="text-error">*</span></label>
+                    <input type="text" placeholder="VD: Đề cương ôn tập HK1 Toán 12" className="w-full p-3 border border-outline-variant rounded-xl text-sm outline-none focus:border-primary" value={materialTitle} onChange={e => setMaterialTitle(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-on-surface mb-1">File đính kèm (PDF, DOCX, PNG...) <span className="text-error">*</span></label>
+                    <input type="file" className="w-full p-3 border border-outline-variant rounded-xl text-sm outline-none focus:border-primary" onChange={e => setMaterialFile(e.target.files ? e.target.files[0] : null)} />
+                  </div>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <button onClick={() => setShowMaterialForm(false)} className="px-5 py-2.5 text-sm font-medium border border-outline-variant rounded-xl hover:bg-surface-container" disabled={uploadingMaterial}>Hủy</button>
+                    <button onClick={submitMaterial} className="px-5 py-2.5 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary/90 shadow flex items-center gap-2" disabled={uploadingMaterial}>
+                      {uploadingMaterial && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+                      {uploadingMaterial ? 'Đang tải lên...' : 'Xác nhận tải lên'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {materials.length === 0 ? (
+                <div className="col-span-2 text-center text-sm text-on-surface-variant italic py-8 border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
+                  Chưa có tài liệu nào được chia sẻ trong lớp này.
+                </div>
+              ) : (
+                materials.map((mat) => (
+                  <div key={mat.id} className="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant rounded-xl hover:shadow-sm transition-shadow">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="w-12 h-12 rounded-lg bg-primary-container text-primary flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-2xl">
+                          {mat.fileType === 'pdf' ? 'picture_as_pdf' : mat.fileType === 'docx' || mat.fileType === 'doc' ? 'description' : 'insert_drive_file'}
+                        </span>
+                      </div>
+                      <div className="truncate">
+                        <h4 className="font-bold text-sm text-on-surface truncate" title={mat.title}>{mat.title}</h4>
+                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined text-[14px]">account_circle</span> {mat.uploaderName}
+                          <span className="mx-1">•</span>
+                          {new Date(mat.uploadedAt).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                      <a href={mat.fileUrl} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full hover:bg-primary/10 text-primary flex items-center justify-center transition-colors tooltip" title="Xem file">
+                        <span className="material-symbols-outlined">download</span>
+                      </a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
         {/* BILLING TAB */}
         {activeTab === 'BILLING' && (
           <div className="bg-surface rounded-2xl p-6 md:p-8 border border-outline-variant shadow-sm">
@@ -372,12 +539,107 @@ const ClassWorkspace: React.FC = () => {
             </div>
 
             <div className="text-center p-6 bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant text-sm text-on-surface-variant">
-              * Tính năng thanh toán trực tuyến qua VNPAY đang được phát triển. Tạm thời hai bên vui lòng thanh toán trực tiếp cho nhau.
+              {session.status === 'TRIAL' ? (
+                isParent ? (
+                  <div className="space-y-4">
+                    <p className="font-medium text-on-surface">Sau khi hoàn thành học thử, hãy Xác nhận thuê gia sư và thanh toán để tiếp tục quá trình học tập chính thức.</p>
+                    <button 
+                      onClick={handleConfirmHire}
+                      className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-sm hover:bg-primary/90 flex items-center justify-center gap-2 mx-auto"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                      Xác nhận thuê & Thanh toán
+                    </button>
+                  </div>
+                ) : (
+                  <p>Lớp học đang trong thời gian học thử. Phụ huynh sẽ tiến hành thanh toán sau khi chốt thuê.</p>
+                )
+              ) : session.status === 'PENDING_PAYMENT' ? (
+                <div className="space-y-4">
+                  <p className="font-bold text-amber-600">Đang chờ phụ huynh thanh toán học phí...</p>
+                  {isParent && (
+                    <button 
+                      onClick={handleConfirmHire}
+                      className="px-6 py-2 border border-primary text-primary rounded-xl font-bold hover:bg-primary/10 transition-colors"
+                    >
+                      Mở lại mã QR thanh toán
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-green-600 font-bold flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined text-green-600">verified</span>
+                  Đã thanh toán thành công. Lớp học chính thức diễn ra!
+                </p>
+              )}
             </div>
           </div>
         )}
 
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+              <h3 className="text-xl font-bold text-on-surface">Thanh toán & Chốt thuê</h3>
+              <button onClick={() => setShowPaymentModal(false)} className="text-on-surface-variant hover:text-error transition-colors">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="p-8 flex flex-col items-center">
+              {paymentStatus === 'SUCCESS' ? (
+                <div className="text-center space-y-4 py-8">
+                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="material-symbols-outlined text-4xl">check_circle</span>
+                  </div>
+                  <h4 className="text-2xl font-black text-on-surface">Thanh toán thành công!</h4>
+                  <p className="text-on-surface-variant">Cảm ơn bạn đã lựa chọn gia sư của StudyHub. Lớp học đã được chuyển sang trạng thái Chính thức.</p>
+                  <button 
+                    onClick={() => setShowPaymentModal(false)}
+                    className="mt-6 px-8 py-3 bg-primary text-white rounded-xl font-bold shadow hover:bg-primary/90 w-full"
+                  >
+                    Đóng cửa sổ
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="text-center mb-6">
+                    <p className="text-on-surface-variant text-sm mb-1">Quét mã VietQR bằng App ngân hàng để thanh toán</p>
+                    <p className="text-primary font-black text-2xl">{session.price?.toLocaleString('vi-VN')}đ</p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-2xl shadow-inner border border-outline-variant mb-6 relative">
+                    <img src={qrUrl} alt="VietQR" className="w-64 h-64 object-contain" />
+                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-center pointer-events-none rounded-2xl opacity-0 transition-opacity"></div>
+                  </div>
+                  
+                  <div className="w-full bg-surface-container-lowest p-4 rounded-xl border border-outline-variant space-y-2 text-sm text-left mb-6">
+                    <div className="flex justify-between">
+                      <span className="text-on-surface-variant font-medium">Nội dung chuyển khoản:</span>
+                      <span className="font-bold text-on-surface select-all">{transactionCode}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-on-surface-variant font-medium">Trạng thái:</span>
+                      <span className="font-bold text-amber-600 flex items-center gap-2">
+                        <span className="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></span>
+                        Đang chờ thanh toán...
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-center text-on-surface-variant/70">
+                    Hệ thống đang liên tục kiểm tra tài khoản (Polling).<br/>Cửa sổ này sẽ tự động chuyển sang Thành công khi nhận được tiền.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

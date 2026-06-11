@@ -40,7 +40,7 @@ const TestPayment: React.FC = () => {
 
   // Polling logic
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
 
     const checkStatus = async () => {
       if (!transactionCode || paymentStatus !== 'PENDING') return;

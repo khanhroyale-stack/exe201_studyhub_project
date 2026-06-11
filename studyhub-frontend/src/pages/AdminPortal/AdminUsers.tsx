@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-// --- MOCK DATA FOR ACCOUNTS TAB ---
-const MOCK_ACCOUNTS = [
-  { id: 'A001', name: 'Nguyễn Thị Thu', email: 'thu.nguyen@example.com', role: 'Gia sư', status: 'Hoạt động', joinedAt: '12/10/2023', avatar: 'https://i.pravatar.cc/150?u=thu' },
-  { id: 'A002', name: 'Trần Minh Tuấn', email: 'tuan.tran@example.com', role: 'Phụ huynh', status: 'Hoạt động', joinedAt: '15/10/2023', avatar: 'https://i.pravatar.cc/150?u=tuan' },
-  { id: 'A003', name: 'Lê Anh Khoa', email: 'khoa.le@example.com', role: 'Gia sư', status: 'Bị khóa', joinedAt: '01/11/2023', avatar: 'https://i.pravatar.cc/150?u=khoa' },
-  { id: 'A004', name: 'Phạm Mai Hương', email: 'huong.pham@example.com', role: 'Phụ huynh', status: 'Hoạt động', joinedAt: '20/11/2023', avatar: 'https://i.pravatar.cc/150?u=huong' },
-];
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'ekyc' | 'accounts'>('accounts');
-  const [searchTerm, setSearchTerm] = useState('');
   
   // --- REAL DATA FOR EKYC TAB ---
   const [pendingTutors, setPendingTutors] = useState<any[]>([]);
@@ -22,7 +14,7 @@ const AdminUsers: React.FC = () => {
       const data = await response.json();
       setPendingTutors(data);
       
-      setSelectedTutor(current => {
+      setSelectedTutor((current: any) => {
         if (!current) return data.length > 0 ? data[0] : null;
         const stillExists = data.some((t: any) => t.id === current.id);
         if (!stillExists) return data.length > 0 ? data[0] : null;

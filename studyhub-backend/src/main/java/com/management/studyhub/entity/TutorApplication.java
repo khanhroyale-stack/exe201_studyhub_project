@@ -32,7 +32,4 @@ public class TutorApplication {
     private String message;
 
     private LocalDateTime createdAt = LocalDateTime.now();
-    // Trong class TutorApplication.java
-    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
-    private List<StudyMaterial> studyMaterials;
 }

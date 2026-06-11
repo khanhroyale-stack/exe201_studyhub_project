@@ -252,13 +252,12 @@ const ClassManagement: React.FC = () => {
 
                     {session.status === 'TRIAL' && (
                       <>
-                        <button
-                          onClick={() => updateStatus(session.id, 'CONFIRMED')}
-                          disabled={updatingId === session.id}
-                          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"
+                        <Link
+                          to={`/parent/classes/${session.id}/workspace?tab=BILLING`}
+                          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
                         >
-                          {updatingId === session.id ? 'Đang xử lý...' : '✓ Xác nhận tiếp tục'}
-                        </button>
+                          ✓ Xác nhận tiếp tục
+                        </Link>
                         <button
                           onClick={() => {
                             if (window.confirm('Bạn có chắc muốn hủy lớp học này?')) updateStatus(session.id, 'CANCELLED');

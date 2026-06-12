@@ -19,7 +19,7 @@ const TutorList: React.FC = () => {
   const [keyword, setKeyword] = useState(initialKeyword);
   const [searchKeyword, setSearchKeyword] = useState(initialKeyword); // Only update when hitting search
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<number[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(1000000);
+  const [maxPrice] = useState<number>(1000000);
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [method, setMethod] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState('popular');

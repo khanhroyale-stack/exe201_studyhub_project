@@ -27,11 +27,12 @@ type TabType = 'active' | 'completed' | 'cancelled';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
-  TRIAL:       { label: 'Chờ học thử',   color: 'text-amber-700',  bgColor: 'bg-amber-100 border-amber-200',  icon: 'hourglass_empty' },
-  CONFIRMED:   { label: 'Đang học',       color: 'text-green-700',  bgColor: 'bg-green-100 border-green-200',  icon: 'check_circle' },
-  COMPLETED:   { label: 'Hoàn thành',     color: 'text-blue-700',   bgColor: 'bg-blue-100 border-blue-200',    icon: 'task_alt' },
-  CANCELLED:   { label: 'Đã hủy',         color: 'text-red-700',    bgColor: 'bg-red-100 border-red-200',      icon: 'cancel' },
-  DISBURSED:   { label: 'Đã giải ngân',   color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-200', icon: 'payments' },
+  TRIAL:           { label: 'Chờ học thử',   color: 'text-amber-700',  bgColor: 'bg-amber-100 border-amber-200',  icon: 'hourglass_empty' },
+  PENDING_PAYMENT: { label: 'Chờ thanh toán', color: 'text-orange-700', bgColor: 'bg-orange-100 border-orange-200', icon: 'payments' },
+  CONFIRMED:       { label: 'Đang học',       color: 'text-green-700',  bgColor: 'bg-green-100 border-green-200',  icon: 'check_circle' },
+  COMPLETED:       { label: 'Hoàn thành',     color: 'text-blue-700',   bgColor: 'bg-blue-100 border-blue-200',    icon: 'task_alt' },
+  CANCELLED:       { label: 'Đã hủy',         color: 'text-red-700',    bgColor: 'bg-red-100 border-red-200',      icon: 'cancel' },
+  DISBURSED:       { label: 'Đã giải ngân',   color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-200', icon: 'payments' },
 };
 
 const ClassManagement: React.FC = () => {
@@ -73,7 +74,7 @@ const ClassManagement: React.FC = () => {
     }
   };
 
-  const activeSessions    = sessions.filter(s => ['TRIAL', 'CONFIRMED'].includes(s.status));
+  const activeSessions    = sessions.filter(s => ['TRIAL', 'CONFIRMED', 'PENDING_PAYMENT'].includes(s.status));
   const completedSessions = sessions.filter(s => ['COMPLETED', 'DISBURSED'].includes(s.status));
   const cancelledSessions = sessions.filter(s => s.status === 'CANCELLED');
 
@@ -232,6 +233,15 @@ const ClassManagement: React.FC = () => {
                         Gia sư đã được chọn. Đang chờ sắp xếp buổi học thử.
                       </div>
                     )}
+                    {session.status === 'PENDING_PAYMENT' && (
+                      <div className="mt-2 px-3 py-2 bg-orange-50 border border-orange-300 rounded-xl text-sm text-orange-800 flex items-start gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-orange-500 shrink-0 mt-0.5">warning</span>
+                        <div>
+                          <p className="font-bold mb-0.5">⚠️ Cần thanh toán học phí</p>
+                          <p className="text-xs text-orange-700">Buổi học thử đã xong. Vui lòng hoàn thành thanh toán để lớp học chính thức bắt đầu.</p>
+                        </div>
+                      </div>
+                    )}
                     {session.status === 'CONFIRMED' && (
                       <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px]">check_circle</span>
@@ -269,10 +279,19 @@ const ClassManagement: React.FC = () => {
                         </button>
                       </>
                     )}
+                    {session.status === 'PENDING_PAYMENT' && (
+                      <Link
+                        to={`/parent/classes/${session.id}/workspace?tab=BILLING`}
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-bold hover:bg-orange-600 transition-colors whitespace-nowrap flex items-center gap-1 animate-pulse"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+                        Hoàn tất thanh toán
+                      </Link>
+                    )}
                     {session.status === 'CONFIRMED' && (
                       <button
                         onClick={() => {
-                          if (window.confirm('Đánh dấu lớp học này đã hoàn tất quá trình giảng dạy?')) updateStatus(session.id, 'COMPLETED');
+                          if (true || window.confirm('Đánh dấu lớp học này đã hoàn tất quá trình giảng dạy?')) updateStatus(session.id, 'COMPLETED');
                         }}
                         disabled={updatingId === session.id}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"

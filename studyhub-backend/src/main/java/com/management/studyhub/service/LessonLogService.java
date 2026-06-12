@@ -32,6 +32,24 @@ public class LessonLogService {
         ClassSession session = classSessionRepository.findById(classSessionId)
                 .orElseThrow(() -> new RuntimeException("ClassSession not found"));
 
+        // Validate status
+        if (session.getStatus() == com.management.studyhub.entity.enums.ClassSessionStatus.PENDING_PAYMENT) {
+            throw new RuntimeException("Lớp học đang chờ phụ huynh thanh toán học phí. Không thể thêm nhật ký buổi học mới.");
+        }
+        
+        if (session.getStatus() == com.management.studyhub.entity.enums.ClassSessionStatus.TRIAL) {
+            long trialCount = lessonLogRepository.countByClassSessionId(classSessionId);
+            if (trialCount >= 2) {
+                throw new RuntimeException("Lớp học đã kết thúc 2 buổi học thử. Vui lòng yêu cầu phụ huynh Xác nhận thuê & Thanh toán để tiếp tục.");
+            }
+        }
+
+        if (session.getStatus() == com.management.studyhub.entity.enums.ClassSessionStatus.COMPLETED || 
+            session.getStatus() == com.management.studyhub.entity.enums.ClassSessionStatus.DISBURSED || 
+            session.getStatus() == com.management.studyhub.entity.enums.ClassSessionStatus.CANCELLED) {
+            throw new RuntimeException("Lớp học đã kết thúc hoặc đã hủy. Không thể thêm nhật ký mới.");
+        }
+
         LessonLog log = new LessonLog();
         log.setClassSession(session);
         log.setTitle(dto.getTitle());

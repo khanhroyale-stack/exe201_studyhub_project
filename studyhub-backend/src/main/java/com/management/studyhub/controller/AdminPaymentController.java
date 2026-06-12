@@ -17,7 +17,7 @@ public class AdminPaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/completed-classes")
-    public ResponseEntity<List<ClassSession>> getCompletedClasses() {
+    public ResponseEntity<List<Map<String, Object>>> getCompletedClasses() {
         return ResponseEntity.ok(paymentService.getCompletedClasses());
     }
 

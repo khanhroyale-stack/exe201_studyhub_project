@@ -124,6 +124,13 @@ public class DatabaseSeeder implements CommandLineRunner {
         TutorProfile tutor3 = tutor3User != null ? tutorProfileRepository.findAll().stream().filter(t -> t.getUser().getId().equals(tutor3User.getId())).findFirst().orElse(null) : null;
         
         if (parent != null && tutor3 != null) {
+            // Cập nhật thông tin ngân hàng cho tutor3 để dễ test giải ngân
+            tutor3.setBankName("Techcombank");
+            tutor3.setBankAccountNumber("1903456789012");
+            tutor3.setBankAccountName("DAVID SMITH");
+            tutorProfileRepository.save(tutor3);
+
+            // Lớp 1: Đã CONFIRMED
             com.management.studyhub.entity.ClassSession session = new com.management.studyhub.entity.ClassSession();
             session.setParent(parent);
             session.setTutorProfileId(tutor3.getId());
@@ -133,13 +140,26 @@ public class DatabaseSeeder implements CommandLineRunner {
             session.setClassName("Tiếng Anh Giao Tiếp - Lớp Người đi làm");
             session.setSchedule("Tối Thứ 3, Thứ 5 (20h-21h30)");
             session.setPricePerSession(400000.0);
+            session.setPrice(4000000.0);
             session.setLearningMode("ONLINE");
             session.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.CONFIRMED);
-            
-            // Generate mock meet link
             session.setMeetingLink("https://meet.google.com/abc-defg-hij");
-            
             classSessionRepository.save(session);
+
+            // Lớp 2: Lớp học thử TRIAL (để phụ huynh bấm Xác nhận thuê & Thanh toán)
+            com.management.studyhub.entity.ClassSession trialSession = new com.management.studyhub.entity.ClassSession();
+            trialSession.setParent(parent);
+            trialSession.setTutorProfileId(tutor3.getId());
+            trialSession.setTutorName(tutor3.getFullName());
+            trialSession.setTutorAvatar(tutor3.getAvatarUrl());
+            trialSession.setSubject("Luyện thi IELTS");
+            trialSession.setClassName("IELTS Cam kết đầu ra 6.5+");
+            trialSession.setSchedule("Sáng Thứ Bảy, Chủ Nhật (9h-11h)");
+            trialSession.setPricePerSession(500000.0);
+            trialSession.setPrice(2000000.0); // 4 buổi học phí tạm tính
+            trialSession.setLearningMode("ONLINE");
+            trialSession.setStatus(com.management.studyhub.entity.enums.ClassSessionStatus.TRIAL);
+            classSessionRepository.save(trialSession);
         }
     }
 

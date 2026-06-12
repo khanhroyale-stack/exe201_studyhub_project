@@ -22,6 +22,7 @@ public class PaymentService {
     private final ClassSessionRepository classSessionRepository;
     private final TransactionRepository transactionRepository;
     private final com.management.studyhub.repository.CommissionRecordRepository commissionRecordRepository;
+    private final com.management.studyhub.repository.TutorProfileRepository tutorProfileRepository;
 
     // Thay bằng số tài khoản thật của StudyHub
     private static final String BANK_BIN = "970436"; // Vietcombank
@@ -33,8 +34,8 @@ public class PaymentService {
         ClassSession classSession = classSessionRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        if (classSession.getStatus() != ClassSessionStatus.TRIAL) {
-            throw new RuntimeException("Class is not in TRIAL status");
+        if (classSession.getStatus() != ClassSessionStatus.TRIAL && classSession.getStatus() != ClassSessionStatus.PENDING_PAYMENT) {
+            throw new RuntimeException("Lớp học không ở trạng thái Chờ học thử hoặc Chờ thanh toán");
         }
 
         // Tạo Transaction
@@ -119,8 +120,27 @@ public class PaymentService {
         }
     }
 
-    public List<ClassSession> getCompletedClasses() {
-        return classSessionRepository.findByStatus(ClassSessionStatus.COMPLETED);
+    public List<Map<String, Object>> getCompletedClasses() {
+        List<ClassSession> sessions = classSessionRepository.findByStatus(ClassSessionStatus.COMPLETED);
+        return sessions.stream().map(session -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", session.getId());
+            map.put("className", session.getClassName());
+            map.put("tutorName", session.getTutorName());
+            map.put("tutorAvatar", session.getTutorAvatar());
+            map.put("price", session.getPrice());
+            map.put("pricePerSession", session.getPricePerSession());
+            map.put("status", session.getStatus() != null ? session.getStatus().name() : "");
+            
+            if (session.getTutorProfileId() != null) {
+                tutorProfileRepository.findById(session.getTutorProfileId()).ifPresent(tutor -> {
+                    map.put("bankAccountNumber", tutor.getBankAccountNumber());
+                    map.put("bankName", tutor.getBankName());
+                    map.put("bankAccountName", tutor.getBankAccountName());
+                });
+            }
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
     }
 
     @Transactional
@@ -135,5 +155,45 @@ public class PaymentService {
         classSession.setStatus(ClassSessionStatus.DISBURSED);
         classSessionRepository.save(classSession);
         log.info("Disbursed payment for class: {}", classId);
+    }
+
+    /**
+     * Mô phỏng nhận webhook thành công (CHỈ DÙNG CHO TEST/ĐỒ ÁN)
+     * Giả lập việc ngân hàng gửi xác nhận chuyển tiền thành công
+     */
+    @Transactional
+    public Map<String, Object> simulatePaymentSuccess(String transactionCode) {
+        Transaction transaction = transactionRepository.findByTransactionCode(transactionCode)
+                .orElseThrow(() -> new RuntimeException("Transaction không tìm thấy: " + transactionCode));
+
+        if (transaction.getStatus() == TransactionStatus.SUCCESS) {
+            return Map.of("success", false, "message", "Giao dịch này đã được xử lý thành công trước đó.");
+        }
+
+        transaction.setStatus(TransactionStatus.SUCCESS);
+        transactionRepository.save(transaction);
+
+        ClassSession classSession = transaction.getClassSession();
+        classSession.setStatus(ClassSessionStatus.CONFIRMED);
+        classSessionRepository.save(classSession);
+
+        // Tạo CommissionRecord (Hoa hồng 20%)
+        com.management.studyhub.entity.CommissionRecord commission = new com.management.studyhub.entity.CommissionRecord();
+        commission.setTransaction(transaction);
+        commission.setTotalAmount(transaction.getAmount());
+        double platformFee = transaction.getAmount() * 0.20;
+        commission.setPlatformFee(platformFee);
+        commission.setTutorPayout(transaction.getAmount() - platformFee);
+        commissionRecordRepository.save(commission);
+
+        log.info("[SIMULATE] Payment SUCCESS for transaction: {}, class: {}", transactionCode, classSession.getId());
+
+        return Map.of(
+            "success", true,
+            "message", "Mô phỏng thanh toán thành công",
+            "transactionCode", transactionCode,
+            "classId", classSession.getId(),
+            "newClassStatus", "CONFIRMED"
+        );
     }
 }

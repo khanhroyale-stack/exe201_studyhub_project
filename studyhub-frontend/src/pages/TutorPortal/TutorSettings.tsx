@@ -36,6 +36,11 @@ const TutorSettings: React.FC = () => {
   const [certificateUrls, setCertificateUrls] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Bank Account details
+  const [bankName, setBankName] = useState<string>('');
+  const [bankAccountNumber, setBankAccountNumber] = useState<string>('');
+  const [bankAccountName, setBankAccountName] = useState<string>('');
+
   const isReadOnly = profileStatus === 'PROCESSING' || (profileStatus === 'SUCCESS' && !isEditing);
 
   useEffect(() => {
@@ -70,6 +75,9 @@ const TutorSettings: React.FC = () => {
           if (data.subjects && data.subjects.length > 0) {
             setSelectedSubjects(data.subjects.map((s: any) => s.id));
           }
+          if (data.bankName) setBankName(data.bankName);
+          if (data.bankAccountNumber) setBankAccountNumber(data.bankAccountNumber);
+          if (data.bankAccountName) setBankAccountName(data.bankAccountName);
 
           if (data.ekycStatus === 'SUCCESS') {
             updateProfile(data.fullName, data.avatarUrl);
@@ -136,6 +144,11 @@ const TutorSettings: React.FC = () => {
   useEffect(() => {
     const verifyScore = async () => {
       if (idCardFront && avatar) {
+        // Chỉ gọi API verify khi có ít nhất một ảnh vừa được upload mới (dạng base64 data:image)
+        if (!idCardFront.startsWith('data:image/') && !avatar.startsWith('data:image/')) {
+          return;
+        }
+
         setIsVerifying(true);
         setEkycScore(null);
         setEkycError(null);
@@ -209,7 +222,10 @@ const TutorSettings: React.FC = () => {
           introduction,
           subjectIds: selectedSubjects,
           degreeImageUrl,
-          certificates: combinedCertificates
+          certificates: combinedCertificates,
+          bankName,
+          bankAccountNumber,
+          bankAccountName
         })
       });
 
@@ -621,6 +637,57 @@ const TutorSettings: React.FC = () => {
               )}
             </section>
           </div>
+
+          {/* Section 5: Thông tin ngân hàng */}
+          <section className="lg:col-span-12 glass border border-white/20 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 mt-2 animate-slide-up stagger-5">
+            <div className="flex items-center gap-3 mb-6 border-b border-outline-variant pb-4">
+              <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined">payments</span>
+              </div>
+              <div>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface">5. Tài khoản ngân hàng nhận thanh toán</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Thông tin tài khoản ngân hàng để hệ thống tự động giải ngân học phí/lương cho bạn.</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <label className="font-label-md text-label-md text-on-surface">Tên ngân hàng <span className="text-error">*</span></label>
+                <input 
+                  className="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface disabled:opacity-70 disabled:bg-surface-container" 
+                  placeholder="VD: Vietcombank, Techcombank..." 
+                  type="text" 
+                  value={bankName} 
+                  onChange={e => setBankName(e.target.value)} 
+                  disabled={isReadOnly} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="font-label-md text-label-md text-on-surface">Số tài khoản <span className="text-error">*</span></label>
+                <input 
+                  className="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface disabled:opacity-70 disabled:bg-surface-container font-mono" 
+                  placeholder="VD: 1023847291" 
+                  type="text" 
+                  value={bankAccountNumber} 
+                  onChange={e => setBankAccountNumber(e.target.value)} 
+                  disabled={isReadOnly} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="font-label-md text-label-md text-on-surface">Tên chủ tài khoản <span className="text-error">*</span></label>
+                <input 
+                  className="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface disabled:opacity-70 disabled:bg-surface-container uppercase" 
+                  placeholder="VD: NGUYEN VAN A" 
+                  type="text" 
+                  value={bankAccountName} 
+                  onChange={e => setBankAccountName(e.target.value)} 
+                  disabled={isReadOnly} 
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* Bottom Action Bar (Mobile floating) */}

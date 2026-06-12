@@ -69,6 +69,16 @@ public class TutorProfile {
     
     @Column(length = 20)
     private String teachingMethod; // ONLINE, OFFLINE, BOTH
+
+    // Thông tin ngân hàng để giải ngân
+    @Column(length = 100)
+    private String bankName; // Tên ngân hàng (Vietcombank, Techcombank, ...)
+
+    @Column(length = 50)
+    private String bankAccountNumber; // Số tài khoản ngân hàng
+
+    @Column(length = 100)
+    private String bankAccountName; // Tên chủ tài khoản
     
     private Double averageRating = 0.0;
     private Integer totalReviews = 0;

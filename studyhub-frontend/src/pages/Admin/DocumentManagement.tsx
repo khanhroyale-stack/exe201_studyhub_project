@@ -3,7 +3,7 @@ import { PublicDocument, documentApi } from '../../services/documentApi';
 import { useAuth } from '../../context/AuthContext';
 
 const DocumentManagement: React.FC = () => {
-  const { user } = useAuth(); // Assuming useAuth provides user with id
+  const { userId } = useAuth();
   const [documents, setDocuments] = useState<PublicDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -11,8 +11,7 @@ const DocumentManagement: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Parse admin id from localStorage as fallback since user object might be different
-  const adminId = user?.id || parseInt(localStorage.getItem('userId') || '1');
+  const adminId = userId || parseInt(localStorage.getItem('userId') || '1');
 
   useEffect(() => {
     fetchDocuments();

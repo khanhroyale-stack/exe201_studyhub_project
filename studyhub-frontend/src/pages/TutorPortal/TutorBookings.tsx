@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../utils/api';
 
 interface DirectBookingDTO {
   id: number;
@@ -18,7 +19,6 @@ interface DirectBookingDTO {
   createdAt: string;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const TutorBookings: React.FC = () => {
   const { tutorId } = useAuth();
@@ -30,7 +30,7 @@ const TutorBookings: React.FC = () => {
     // tutorId here is profile.id
     if (!tutorId) return;
 
-    fetch(`${BASE_URL}/bookings/tutor/${tutorId}`)
+    apiFetch(`/bookings/tutor/${tutorId}`)
       .then(res => res.json())
       .then(data => {
         setBookings(data);
@@ -46,7 +46,7 @@ const TutorBookings: React.FC = () => {
     if (!window.confirm(`Bạn có chắc muốn ${action === 'accept' ? 'chấp nhận' : 'từ chối'} lời mời này?`)) return;
 
     try {
-      const response = await fetch(`${BASE_URL}/bookings/${id}/${action}`, { method: 'PUT' });
+      const response = await apiFetch(`/bookings/${id}/${action}`, { method: 'PUT' });
       if (!response.ok) throw new Error('Có lỗi xảy ra');
       alert(`Đã ${action === 'accept' ? 'chấp nhận' : 'từ chối'} thành công!`);
       

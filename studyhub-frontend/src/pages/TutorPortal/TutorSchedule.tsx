@@ -1,161 +1,187 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { apiFetch } from '../../utils/api';
+
+interface ClassSessionDTO {
+  id: number;
+  className: string;
+  subject: string;
+  schedule: string;
+  status: string;
+  parentName: string;
+  pricePerSession: number;
+  nextSessionDate?: string;
+}
+
+// Parse "Thứ 2, Thứ 4 - 18:30" → [1, 3] (0=T2, 1=T3, ...)
+function parseDaysFromSchedule(schedule: string): number[] {
+  if (!schedule) return [];
+  const dayMap: Record<string, number> = {
+    'thứ 2': 0, 't2': 0, 'thứ hai': 0,
+    'thứ 3': 1, 't3': 1, 'thứ ba': 1,
+    'thứ 4': 2, 't4': 2, 'thứ tư': 2,
+    'thứ 5': 3, 't5': 3, 'thứ năm': 3,
+    'thứ 6': 4, 't6': 4, 'thứ sáu': 4,
+    'thứ 7': 5, 't7': 5, 'thứ bảy': 5,
+    'chủ nhật': 6, 'cn': 6, 'cn.': 6,
+  };
+  const lower = schedule.toLowerCase();
+  const days: number[] = [];
+  for (const [key, val] of Object.entries(dayMap)) {
+    if (lower.includes(key) && !days.includes(val)) days.push(val);
+  }
+  return days;
+}
 
 const TutorSchedule: React.FC = () => {
+  const { tutorId, name } = useAuth();
+  const [classes, setClasses] = useState<ClassSessionDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const today = new Date();
+  const weekDays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+  // Index của hôm nay trong weekDays (0=T2 ... 6=CN)
+  const todayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+
+  useEffect(() => {
+    if (!tutorId) { setLoading(false); return; }
+    apiFetch(`/class-sessions/tutor/${tutorId}`)
+      .then(res => res.json())
+      .then(data => {
+        setClasses(Array.isArray(data) ? data.filter((c: any) => ['TRIAL', 'CONFIRMED'].includes(c.status)) : []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [tutorId]);
+
+  // Build calendar map: dayIdx → classes teaching on that day
+  const calendarMap: Record<number, ClassSessionDTO[]> = {};
+  for (let i = 0; i < 7; i++) calendarMap[i] = [];
+  classes.forEach(cls => {
+    const days = parseDaysFromSchedule(cls.schedule);
+    days.forEach(d => {
+      if (!calendarMap[d].find(c => c.id === cls.id)) {
+        calendarMap[d].push(cls);
+      }
+    });
+  });
+
   return (
-    <div className="max-w-[1440px] mx-auto space-y-gutter">
+    <div className="max-w-[1440px] mx-auto space-y-gutter pb-20 animate-fade-in">
       {/* Welcome Section */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-container-lowest p-gutter rounded-2xl border border-outline-variant">
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant">
         <div>
-          <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-1">Tuần làm việc mới, Hoàng!</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">Bạn có 12 ca dạy trong tuần này. Ca tiếp theo bắt đầu sau 2 giờ.</p>
+          <h2 className="font-bold text-2xl text-on-surface mb-1">
+            Tuần làm việc mới, {name || 'Gia sư'}!
+          </h2>
+          <p className="text-on-surface-variant text-sm">
+            Bạn đang có <span className="font-bold text-primary">{classes.length}</span> lớp đang hoạt động.
+          </p>
         </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 rounded-lg border border-outline text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Tạo lịch trống
-          </button>
-        </div>
+        <Link
+          to="/tutor/classes"
+          className="px-4 py-2 rounded-lg border border-outline text-on-surface font-semibold text-sm hover:bg-surface-container transition-colors flex items-center gap-2"
+        >
+          <span className="material-symbols-outlined text-[18px]">school</span>
+          Quản lý lớp học
+        </Link>
       </section>
 
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-gutter">
-        {/* Calendar Widget (Takes up 2 columns on large screens) */}
-        <section className="xl:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-2xl p-gutter flex flex-col min-h-[600px]">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Calendar Widget */}
+        <section className="xl:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 flex flex-col min-h-[400px]">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface">Lịch tuần này</h3>
-            <div className="flex items-center gap-2">
-              <button className="p-1 rounded hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">chevron_left</span></button>
-              <span className="font-label-md text-label-md text-on-surface">Tháng 10, 2024</span>
-              <button className="p-1 rounded hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">chevron_right</span></button>
-            </div>
+            <h3 className="font-bold text-xl text-on-surface">Lịch dạy tuần này</h3>
+            <span className="text-sm text-on-surface-variant font-medium">
+              {today.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+            </span>
           </div>
-          {/* Calendar Grid */}
-          <div className="flex-1 flex flex-col">
-            {/* Days Header */}
-            <div className="grid grid-cols-7 gap-2 mb-2 text-center border-b border-outline-variant pb-2">
-              <div className="font-label-sm text-label-sm text-on-surface-variant">T2</div>
-              <div className="font-label-sm text-label-sm text-on-surface-variant">T3</div>
-              <div className="font-label-sm text-label-sm text-primary font-bold">T4</div>
-              <div className="font-label-sm text-label-sm text-on-surface-variant">T5</div>
-              <div className="font-label-sm text-label-sm text-on-surface-variant">T6</div>
-              <div className="font-label-sm text-label-sm text-on-surface-variant">T7</div>
-              <div className="font-label-sm text-label-sm text-on-surface-variant">CN</div>
+
+          {/* Days Header */}
+          <div className="grid grid-cols-7 gap-2 mb-4 text-center border-b border-outline-variant pb-3">
+            {weekDays.map((day, i) => (
+              <div key={i} className={`text-xs font-bold ${i === todayIdx ? 'text-primary' : 'text-on-surface-variant'}`}>
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
-            {/* Simplified Time Grid (Decorative for layout) */}
-            <div className="flex-1 grid grid-cols-7 gap-2 relative min-h-[400px]">
-              {/* Background Lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
-                <div className="border-t border-outline w-full h-[1px]"></div>
-                <div className="border-t border-outline w-full h-[1px]"></div>
-                <div className="border-t border-outline w-full h-[1px]"></div>
-                <div className="border-t border-outline w-full h-[1px]"></div>
-              </div>
-              {/* Columns */}
-              <div className="col-span-1 relative"></div>
-              <div className="col-span-1 relative">
-                {/* Event Card */}
-                <div className="absolute top-[10%] left-0 right-0 bg-primary-fixed border border-primary-fixed-dim rounded-lg p-2 shadow-sm">
-                  <p className="font-label-sm text-label-sm text-on-primary-fixed-variant font-bold truncate">Toán 10 - Lớp A1</p>
-                  <p className="text-[10px] text-on-primary-fixed-variant mt-1">18:00 - 19:30</p>
-                </div>
-              </div>
-              <div className="col-span-1 relative bg-surface-container-lowest border-x border-outline-variant/30">
-                {/* Today Highlight Column */}
-                <div className="absolute top-[30%] left-0 right-0 bg-secondary-container border border-secondary rounded-lg p-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow group">
-                  <p className="font-label-sm text-label-sm text-on-secondary-container font-bold truncate">Vật lý 12 - Luyện thi</p>
-                  <p className="text-[10px] text-on-secondary-container mt-1">19:00 - 21:00</p>
-                  {/* Hover Action Menu (simulate) */}
-                  <div className="hidden group-hover:flex absolute top-full left-0 mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-1 z-10 w-32 flex-col gap-1">
-                    <button className="text-left px-2 py-1 text-[11px] font-label-sm hover:bg-surface-container rounded text-on-surface w-full">Vào lớp</button>
-                    <button className="text-left px-2 py-1 text-[11px] font-label-sm hover:bg-surface-container rounded text-error w-full">Xin nghỉ/Đổi ca</button>
+          ) : (
+            <div className="grid grid-cols-7 gap-2 flex-1">
+              {weekDays.map((_, dayIdx) => {
+                const dayClasses = calendarMap[dayIdx] || [];
+                const isToday = dayIdx === todayIdx;
+                return (
+                  <div
+                    key={dayIdx}
+                    className={`min-h-[120px] rounded-xl p-2 flex flex-col gap-1.5 transition-colors ${
+                      isToday ? 'bg-primary/5 border border-primary/20' : 'bg-surface border border-outline-variant/50'
+                    }`}
+                  >
+                    {dayClasses.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <span className="text-[10px] text-outline-variant">—</span>
+                      </div>
+                    ) : (
+                      dayClasses.map(cls => (
+                        <div key={cls.id} className="bg-primary/10 border border-primary/20 rounded-lg p-1.5">
+                          <p className="text-[9px] font-bold text-primary truncate leading-tight">{cls.subject}</p>
+                          <p className="text-[8px] text-on-surface-variant truncate leading-tight">{cls.className}</p>
+                          <span className={`text-[8px] font-bold px-1 py-0.5 rounded-full ${cls.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {cls.status === 'CONFIRMED' ? '●' : '○'}
+                          </span>
+                        </div>
+                      ))
+                    )}
                   </div>
-                </div>
-              </div>
-              <div className="col-span-1 relative"></div>
-              <div className="col-span-1 relative">
-                <div className="absolute top-[60%] left-0 right-0 bg-tertiary-fixed border border-tertiary-fixed-dim rounded-lg p-2 shadow-sm">
-                  <p className="font-label-sm text-label-sm text-on-tertiary-fixed-variant font-bold truncate">Hóa 11 - Cơ bản</p>
-                  <p className="text-[10px] text-on-tertiary-fixed-variant mt-1">20:00 - 21:30</p>
-                </div>
-              </div>
-              <div className="col-span-1 relative"></div>
-              <div className="col-span-1 relative"></div>
+                );
+              })}
             </div>
-          </div>
+          )}
+
+          {classes.length === 0 && !loading && (
+            <div className="flex-1 flex items-center justify-center flex-col text-on-surface-variant mt-4">
+              <span className="material-symbols-outlined text-5xl mb-3 text-outline-variant">calendar_today</span>
+              <p className="text-sm">Không có lịch dạy nào.</p>
+              <Link to="/tutor/search-classes" className="mt-3 text-primary text-sm font-semibold hover:underline">Tìm lớp mới →</Link>
+            </div>
+          )}
         </section>
 
         {/* Active Classes List */}
-        <section className="xl:col-span-1 flex flex-col gap-gutter">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col h-full overflow-hidden">
-            <div className="p-gutter border-b border-outline-variant bg-surface-container-low">
-              <h3 className="font-headline-sm text-headline-sm text-on-surface">Lớp đang dạy</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-gutter space-y-4">
-              {/* Class Card 1 */}
-              <div className="border border-outline-variant rounded-xl p-4 hover:shadow-[0px_4px_12px_rgba(0,0,0,0.05)] transition-shadow duration-150 bg-surface-container-lowest group">
-                <div className="flex justify-between items-start mb-3">
+        <section className="xl:col-span-1 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden">
+          <div className="p-5 border-b border-outline-variant bg-surface-container-low">
+            <h3 className="font-bold text-lg text-on-surface">Lớp đang dạy ({classes.length})</h3>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {classes.length === 0 ? (
+              <p className="text-on-surface-variant text-sm text-center py-8">Chưa có lớp nào.</p>
+            ) : classes.map(cls => (
+              <div key={cls.id} className="border border-outline-variant rounded-xl p-4 bg-white hover:shadow-sm transition-shadow group">
+                <div className="flex justify-between items-start mb-2">
                   <div>
-                    <span className="inline-block px-2 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded text-[10px] font-bold uppercase tracking-wider mb-1">Toán Học</span>
-                    <h4 className="font-label-md text-label-md text-on-surface">Luyện thi Đại học Khối A</h4>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Học sinh: Nguyễn Văn A</p>
+                    {cls.subject && <span className="inline-block px-2 py-0.5 bg-primary-container text-on-primary-container rounded text-[10px] font-bold uppercase mb-1">{cls.subject}</span>}
+                    <h4 className="font-semibold text-sm text-on-surface">{cls.className}</h4>
+                    <p className="text-xs text-on-surface-variant mt-0.5">{cls.schedule || 'Chưa có lịch'}</p>
                   </div>
-                  <button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-[20px]">more_vert</span></button>
+                  <Link
+                    to={`/tutor/classes/${cls.id}/workspace`}
+                    className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                  </Link>
                 </div>
-                {/* Progress */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span className="text-on-surface-variant">Tiến độ khóa học</span>
-                    <span className="text-primary font-bold">Buổi 3/10</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: '30%' }}></div>
-                  </div>
-                </div>
-                {/* Actions */}
-                <div className="flex gap-2 mt-4">
-                  <button className="flex-1 bg-primary text-on-primary font-label-sm text-label-sm py-2 rounded-lg hover:bg-primary-container transition-colors flex items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
-                    Điểm danh
-                  </button>
-                </div>
+                <div className="text-xs text-primary font-bold">{cls.pricePerSession?.toLocaleString('vi-VN')}đ/buổi</div>
               </div>
-              
-              {/* Class Card 2 */}
-              <div className="border border-outline-variant rounded-xl p-4 hover:shadow-[0px_4px_12px_rgba(0,0,0,0.05)] transition-shadow duration-150 bg-surface-container-lowest">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <span className="inline-block px-2 py-1 bg-secondary-fixed text-on-secondary-fixed-variant rounded text-[10px] font-bold uppercase tracking-wider mb-1">Vật Lý</span>
-                    <h4 className="font-label-md text-label-md text-on-surface">Vật lý 12 Nâng cao</h4>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Học sinh: Trần Thị B</p>
-                  </div>
-                  <button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-[20px]">more_vert</span></button>
-                </div>
-                {/* Progress */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span className="text-on-surface-variant">Tiến độ khóa học</span>
-                    <span className="text-primary font-bold">Buổi 8/20</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: '40%' }}></div>
-                  </div>
-                </div>
-                {/* Actions */}
-                <div className="flex gap-2 mt-4">
-                  <button className="flex-1 border border-outline text-on-surface font-label-sm text-label-sm py-2 rounded-lg hover:bg-surface-container transition-colors">
-                    Đổi/Hủy lịch
-                  </button>
-                  <button className="flex-1 bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm py-2 rounded-lg cursor-not-allowed opacity-50">
-                    Đã điểm danh
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4 border-t border-outline-variant bg-surface-container-lowest text-center">
-              <Link to="/tutor/classes" className="text-primary font-label-sm text-label-sm hover:underline">Xem tất cả lớp học</Link>
-            </div>
+            ))}
+          </div>
+          <div className="p-4 border-t border-outline-variant text-center">
+            <Link to="/tutor/classes" className="text-primary font-semibold text-sm hover:underline">Xem tất cả lớp học</Link>
           </div>
         </section>
       </div>

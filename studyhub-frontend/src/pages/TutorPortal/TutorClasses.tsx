@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 interface ClassSessionDTO {
   id: number;
@@ -23,7 +24,6 @@ interface ClassSessionDTO {
 
 type TabType = 'active' | 'completed' | 'cancelled';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const STATUS_LABEL: Record<string, string> = {
   TRIAL:     'Chờ học thử',
@@ -50,7 +50,7 @@ const TutorClasses: React.FC = () => {
 
   useEffect(() => {
     if (!tutorId) { setLoading(false); return; }
-    fetch(`${BASE_URL}/class-sessions/tutor/${tutorId}`)
+    apiFetch(`/class-sessions/tutor/${tutorId}`)
       .then(res => res.json())
       .then(data => {
         setClasses(Array.isArray(data) ? data : []);

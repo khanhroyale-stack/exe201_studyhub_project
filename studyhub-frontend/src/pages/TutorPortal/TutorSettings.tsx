@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 const TutorSettings: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const tutorId = id || localStorage.getItem('sh_tutor_id') || '1'; // fallback to 1 if not found
-
-  const { updateProfile } = useAuth();
+  const { tutorId: authTutorId, updateProfile } = useAuth();
+  const tutorId = authTutorId?.toString() || '1';
 
   const [idCardFront, setIdCardFront] = useState<string | null>(null);
   const [idCardBack, setIdCardBack] = useState<string | null>(null);
@@ -36,7 +34,7 @@ const TutorSettings: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/tutors/${tutorId}`);
+        const response = await apiFetch(`/tutors/${tutorId}`);
         if (response.ok) {
           const data = await response.json();
           setProfileStatus(data.ekycStatus);
@@ -62,8 +60,9 @@ const TutorSettings: React.FC = () => {
             setCertificateUrls(data.certificates);
           }
 
-          if (data.ekycStatus === 'SUCCESS') {
-            updateProfile(data.fullName, data.avatarUrl);
+          // Always sync Navbar with latest profile data from DB
+          if (data.fullName || data.avatarUrl) {
+            updateProfile(data.fullName || '', data.avatarUrl || '');
           }
         }
       } catch (error) {
@@ -117,9 +116,8 @@ const TutorSettings: React.FC = () => {
         setEkycScore(null);
         setEkycError(null);
         try {
-          const response = await fetch(`http://localhost:8080/api/v1/tutors/verify-ekyc`, {
+          const response = await apiFetch(`/tutors/verify-ekyc`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               avatarUrl: avatar,
               idCardFrontUrl: idCardFront
@@ -169,9 +167,8 @@ const TutorSettings: React.FC = () => {
         combinedCertificates.push(await toBase64(file));
       }
 
-      const response = await fetch(`http://localhost:8080/api/v1/tutors/${tutorId}/ekyc`, {
+      const response = await apiFetch(`/tutors/${tutorId}/ekyc`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           avatarUrl: avatar,
           idCardFrontUrl: idCardFront,

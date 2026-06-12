@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 interface ClassSessionDTO {
   id: number;
@@ -24,7 +25,6 @@ interface ClassSessionDTO {
 
 type TabType = 'active' | 'completed' | 'cancelled';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
   TRIAL:       { label: 'Chờ học thử',   color: 'text-amber-700',  bgColor: 'bg-amber-100 border-amber-200',  icon: 'hourglass_empty' },
@@ -43,7 +43,7 @@ const ClassManagement: React.FC = () => {
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    fetch(`${BASE_URL}/class-sessions/parent/${userId}`)
+    apiFetch(`/class-sessions/parent/${userId}`)
       .then(res => res.json())
       .then(data => {
         setSessions(Array.isArray(data) ? data : []);
@@ -58,7 +58,7 @@ const ClassManagement: React.FC = () => {
   const updateStatus = async (sessionId: number, newStatus: string) => {
     setUpdatingId(sessionId);
     try {
-      const res = await fetch(`${BASE_URL}/class-sessions/${sessionId}/status`, {
+      const res = await apiFetch(`/class-sessions/${sessionId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

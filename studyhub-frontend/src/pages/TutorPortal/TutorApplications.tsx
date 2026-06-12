@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 interface ApplicantDTO {
   id: number;
@@ -19,7 +20,6 @@ interface ApplicantDTO {
   postStatus: string;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const TutorApplications: React.FC = () => {
   const { tutorId } = useAuth();
@@ -29,7 +29,7 @@ const TutorApplications: React.FC = () => {
   useEffect(() => {
     if (!tutorId) return;
 
-    fetch(`${BASE_URL}/posts/my-applications/${tutorId}`)
+    apiFetch(`/posts/my-applications/${tutorId}`)
       .then(res => res.json())
       .then((data: ApplicantDTO[]) => {
         setApplications(Array.isArray(data) ? data : []);

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { UnifiedPost } from '../../types/shared';
+import { apiFetch } from '../../utils/api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+
+
 
 interface ApplicantDTO {
   id: number;
@@ -11,29 +13,45 @@ interface ApplicantDTO {
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
 }
 
+interface Subject {
+  id: number;
+  name: string;
+}
+
 const TutorSearchClasses: React.FC = () => {
   const { tutorId } = useAuth();
   const [posts, setPosts] = useState<UnifiedPost[]>([]);
   const [myApplications, setMyApplications] = useState<ApplicantDTO[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filter state
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedMode, setSelectedMode] = useState<'Tất cả' | 'Online' | 'Offline'>('Tất cả');
+  const [sortBy, setSortBy] = useState<'newest' | 'price_desc' | 'price_asc'>('newest');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [postsRes, appsRes] = await Promise.all([
-          fetch(`${BASE_URL}/posts`),
-          tutorId ? fetch(`${BASE_URL}/posts/my-applications/${tutorId}`) : Promise.resolve(null)
+        const [postsRes, appsRes, subjectsRes] = await Promise.all([
+          apiFetch(`/posts`),
+          tutorId ? apiFetch(`/posts/my-applications/${tutorId}`) : Promise.resolve(null),
+          apiFetch(`/subjects`)
         ]);
 
         if (postsRes.ok) {
           const postsData = await postsRes.json();
-          // Lọc ra các bài đăng đang tuyển
-          setPosts((Array.isArray(postsData) ? postsData : []).filter(p => p.status === 'RECRUITING'));
+          setPosts((Array.isArray(postsData) ? postsData : []).filter((p: any) => p.status === 'RECRUITING'));
         }
 
         if (appsRes && appsRes.ok) {
           const appsData = await appsRes.json();
           setMyApplications(Array.isArray(appsData) ? appsData : []);
+        }
+
+        if (subjectsRes.ok) {
+          const subData = await subjectsRes.json();
+          setSubjects(Array.isArray(subData) ? subData : []);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -45,11 +63,45 @@ const TutorSearchClasses: React.FC = () => {
     fetchData();
   }, [tutorId]);
 
-  // Helper để lấy trạng thái ứng tuyển của 1 bài đăng
   const getApplicationStatus = (postId: number | string) => {
     const app = myApplications.find(a => a.jobPostingId === Number(postId));
     return app ? app.status : null;
   };
+
+  const toggleSubject = (subjectName: string) => {
+    setSelectedSubjects(prev =>
+      prev.includes(subjectName) ? prev.filter(s => s !== subjectName) : [...prev, subjectName]
+    );
+  };
+
+  const filteredPosts = useMemo(() => {
+    let result = [...posts];
+
+    // Filter by subject
+    if (selectedSubjects.length > 0) {
+      result = result.filter(p => selectedSubjects.includes(p.subject));
+    }
+
+    // Filter by mode
+    if (selectedMode !== 'Tất cả') {
+      result = result.filter(p => {
+        if (selectedMode === 'Online') return p.learningMode === 'ONLINE' || (p.learningMode as string) === 'BOTH';
+        if (selectedMode === 'Offline') return p.learningMode === 'OFFLINE' || (p.learningMode as string) === 'BOTH';
+        return true;
+      });
+    }
+
+    // Sort
+    if (sortBy === 'price_desc') {
+      result.sort((a, b) => (b.pricePerSession || 0) - (a.pricePerSession || 0));
+    } else if (sortBy === 'price_asc') {
+      result.sort((a, b) => (a.pricePerSession || 0) - (b.pricePerSession || 0));
+    } else {
+      result.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+    }
+
+    return result;
+  }, [posts, selectedSubjects, selectedMode, sortBy]);
 
   return (
     <div className="animate-fade-in pb-20">
@@ -60,10 +112,14 @@ const TutorSearchClasses: React.FC = () => {
         </div>
         <div className="hidden lg:flex items-center gap-2 text-sm font-medium text-on-surface-variant">
           <span>Sắp xếp theo:</span>
-          <select className="bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-4 pr-10 focus:border-primary focus:ring-0 cursor-pointer outline-none">
-            <option>Mới nhất</option>
-            <option>Học phí cao nhất</option>
-            <option>Gần tôi nhất</option>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+            className="bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-4 pr-10 focus:border-primary focus:ring-0 cursor-pointer outline-none"
+          >
+            <option value="newest">Mới nhất</option>
+            <option value="price_desc">Học phí cao nhất</option>
+            <option value="price_asc">Học phí thấp nhất</option>
           </select>
         </div>
       </div>
@@ -73,8 +129,16 @@ const TutorSearchClasses: React.FC = () => {
         <div className="w-full lg:w-72 glass border border-white/20 rounded-2xl p-6 shrink-0 sticky top-[96px] shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-on-background">Bộ lọc</h3>
-            <button className="text-sm font-medium text-primary hover:underline">Xóa tất cả</button>
+            {(selectedSubjects.length > 0 || selectedMode !== 'Tất cả') && (
+              <button
+                onClick={() => { setSelectedSubjects([]); setSelectedMode('Tất cả'); }}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Xóa tất cả
+              </button>
+            )}
           </div>
+
           {/* Môn học */}
           <div className="mb-6 border-b border-outline-variant pb-6">
             <h4 className="text-sm font-semibold text-on-surface mb-3 flex items-center justify-between">
@@ -82,22 +146,33 @@ const TutorSearchClasses: React.FC = () => {
               <span className="material-symbols-outlined text-[20px] text-on-surface-variant">keyboard_arrow_up</span>
             </h4>
             <div className="space-y-3">
-              {['Toán học', 'Tiếng Anh', 'Vật lý', 'Hóa học'].map(subject => (
-                <label key={subject} className="flex items-center gap-3 cursor-pointer group">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox" />
-                  <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors">{subject}</span>
+              {subjects.slice(0, 8).map(sub => (
+                <label key={sub.id} className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                    checked={selectedSubjects.includes(sub.name)}
+                    onChange={() => toggleSubject(sub.name)}
+                  />
+                  <span className="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors">{sub.name}</span>
                 </label>
               ))}
-              <button className="text-sm font-medium text-primary mt-2 hover:underline">Xem thêm</button>
             </div>
           </div>
+
           {/* Hình thức */}
           <div className="mb-6 border-b border-outline-variant pb-6">
             <h4 className="text-sm font-semibold text-on-surface mb-3">Hình thức học</h4>
             <div className="flex gap-2">
-              {['Tất cả', 'Online', 'Offline'].map(format => (
+              {(['Tất cả', 'Online', 'Offline'] as const).map(format => (
                 <label key={format} className="flex-1 text-center cursor-pointer">
-                  <input className="peer sr-only" name="format" type="radio" defaultChecked={format === 'Tất cả'} />
+                  <input
+                    className="peer sr-only"
+                    name="format"
+                    type="radio"
+                    checked={selectedMode === format}
+                    onChange={() => setSelectedMode(format)}
+                  />
                   <div className="px-3 py-2 rounded-lg border border-outline-variant text-xs text-on-surface-variant peer-checked:bg-primary-fixed peer-checked:text-on-primary-fixed peer-checked:border-primary peer-checked:font-semibold transition-all">
                     {format}
                   </div>
@@ -105,6 +180,13 @@ const TutorSearchClasses: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Active filters summary */}
+          {(selectedSubjects.length > 0 || selectedMode !== 'Tất cả') && (
+            <div className="text-xs text-primary font-medium">
+              Đang lọc: {filteredPosts.length}/{posts.length} lớp
+            </div>
+          )}
         </div>
 
         {/* Class List Grid */}
@@ -114,13 +196,16 @@ const TutorSearchClasses: React.FC = () => {
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               Đang tải danh sách lớp học...
             </div>
-          ) : posts.length === 0 ? (
+          ) : filteredPosts.length === 0 ? (
             <div className="col-span-1 xl:col-span-2 text-center py-20 text-on-surface-variant bg-surface-container-lowest rounded-2xl border border-outline-variant flex flex-col items-center">
               <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">search_off</span>
-              Hiện tại không có lớp học nào đang tuyển gia sư.
+              {selectedSubjects.length > 0 || selectedMode !== 'Tất cả'
+                ? 'Không có lớp nào khớp với bộ lọc. Hãy thử điều chỉnh bộ lọc.'
+                : 'Hiện tại không có lớp học nào đang tuyển gia sư.'
+              }
             </div>
           ) : (
-            posts.map((post) => {
+            filteredPosts.map((post) => {
               const status = getApplicationStatus(post.id);
               return (
                 <div key={post.id} className="glass border border-white/20 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
@@ -130,11 +215,18 @@ const TutorSearchClasses: React.FC = () => {
                         <span className="bg-primary-fixed text-on-primary-fixed-variant px-2.5 py-1 rounded-md text-xs font-semibold">{post.subject}</span>
                         <span className="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-md text-xs font-medium border border-outline-variant">{post.classLevel}</span>
                         <span className="bg-surface-container-high text-on-surface-variant px-2.5 py-1 rounded-md text-xs font-medium border border-outline-variant flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">{post.learningMode === 'ONLINE' ? 'videocam' : 'location_on'}</span>
-                          {post.learningMode === 'ONLINE' ? 'Online' : 'Offline'}
+                          <span className="material-symbols-outlined text-[14px]">
+                            {post.learningMode === 'ONLINE' ? 'videocam' : post.learningMode === 'OFFLINE' ? 'location_on' : 'devices'}
+                          </span>
+                          {post.learningMode === 'ONLINE' ? 'Online' : post.learningMode === 'OFFLINE' ? 'Offline' : 'Cả hai'}
                         </span>
                       </div>
                       <h3 className="text-xl font-bold text-on-background line-clamp-2 leading-tight">{post.title}</h3>
+                      {(post.requirement || post.description) && (
+                        <p className="mt-2 text-sm text-on-surface-variant line-clamp-2">
+                          {post.requirement || post.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-3 mb-6 flex-1 mt-2">
@@ -142,7 +234,11 @@ const TutorSearchClasses: React.FC = () => {
                       <span className="material-symbols-outlined text-outline-variant text-[20px] mt-0.5">location_on</span>
                       <div>
                         <p className="text-sm font-medium text-on-surface">
-                          {post.learningMode === 'ONLINE' ? 'Học Online' : (post.detailedAddress ? `${post.detailedAddress}, ${post.location}` : post.location)}
+                          {post.learningMode === 'ONLINE'
+                            ? 'Học Online'
+                            : (post.learningMode as string) === 'BOTH'
+                              ? `Online / Offline tại: ${post.detailedAddress ? `${post.detailedAddress}, ${post.location}` : post.location}`
+                              : (post.detailedAddress ? `${post.detailedAddress}, ${post.location}` : post.location)}
                         </p>
                       </div>
                     </div>
@@ -159,7 +255,7 @@ const TutorSearchClasses: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="border-t border-outline-variant pt-5 mt-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-lg">

@@ -36,6 +36,10 @@ studyhub-backend/*.log
 # Crash dumps
 studyhub-backend/*.hprof
 
+# Backend secrets — application.properties chứa DB password, Cloudinary keys
+# Chỉ commit application-example.properties (template không có secrets)
+studyhub-backend/src/main/resources/application.properties
+
 # ==========================================
 # 3. FRONTEND (studyhub-frontend)
 # ==========================================

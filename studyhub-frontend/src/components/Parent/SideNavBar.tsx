@@ -4,11 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 
 const navGroups = [
   {
-    items: [
-      { to: '/parent/dashboard', icon: 'dashboard', label: 'Tổng quan' },
-    ],
-  },
-  {
     label: 'Tuyển gia sư',
     items: [
       {

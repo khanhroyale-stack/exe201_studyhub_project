@@ -40,10 +40,8 @@ const Login: React.FC = () => {
         response.tutorId || null,
         response.userId || null
       );
-      if (response.tutorId) {
-        localStorage.setItem('sh_tutor_id', response.tutorId.toString());
-      }
       // Navigation is handled by the useEffect above
+
     } catch (error: any) {
       setErrorMsg(error.response?.data || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
     } finally {

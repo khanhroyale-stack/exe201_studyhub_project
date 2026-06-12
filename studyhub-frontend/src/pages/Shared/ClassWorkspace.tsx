@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const ClassWorkspace: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +44,7 @@ const ClassWorkspace: React.FC = () => {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/payment/status/${transactionCode}`);
+        const res = await apiFetch(`/payment/status/${transactionCode}`);
         if (res.ok) {
           const data = await res.json();
           if (data.status === 'SUCCESS') {
@@ -62,7 +62,7 @@ const ClassWorkspace: React.FC = () => {
 
   const handleConfirmHire = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/payment/confirm-hire/${id}`, { method: 'POST' });
+      const res = await apiFetch(`/payment/confirm-hire/${id}`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -85,19 +85,19 @@ const ClassWorkspace: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/class-sessions/${id}`);
+      const res = await apiFetch(`/class-sessions/${id}`);
       if (!res.ok) throw new Error('Không tìm thấy lớp học');
       const data = await res.json();
       setSession(data);
       setMeetingLink(data.meetingLink || '');
       setAddress(data.address || '');
 
-      const logRes = await fetch(`${BASE_URL}/lesson-logs/class/${id}`);
+      const logRes = await apiFetch(`/lesson-logs/class/${id}`);
       if (logRes.ok) {
         setLogs(await logRes.json());
       }
 
-      const matRes = await fetch(`${BASE_URL}/study-materials/class/${id}`);
+      const matRes = await apiFetch(`/study-materials/class/${id}`);
       if (matRes.ok) {
         setMaterials(await matRes.json());
       }
@@ -111,7 +111,7 @@ const ClassWorkspace: React.FC = () => {
 
   const saveMeetingLink = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/class-sessions/${id}/meeting-link`, {
+      const res = await apiFetch(`/class-sessions/${id}/meeting-link`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ link: meetingLink })
@@ -127,7 +127,7 @@ const ClassWorkspace: React.FC = () => {
 
   const saveAddress = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/class-sessions/${id}/address`, {
+      const res = await apiFetch(`/class-sessions/${id}/address`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: address })
@@ -147,7 +147,7 @@ const ClassWorkspace: React.FC = () => {
         ...newLog,
         scheduledDate: new Date().toISOString()
       };
-      const res = await fetch(`${BASE_URL}/lesson-logs/class/${id}`, {
+      const res = await apiFetch(`/lesson-logs/class/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -175,7 +175,7 @@ const ClassWorkspace: React.FC = () => {
     formData.append('file', materialFile);
 
     try {
-      const res = await fetch(`${BASE_URL}/study-materials/class/${id}`, {
+      const res = await apiFetch(`/study-materials/class/${id}`, {
         method: 'POST',
         body: formData
       });
@@ -608,7 +608,8 @@ const ClassWorkspace: React.FC = () => {
                 <>
                   <div className="text-center mb-6">
                     <p className="text-on-surface-variant text-sm mb-1">Quét mã VietQR bằng App ngân hàng để thanh toán</p>
-                    <p className="text-primary font-black text-2xl">{session.price?.toLocaleString('vi-VN')}đ</p>
+                    <p className="text-primary font-black text-2xl">{session.pricePerSession?.toLocaleString('vi-VN')}đ</p>
+
                   </div>
                   
                   <div className="bg-white p-4 rounded-2xl shadow-inner border border-outline-variant mb-6 relative">

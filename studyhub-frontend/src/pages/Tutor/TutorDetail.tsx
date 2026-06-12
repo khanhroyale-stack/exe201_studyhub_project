@@ -1,12 +1,115 @@
-import React from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MOCK_TUTORS } from '../../constants/mockData';
+import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
+
+
+interface TutorProfile {
+  id: number;
+  fullName: string;
+  avatarUrl: string;
+  major: string;
+  universityName: string;
+  introduction: string;
+  price: number;
+  averageRating: number;
+  totalReviews: number;
+  experienceYears: number;
+  ekycStatus: string;
+  subjects: Array<{ id: number; name: string }>;
+  teachingMethod: string;
+  birthDate: string;
+  address: string;
+  phoneNumber: string;
+  degreeImageUrl: string;
+  certificates: string[];
+}
+
+interface Review {
+  id: number;
+  reviewerName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
 
 const TutorDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const tutorId = id ? parseInt(id, 10) : 1;
-  const tutor = MOCK_TUTORS.find(t => t.id === tutorId) || MOCK_TUTORS[0];
+  const { role, isLoggedIn } = useAuth();
+
+  const [tutor, setTutor] = useState<TutorProfile | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [tutorRes, reviewsRes] = await Promise.all([
+          apiFetch(`/tutors/${id}`),
+          apiFetch(`/reviews/tutor/${id}`)
+        ]);
+        if (!tutorRes.ok) throw new Error('Không tìm thấy gia sư');
+        const tutorData = await tutorRes.json();
+        setTutor(tutorData);
+        if (reviewsRes.ok) {
+          const reviewData = await reviewsRes.json();
+          setReviews(Array.isArray(reviewData) ? reviewData : []);
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  const renderStars = (rating: number, size = '18px') => (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map(star => (
+        <span
+          key={star}
+          className="material-symbols-outlined"
+          style={{
+            fontSize: size,
+            fontVariationSettings: star <= Math.round(rating) ? "'FILL' 1" : "'FILL' 0",
+            color: '#f59e0b'
+          }}
+        >star</span>
+      ))}
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !tutor) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <span className="material-symbols-outlined text-6xl text-error">person_off</span>
+        <p className="text-error font-medium text-lg">{error || 'Không tìm thấy gia sư'}</p>
+        <button onClick={() => navigate('/tutors')} className="px-6 py-2 bg-primary text-white rounded-xl font-semibold">
+          Quay lại danh sách
+        </button>
+      </div>
+    );
+  }
+
+  const experienceLabel = () => {
+    if (!tutor.experienceYears) return 'Chưa có thông tin';
+    if (tutor.experienceYears === 0) return 'Dưới 1 năm';
+    if (tutor.experienceYears <= 3) return '1 - 3 năm';
+    return 'Trên 3 năm';
+  };
 
   return (
     <div className="bg-surface text-on-surface min-h-screen">
@@ -16,31 +119,58 @@ const TutorDetail: React.FC = () => {
           <div className="max-w-[1440px] mx-auto px-4 md:px-8">
             <div className="flex flex-col md:flex-row gap-8 items-start">
               <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                <img 
-                  className="w-full h-full object-cover" 
-                  alt={tutor.name}
-                  src={tutor.avatar} 
+                <img
+                  className="w-full h-full object-cover"
+                  alt={tutor.fullName}
+                  src={tutor.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.fullName)}&background=003d9b&color=fff&size=256`}
                 />
+                {tutor.ekycStatus === 'SUCCESS' && (
+                  <div className="absolute bottom-2 right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow">
+                    <span className="material-symbols-outlined text-[12px]">verified</span>
+                    eKYC
+                  </div>
+                )}
               </div>
               <div className="flex-grow space-y-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <h1 className="font-headline-lg text-headline-lg text-on-surface">{tutor.name}</h1>
-                  <div className="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-full">
-                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="font-label-md text-label-md">{tutor.rating}</span>
-                  </div>
+                  <h1 className="font-headline-lg text-headline-lg text-on-surface">{tutor.fullName}</h1>
+                  {tutor.averageRating > 0 && (
+                    <div className="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-full">
+                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1", color: '#f59e0b' }}>star</span>
+                      <span className="font-label-md text-label-md">{tutor.averageRating.toFixed(1)}</span>
+                      <span className="text-xs text-on-surface-variant">({tutor.totalReviews} đánh giá)</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-primary font-headline-sm text-headline-sm">{tutor.title}</p>
+                <p className="text-primary font-headline-sm text-headline-sm">
+                  {tutor.major ? `${tutor.major}` : ''}{tutor.universityName ? ` — ${tutor.universityName}` : ''}
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {tutor.tags.map((subject, index) => (
-                    <span key={index} className="px-4 py-1.5 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md text-label-md">
-                      {subject}
+                  {tutor.subjects?.map(sub => (
+                    <span key={sub.id} className="px-4 py-1.5 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md text-label-md">
+                      {sub.name}
                     </span>
                   ))}
                 </div>
-                <p className="text-on-surface-variant max-w-3xl font-body-lg text-body-lg">
-                  Chào bạn! Tôi là {tutor.name}, với hơn 5 năm kinh nghiệm giảng dạy. Tôi tin rằng mọi học sinh đều có thể chinh phục môn học nếu tìm được phương pháp tiếp cận phù hợp và sự kiên nhẫn từ người thầy.
-                </p>
+                {tutor.introduction && (
+                  <p className="text-on-surface-variant max-w-3xl font-body-lg text-body-lg">
+                    {tutor.introduction}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <div className="flex items-center gap-2 text-on-surface-variant text-sm">
+                    <span className="material-symbols-outlined text-[18px] text-primary">work</span>
+                    Kinh nghiệm: <span className="font-semibold text-on-surface">{experienceLabel()}</span>
+                  </div>
+                  {tutor.teachingMethod && tutor.teachingMethod !== 'ALL' && (
+                    <div className="flex items-center gap-2 text-on-surface-variant text-sm">
+                      <span className="material-symbols-outlined text-[18px] text-primary">videocam</span>
+                      Hình thức: <span className="font-semibold text-on-surface">
+                        {tutor.teachingMethod === 'ONLINE' ? 'Online' : tutor.teachingMethod === 'OFFLINE' ? 'Offline' : 'Online & Offline'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -48,115 +178,43 @@ const TutorDetail: React.FC = () => {
 
         {/* Content Grid */}
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-12 flex flex-col lg:flex-row gap-6">
-          {/* Left Column: Details */}
+          {/* Left Column */}
           <div className="flex-grow space-y-12">
 
-
             {/* Education */}
-            <section>
-              <h2 className="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">school</span>
-                Học vấn & Bằng cấp
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex gap-4">
-                  <div className="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="material-symbols-outlined text-on-primary-fixed-variant">history_edu</span>
-                  </div>
-                  <div>
-                    <h3 className="font-label-md text-label-md text-on-surface">Thạc sĩ / Cử nhân Sư phạm</h3>
-                    <p className="text-body-sm text-on-surface-variant">Đại học Sư phạm | 2018 - 2020</p>
-                  </div>
+            {(tutor.universityName || tutor.degreeImageUrl) && (
+              <section>
+                <h2 className="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">school</span>
+                  Học vấn &amp; Bằng cấp
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {tutor.universityName && (
+                    <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex gap-4">
+                      <div className="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-on-primary-fixed-variant">history_edu</span>
+                      </div>
+                      <div>
+                        <h3 className="font-label-md text-label-md text-on-surface">{tutor.major || 'Sinh viên đại học'}</h3>
+                        <p className="text-body-sm text-on-surface-variant">{tutor.universityName}</p>
+                      </div>
+                    </div>
+                  )}
+                  {tutor.certificates?.map((cert, i) => (
+                    <a key={i} href={cert} target="_blank" rel="noreferrer"
+                      className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex gap-4 hover:shadow-md transition-shadow">
+                      <div className="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-on-primary-fixed-variant">verified</span>
+                      </div>
+                      <div>
+                        <h3 className="font-label-md text-label-md text-on-surface">Chứng chỉ #{i + 1}</h3>
+                        <p className="text-body-sm text-primary hover:underline">Xem chứng chỉ</p>
+                      </div>
+                    </a>
+                  ))}
                 </div>
-                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex gap-4">
-                  <div className="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="material-symbols-outlined text-on-primary-fixed-variant">verified</span>
-                  </div>
-                  <div>
-                    <h3 className="font-label-md text-label-md text-on-surface">Chứng chỉ Nghiệp vụ Sư phạm</h3>
-                    <p className="text-body-sm text-on-surface-variant">Bộ Giáo dục & Đào tạo | 2017</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Experience */}
-            <section>
-              <h2 className="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">work</span>
-                Kinh nghiệm giảng dạy
-              </h2>
-              <div className="space-y-4">
-                <div className="relative pl-8 border-l-2 border-outline-variant pb-8 last:pb-0 ml-4">
-                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-surface"></div>
-                  <h3 className="font-label-md text-label-md text-on-surface">Gia sư cao cấp tại StudyHub</h3>
-                  <p className="text-body-sm text-primary mb-2">2021 - Hiện tại</p>
-                  <p className="text-on-surface-variant">Hỗ trợ học sinh xây dựng lộ trình học tập cá nhân hóa, tỷ lệ học sinh đỗ đạt cao.</p>
-                </div>
-                <div className="relative pl-8 border-l-2 border-outline-variant pb-8 last:pb-0 ml-4">
-                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-outline-variant border-4 border-surface"></div>
-                  <h3 className="font-label-md text-label-md text-on-surface">Giáo viên tự do</h3>
-                  <p className="text-body-sm text-primary mb-2">2018 - 2021</p>
-                  <p className="text-on-surface-variant">Giảng dạy chương trình phổ thông các cấp, bồi dưỡng học sinh.</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Schedule */}
-            <section>
-              <h2 className="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">calendar_month</span>
-                Lịch dạy trống
-              </h2>
-              <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant overflow-x-auto">
-                <table className="w-full min-w-[600px]">
-                  <thead>
-                    <tr>
-                      <th className="p-4 text-left font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">Thời gian</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">T2</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">T3</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">T4</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">T5</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">T6</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">T7</th>
-                      <th className="p-4 text-center font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">CN</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="p-4 font-label-sm text-label-sm text-on-surface">Sáng (08:00 - 11:00)</td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 font-label-sm text-label-sm text-on-surface">Chiều (14:00 - 17:00)</td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 font-label-sm text-label-sm text-on-surface">Tối (19:00 - 21:00)</td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-6 h-6 mx-auto rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-[14px] text-white">check</span></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                      <td className="p-2"><div className="w-3 h-3 mx-auto rounded-full bg-primary/20"></div></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
+              </section>
+            )}
 
             {/* Reviews */}
             <section>
@@ -165,48 +223,38 @@ const TutorDetail: React.FC = () => {
                   <span className="material-symbols-outlined text-primary">reviews</span>
                   Đánh giá từ học viên
                 </h2>
-                <span className="font-label-md text-label-md text-primary">Xem tất cả (48)</span>
+                {reviews.length > 0 && (
+                  <span className="font-label-md text-label-md text-primary">{reviews.length} đánh giá</span>
+                )}
               </div>
-              <div className="space-y-6">
-                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center font-bold text-secondary">MT</div>
-                      <div>
-                        <h4 className="font-label-md text-label-md text-on-surface">Minh Tuấn</h4>
-                        <p className="text-label-sm text-on-surface-variant">Lớp 12 - Luyện thi ĐH</p>
-                      </div>
-                    </div>
-                    <div className="flex text-tertiary-container">
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    </div>
-                  </div>
-                  <p className="text-on-surface-variant">Cô dạy rất dễ hiểu, đặc biệt là phần hình học không gian vốn là nỗi khiếp sợ của mình. Nhờ cô mà mình đã tự tin hơn rất nhiều khi làm đề thi thử.</p>
+              {reviews.length === 0 ? (
+                <div className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant text-center text-on-surface-variant">
+                  <span className="material-symbols-outlined text-5xl block mb-3 text-outline-variant">rate_review</span>
+                  <p>Chưa có đánh giá nào cho gia sư này.</p>
                 </div>
-                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center font-bold text-secondary">HL</div>
-                      <div>
-                        <h4 className="font-label-md text-label-md text-on-surface">Hương Ly</h4>
-                        <p className="text-label-sm text-on-surface-variant">Lớp 11</p>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.slice(0, 5).map(review => (
+                    <div key={review.id} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex gap-3">
+                          <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center font-bold text-secondary text-sm">
+                            {review.reviewerName?.charAt(0) || 'U'}
+                          </div>
+                          <div>
+                            <h4 className="font-label-md text-label-md text-on-surface">{review.reviewerName || 'Phụ huynh'}</h4>
+                            <p className="text-label-sm text-on-surface-variant text-xs">
+                              {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : ''}
+                            </p>
+                          </div>
+                        </div>
+                        {renderStars(review.rating)}
                       </div>
+                      {review.comment && <p className="text-on-surface-variant text-sm leading-relaxed">{review.comment}</p>}
                     </div>
-                    <div className="flex text-tertiary-container">
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>star</span>
-                    </div>
-                  </div>
-                  <p className="text-on-surface-variant">Phương pháp giảng dạy rất logic và hiện đại. Cô luôn kiên nhẫn giải thích cho đến khi mình hiểu bài mới thôi.</p>
+                  ))}
                 </div>
-              </div>
+              )}
             </section>
           </div>
 
@@ -216,32 +264,56 @@ const TutorDetail: React.FC = () => {
               <div>
                 <p className="text-on-surface-variant text-label-md font-label-md mb-1">Học phí</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-headline-md text-primary">{tutor.price}/h</span>
+                  <span className="text-headline-md font-headline-md text-primary">
+                    {tutor.price ? `${tutor.price.toLocaleString('vi-VN')}đ/ca` : 'Thỏa thuận'}
+                  </span>
                 </div>
               </div>
-              <div className="space-y-4 pt-6 border-t border-outline-variant">
-                <div className="flex items-center gap-3 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-[20px]">verified_user</span>
-                  <span className="text-body-sm font-body-sm">Gia sư đã được xác thực</span>
-                </div>
-                <div className="flex items-center gap-3 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-[20px]">bolt</span>
-                  <span className="text-body-sm font-body-sm">Phản hồi trong 30 phút</span>
-                </div>
-                <div className="flex items-center gap-3 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-[20px]">videocam</span>
-                  <span className="text-body-sm font-body-sm">Dạy qua Google Meet / Zoom</span>
+              <div className="space-y-3 pt-4 border-t border-outline-variant">
+                {tutor.ekycStatus === 'SUCCESS' && (
+                  <div className="flex items-center gap-3 text-green-700 text-sm font-medium">
+                    <span className="material-symbols-outlined text-[20px]">verified_user</span>
+                    Đã xác thực eKYC
+                  </div>
+                )}
+                {tutor.teachingMethod && (
+                  <div className="flex items-center gap-3 text-on-surface-variant text-sm">
+                    <span className="material-symbols-outlined text-[20px]">videocam</span>
+                    {tutor.teachingMethod === 'ONLINE' ? 'Dạy online (Google Meet / Zoom)' :
+                      tutor.teachingMethod === 'OFFLINE' ? 'Dạy offline tại nhà' : 'Online & Offline'}
+                  </div>
+                )}
+                <div className="flex items-center gap-3 text-on-surface-variant text-sm">
+                  <span className="material-symbols-outlined text-[20px]">work</span>
+                  Kinh nghiệm: {experienceLabel()}
                 </div>
               </div>
-              <button onClick={() => {
-                alert('Chuyển hướng đến màn hình Chọn bài đăng để Mời dạy...');
-                navigate('/parent/posts');
-              }} className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                <span className="material-symbols-outlined">person_add</span> Mời dạy
-              </button>
-              <button onClick={() => navigate('/parent/messages')} className="w-full border border-primary text-primary py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
-                <span className="material-symbols-outlined">chat</span> Nhắn tin
-              </button>
+
+              {isLoggedIn && role === 'parent' ? (
+                <>
+                  <button
+                    onClick={() => navigate(`/parent/posts?inviteTutor=${tutor.id}&tutorName=${encodeURIComponent(tutor.fullName || '')}`)}
+
+                    className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">person_add</span> Mời dạy
+                  </button>
+                  <button
+                    onClick={() => navigate('/parent/messages')}
+                    className="w-full border border-primary text-primary py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/10 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">chat</span> Nhắn tin
+                  </button>
+                </>
+              ) : !isLoggedIn ? (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="w-full bg-primary text-white py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined">login</span> Đăng nhập để mời dạy
+                </button>
+              ) : null}
+
               <p className="text-center text-label-sm font-label-sm text-on-surface-variant px-4">
                 Tư vấn miễn phí lộ trình học tập và chọn lớp phù hợp.
               </p>

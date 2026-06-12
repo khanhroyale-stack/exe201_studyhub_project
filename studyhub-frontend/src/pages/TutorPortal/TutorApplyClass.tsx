@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import TutorProfileModal from '../../components/Shared/TutorProfileModal';
+import { apiFetch } from '../../utils/api';
 
 interface JobPostingDTO {
   id: number;
@@ -31,7 +32,6 @@ interface TutorProfile {
   experienceYears: number;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const TutorApplyClass: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -56,11 +56,11 @@ const TutorApplyClass: React.FC = () => {
 
     setLoading(true);
     Promise.all([
-      fetch(`${BASE_URL}/posts/${postId}`).then(res => {
+      apiFetch(`/posts/${postId}`).then(res => {
         if (!res.ok) throw new Error('Không tìm thấy bài đăng hoặc có lỗi xảy ra');
         return res.json();
       }),
-      fetch(`${BASE_URL}/tutors/${tutorId}`).then(res => {
+      apiFetch(`/tutors/${tutorId}`).then(res => {
         if (!res.ok) throw new Error('Không lấy được hồ sơ gia sư');
         return res.json();
       })
@@ -97,7 +97,7 @@ const TutorApplyClass: React.FC = () => {
     };
 
     try {
-      const res = await fetch(`${BASE_URL}/posts/${postId}/apply`, {
+      const res = await apiFetch(`/posts/${postId}/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyData)
@@ -150,9 +150,10 @@ const TutorApplyClass: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div><span className="text-on-surface-variant">Môn học:</span> <span className="font-medium text-on-surface">{post.subject} ({post.classLevel})</span></div>
           <div><span className="text-on-surface-variant">Học phí:</span> <span className="font-medium text-on-surface text-primary">{post.pricePerSession?.toLocaleString('vi-VN')}đ/buổi</span></div>
-          <div><span className="text-on-surface-variant">Hình thức:</span> <span className="font-medium text-on-surface">{post.learningMode === 'ONLINE' ? '🌐 Online' : '📍 Offline'}</span></div>
+          <div><span className="text-on-surface-variant">Hình thức:</span> <span className="font-medium text-on-surface">{post.learningMode === 'ONLINE' ? '🌐 Online' : post.learningMode === 'OFFLINE' ? '📍 Offline' : '🌐📍 Cả hai (Online & Offline)'}</span></div>
+          <div><span className="text-on-surface-variant">Địa điểm:</span> <span className="font-medium text-on-surface">{post.learningMode === 'ONLINE' ? 'Học Online' : (post.detailedAddress ? `${post.detailedAddress}, ${post.location}` : post.location)}</span></div>
           <div><span className="text-on-surface-variant">Lịch học:</span> <span className="font-medium text-on-surface">{post.schedule || 'Chưa rõ'}</span></div>
-          <div className="col-span-2"><span className="text-on-surface-variant">Yêu cầu:</span> <span className="font-medium text-on-surface">{post.requirement || 'Không có yêu cầu đặc biệt'}</span></div>
+          <div className="col-span-2"><span className="text-on-surface-variant">Yêu cầu:</span> <span className="font-medium text-on-surface">{post.requirement || post.description || 'Không có yêu cầu đặc biệt'}</span></div>
         </div>
       </section>
 

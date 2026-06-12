@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { apiFetch } from '../../utils/api';
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'ekyc' | 'accounts'>('accounts');
@@ -8,12 +8,16 @@ const AdminUsers: React.FC = () => {
   const [pendingTutors, setPendingTutors] = useState<any[]>([]);
   const [selectedTutor, setSelectedTutor] = useState<any | null>(null);
 
+  // --- REAL DATA FOR ACCOUNTS TAB ---
+  const [users, setUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+
   const fetchPendingEkyc = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/admin/ekyc/pending');
+      const response = await apiFetch('/admin/ekyc/pending');
       const data = await response.json();
       setPendingTutors(data);
-      
       setSelectedTutor((current: any) => {
         if (!current) return data.length > 0 ? data[0] : null;
         const stillExists = data.some((t: any) => t.id === current.id);
@@ -21,57 +25,90 @@ const AdminUsers: React.FC = () => {
         return current;
       });
     } catch (error) {
-      console.error("Lỗi khi tải dữ liệu eKYC:", error);
+      console.error('Lỗi khi tải dữ liệu eKYC:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const response = await apiFetch('/admin/users');
+      const data = await response.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách người dùng:', error);
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
     }
   };
 
   useEffect(() => {
     if (activeTab === 'ekyc') {
       fetchPendingEkyc();
+    } else if (activeTab === 'accounts') {
+      fetchUsers();
     }
   }, [activeTab]);
 
+  const filteredUsers = users.filter(u =>
+    !userSearch ||
+    (u.fullName || '').toLowerCase().includes(userSearch.toLowerCase()) ||
+    (u.email || '').toLowerCase().includes(userSearch.toLowerCase())
+  );
+
   const handleApprove = async (id: number) => {
     try {
-      await fetch(`http://localhost:8080/api/admin/ekyc/${id}/approve`, { method: 'PUT' });
-      alert("Đã duyệt hồ sơ thành công!");
+      await apiFetch(`/admin/ekyc/${id}/approve`, { method: 'PUT' });
+      alert('Đã duyệt hồ sơ thành công!');
       fetchPendingEkyc();
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra");
+      alert('Có lỗi xảy ra');
     }
   };
 
   const handleReject = async (id: number) => {
     try {
-      await fetch(`http://localhost:8080/api/admin/ekyc/${id}/reject`, { 
+      await apiFetch(`/admin/ekyc/${id}/reject`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: 'Hình ảnh CCCD mờ, không rõ nét' })
       });
-      alert("Đã từ chối hồ sơ!");
+      alert('Đã từ chối hồ sơ!');
       fetchPendingEkyc();
     } catch (error) {
-      console.error("Lỗi khi từ chối eKYC:", error);
+      console.error('Lỗi khi từ chối eKYC:', error);
     }
   };
 
   const handleReEvaluateAI = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/ekyc/${id}/re-evaluate`, { method: 'PUT' });
+      const response = await apiFetch(`/admin/ekyc/${id}/re-evaluate`, { method: 'PUT' });
       const data = await response.json();
       if (response.ok) {
         alert(`Quét AI thành công! Độ khớp: ${data.similarityScore}%`);
         fetchPendingEkyc();
         if (selectedTutor?.id === id) {
-          setSelectedTutor({...selectedTutor, similarityScore: data.similarityScore});
+          setSelectedTutor({ ...selectedTutor, similarityScore: data.similarityScore });
         }
       } else {
         alert(`Lỗi AI: ${data.error}`);
       }
     } catch (error) {
-      console.error("Lỗi khi quét AI:", error);
-      alert("Có lỗi xảy ra khi kết nối với AI Face Matching.");
+      console.error('Lỗi khi quét AI:', error);
+      alert('Có lỗi xảy ra khi kết nối với AI Face Matching.');
+    }
+  };
+
+  const handleToggleLock = async (userId: number, currentStatus: string) => {
+    const action = currentStatus === 'ACTIVE' ? 'lock' : 'unlock';
+    if (!window.confirm(`Bạn có chắc muốn ${action === 'lock' ? 'khóa' : 'mở khóa'} tài khoản này?`)) return;
+    try {
+      await apiFetch(`/admin/users/${userId}/${action}`, { method: 'PUT' });
+      fetchUsers();
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra');
     }
   };
 
@@ -80,36 +117,129 @@ const AdminUsers: React.FC = () => {
       {/* Page Header & Tabs */}
       <div className="mb-8 animate-slide-up">
         <h2 className="font-headline-lg text-headline-lg md:text-headline-xl md:font-headline-xl text-on-surface mb-6 font-bold text-[#0f172a]">
-          Quản lý Người dùng & eKYC
+          Quản lý Người dùng &amp; eKYC
         </h2>
         <div className="flex border-b border-slate-200">
-          <button 
+          <button
             onClick={() => setActiveTab('ekyc')}
             className={`px-6 py-3 font-semibold text-sm transition-colors relative ${activeTab === 'ekyc' ? 'text-primary' : 'text-slate-500 hover:bg-slate-50'}`}
           >
             Duyệt hồ sơ Gia sư
-            {activeTab === 'ekyc' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
+            {activeTab === 'ekyc' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full" />}
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('accounts')}
             className={`px-6 py-3 font-semibold text-sm transition-colors relative ${activeTab === 'accounts' ? 'text-primary' : 'text-slate-500 hover:bg-slate-50'}`}
           >
             Quản lý Tài khoản
-            {activeTab === 'accounts' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
+            {activeTab === 'accounts' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full" />}
           </button>
         </div>
       </div>
 
-      {/* =========================================================================
-                                 TAB: QUẢN LÝ TÀI KHOẢN
-      ========================================================================= */}
+      {/* TAB: QUẢN LÝ TÀI KHOẢN */}
       {activeTab === 'accounts' && (
         <div className="animate-slide-up stagger-1 space-y-6">
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-center text-slate-500 py-10">
-             Chức năng đang được phát triển... (Dữ liệu Mock)
+          {/* Search */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-sm">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+              <input
+                type="text"
+                placeholder="Tìm theo tên hoặc email..."
+                value={userSearch}
+                onChange={e => setUserSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
+            <button
+              onClick={fetchUsers}
+              className="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Làm mới
+            </button>
+          </div>
+
+          <div className="bg-white p-0 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            {usersLoading ? (
+              <div className="flex justify-center py-20">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="text-center py-16 text-slate-400">
+                <span className="material-symbols-outlined text-5xl block mb-3 text-slate-300">group</span>
+                <p>{userSearch ? 'Không tìm thấy người dùng phù hợp.' : 'Chưa có dữ liệu người dùng.'}</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50">
+                      <th className="py-3 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Người dùng</th>
+                      <th className="py-3 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Vai trò</th>
+                      <th className="py-3 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Ngày tham gia</th>
+                      <th className="py-3 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Trạng thái</th>
+                      <th className="py-3 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredUsers.map(user => (
+                      <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={user.avatar || user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.email || 'U')}&background=random`}
+                              alt={user.fullName}
+                              className="w-9 h-9 rounded-full object-cover"
+                            />
+                            <div>
+                              <p className="font-semibold text-sm text-slate-800">{user.fullName || '—'}</p>
+                              <p className="text-xs text-slate-500">{user.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2 py-1 rounded-md text-[11px] font-bold uppercase ${
+                            user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                            user.role === 'TUTOR' ? 'bg-blue-100 text-blue-700' :
+                            'bg-emerald-100 text-emerald-700'
+                          }`}>
+                            {user.role === 'ADMIN' ? 'Quản trị' : user.role === 'TUTOR' ? 'Gia sư' : 'Phụ huynh'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-sm text-slate-500">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : '—'}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2 py-1 rounded-md text-[11px] font-bold ${
+                            user.status === 'ACTIVE' || !user.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {user.status === 'ACTIVE' || !user.status ? 'Hoạt động' : 'Đã khóa'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          {user.role !== 'ADMIN' && (
+                            <button
+                              onClick={() => handleToggleLock(user.id, user.status || 'ACTIVE')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                                user.status === 'LOCKED' ? 'bg-primary text-white hover:bg-primary/90' : 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-100'
+                              }`}
+                            >
+                              {user.status === 'LOCKED' ? 'Mở khóa' : 'Khóa TK'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
+
 
       {/* =========================================================================
                                  TAB: DUYỆT EKYC

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../utils/api';
 
 interface ClassSession {
   id: number;
@@ -18,7 +19,7 @@ const AdminPayouts: React.FC = () => {
   const fetchCompletedClasses = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/admin/payment/completed-classes');
+      const response = await apiFetch('/admin/payment/completed-classes');
       if (response.ok) {
         const data = await response.json();
         setClasses(data);
@@ -44,7 +45,7 @@ const AdminPayouts: React.FC = () => {
       setError(null);
       setSuccessMsg(null);
 
-      const response = await fetch(`http://localhost:8080/api/admin/payment/disburse/${classId}`, {
+      const response = await apiFetch(`/admin/payment/disburse/${classId}`, {
         method: 'POST'
       });
 

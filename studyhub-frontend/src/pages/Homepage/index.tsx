@@ -103,22 +103,7 @@ const Homepage: React.FC = () => {
             <div className="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/20 to-indigo-300/20 blur-[120px]" />
             <div className="absolute bottom-[-80px] left-[-80px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-secondary/20 to-teal-300/20 blur-[100px]" />
 
-            {/* 3D Background — hana-viewer */}
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                top: '-10%', left: '-10%',
-                width: '120%', height: '120%',
-                opacity: 0.9,
-              }}
-            >
-              {hanaReady && (
-                <hana-viewer
-                  url="https://prod.spline.design/DXZulGqQC57VpVKk-rgE/scene.hanacode"
-                  style={{ width: '100%', height: '100%', display: 'block' }}
-                ></hana-viewer>
-              )}
-            </div>
+
 
             <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
           </div>

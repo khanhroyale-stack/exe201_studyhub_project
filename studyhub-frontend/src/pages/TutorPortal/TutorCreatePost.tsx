@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 const TutorCreatePost: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const TutorCreatePost: React.FC = () => {
   });
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/subjects')
+    apiFetch('/subjects')
       .then(res => res.json())
       .then(data => {
         setSubjects(data);
@@ -45,9 +46,8 @@ const TutorCreatePost: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/courses?tutorId=${tutorId}`, {
+      const response = await apiFetch(`/courses?tutorId=${tutorId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       if (response.ok) {

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 interface ApplicantDTO {
   id: number;
@@ -16,7 +17,6 @@ interface ApplicantDTO {
   appliedAt: string;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const ApplicantReview: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -31,7 +31,7 @@ const ApplicantReview: React.FC = () => {
   useEffect(() => {
     if (!postId) return;
     setLoading(true);
-    fetch(`${BASE_URL}/posts/${postId}/applicants`)
+    apiFetch(`/posts/${postId}/applicants`)
       .then(res => {
         if (!res.ok) throw new Error('Không thể tải danh sách ứng viên');
         return res.json();
@@ -50,7 +50,7 @@ const ApplicantReview: React.FC = () => {
     if (!window.confirm('Bạn có chắc chắn muốn chấp nhận gia sư này? Các ứng viên khác sẽ bị từ chối tự động.')) return;
     setAccepting(applicantId);
     try {
-      const res = await fetch(`${BASE_URL}/class-sessions/accept-applicant/${applicantId}`, {
+      const res = await apiFetch(`/class-sessions/accept-applicant/${applicantId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

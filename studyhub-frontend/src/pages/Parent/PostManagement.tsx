@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+﻿import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 import TutorProfileModal from '../../components/Shared/TutorProfileModal';
 
 interface ApplicantDTO {
@@ -37,24 +38,29 @@ interface JobPostingDTO {
   applicants: ApplicantDTO[];
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const PostManagement: React.FC = () => {
   const { userId } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteTutorId = searchParams.get('inviteTutor');
+  const inviteTutorName = searchParams.get('tutorName');
+
   const [activeTab, setActiveTab] = useState<'posts' | 'bookings'>('posts');
   const [posts, setPosts] = useState<JobPostingDTO[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState<number | null>(null);
   const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
+  const [inviteBanner, setInviteBanner] = useState<string | null>(inviteTutorId);
+  const [sendingInvite, setSendingInvite] = useState<number | null>(null);
 
   useEffect(() => {
     if (!userId) return;
-    
+
     Promise.all([
-      fetch(`${BASE_URL}/posts/parent/${userId}`).then(res => res.json()),
-      fetch(`${BASE_URL}/bookings/parent/${userId}`).then(res => res.json())
+      apiFetch(`/posts/parent/${userId}`).then(res => res.json()),
+      apiFetch(`/bookings/parent/${userId}`).then(res => res.json())
     ])
       .then(([postsData, bookingsData]) => {
         setPosts(Array.isArray(postsData) ? postsData : []);
@@ -71,7 +77,7 @@ const PostManagement: React.FC = () => {
     if (!window.confirm('Bạn có chắc chắn muốn chấp nhận gia sư này? Các ứng viên khác sẽ bị từ chối tự động và bài đăng sẽ đóng.')) return;
     setAccepting(applicantId);
     try {
-      const res = await fetch(`${BASE_URL}/class-sessions/accept-applicant/${applicantId}`, {
+      const res = await apiFetch(`/class-sessions/accept-applicant/${applicantId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -100,6 +106,30 @@ const PostManagement: React.FC = () => {
     ));
   };
 
+  const handleInviteTutorToPost = async (postId: number) => {
+    if (!inviteBanner) return;
+    if (!window.confirm('Gửi lời mời đến gia sư này cho bài đăng đã chọn?')) return;
+    setSendingInvite(postId);
+    try {
+      const res = await apiFetch(`/bookings`, {
+        method: 'POST',
+        body: JSON.stringify({ tutorId: parseInt(inviteBanner!), jobPostingId: postId, parentId: userId })
+      });
+      if (res.ok) {
+        alert('Đã gửi lời mời thành công! Gia sư sẽ nhận được thông báo.');
+        setInviteBanner(null);
+        navigate('/parent/posts');
+      } else {
+        const err = await res.json();
+        alert('Lỗi: ' + (err.error || 'Không thể gửi lời mời'));
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ.');
+    } finally {
+      setSendingInvite(null);
+    }
+  };
+
   const totalPosts = posts.length;
   const activePosts = posts.filter(p => p.status === 'RECRUITING').length;
   const pendingApprovalPosts = posts.filter(p => p.status === 'PENDING_APPROVAL').length;
@@ -107,6 +137,23 @@ const PostManagement: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-8 animate-fade-in pb-20">
+      {/* Invite Banner */}
+      {inviteBanner && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 animate-slide-up">
+          <span className="material-symbols-outlined text-blue-600 text-[24px]">person_add</span>
+          <div className="flex-1">
+            <p className="font-semibold text-blue-800 text-sm">
+              Bạn đang muốn mời gia sư <span className="text-primary">{inviteTutorName ? decodeURIComponent(inviteTutorName) : `#${inviteBanner}`}</span>
+            </p>
+            <p className="text-blue-600 text-xs mt-0.5">Chọn bài đăng bên dưới để gửi lời mời đến gia sư này.</p>
+          </div>
+          <button onClick={() => setInviteBanner(null)} className="text-blue-400 hover:text-blue-600 transition-colors">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      )}
+
+
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-slide-up">
         <div>
@@ -275,8 +322,23 @@ const PostManagement: React.FC = () => {
                       <p className="text-xs text-on-surface-variant mb-1 font-medium">Số người ứng tuyển</p>
                       <p className="text-2xl font-bold text-primary">{post.applicantsCount || 0}</p>
                     </div>
+                    {inviteBanner && post.status === 'RECRUITING' && (
+                      <button
+                        onClick={() => handleInviteTutorToPost(typeof post.id === 'string' ? parseInt(post.id) : post.id)}
+                        disabled={sendingInvite === (typeof post.id === 'string' ? parseInt(post.id) : post.id)}
+                        className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2 shadow"
+                      >
+                        {sendingInvite === (typeof post.id === 'string' ? parseInt(post.id) : post.id) ? (
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <span className="material-symbols-outlined text-[18px]">send</span>
+                        )}
+                        Mời vào bài này
+                      </button>
+                    )}
                   </div>
                 </div>
+
 
                 {/* Danh sách Ứng viên */}
                 <div className="p-6 bg-surface-container-lowest">
@@ -349,7 +411,7 @@ const PostManagement: React.FC = () => {
                               onClick={async () => {
                                 if (!window.confirm('Bạn chắc chắn muốn từ chối ứng viên này?')) return;
                                 try {
-                                  const res = await fetch(`${BASE_URL}/class-sessions/reject-applicant/${app.id}`, { method: 'POST' });
+                                  const res = await apiFetch(`/class-sessions/reject-applicant/${app.id}`, { method: 'POST' });
                                   if (!res.ok) throw new Error();
                                   // Xóa ứng viên khỏi giao diện sau khi từ chối
                                   setPosts(prev => prev.map(p => {

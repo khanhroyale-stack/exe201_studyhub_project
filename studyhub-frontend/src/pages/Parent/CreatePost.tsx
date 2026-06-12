@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 const LEARNING_MODES = [
   { value: 'ONLINE', label: 'Online', icon: 'videocam' },
@@ -24,6 +24,8 @@ const CreatePost: React.FC = () => {
   const [subject, setSubject] = useState('');
   const [classLevel, setClassLevel] = useState('');
   const [learningMode, setLearningMode] = useState<'ONLINE' | 'OFFLINE' | 'BOTH'>('OFFLINE');
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [sessionTime, setSessionTime] = useState('');
   const [price, setPrice] = useState('');
   const [priceError, setPriceError] = useState('');
   const [city, setCity] = useState('Hà Nội');
@@ -32,7 +34,7 @@ const CreatePost: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/subjects`)
+    apiFetch(`/subjects`)
       .then(res => res.json())
       .then(data => setSubjects(Array.isArray(data) ? data : []))
       .catch(() => {});
@@ -62,15 +64,24 @@ const CreatePost: React.FC = () => {
 
     const priceNum = parseInt(price.replace(/,/g, ''), 10);
 
+    // Build schedule string from selected days + time
+    const DAY_LABELS: Record<string, string> = {
+      'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4',
+      'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7', 'CN': 'Chủ nhật'
+    };
+    const scheduleStr = selectedDays.length > 0
+      ? `${selectedDays.map(d => DAY_LABELS[d]).join(', ')}${sessionTime ? ` - ${sessionTime}` : ''}`
+      : '';
+
     const newPost = {
       title: `Tìm gia sư ${subject} - ${classLevel}`,
       subject,
       classLevel,
       description: req || `Cần tìm gia sư môn ${subject} cho học sinh ${classLevel}.`,
-      status: 'RECRUITING', // Tạm thời auto RECRUITING (bỏ qua bước admin duyệt để demo)
+      status: 'RECRUITING',
       location: learningMode !== 'ONLINE' ? city : 'Học Online',
       detailedAddress: learningMode !== 'ONLINE' ? detailedAddress : '',
-      schedule: '',
+      schedule: scheduleStr,
       pricePerSession: priceNum,
       learningMode,
       requirement: req,
@@ -78,9 +89,8 @@ const CreatePost: React.FC = () => {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${BASE_URL}/posts?userId=${userId}`, {
+      const res = await apiFetch(`/posts?userId=${userId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPost),
       });
       if (res.ok) {
@@ -203,8 +213,51 @@ const CreatePost: React.FC = () => {
               </div>
             </div>
 
-            {/* Row 3: Địa chỉ — chỉ hiện khi cần */}
+            {/* Row 3: Lịch học */}
+            <div className="space-y-3">
+              <label className="font-semibold text-sm text-on-surface block">
+                Lịch học <span className="text-on-surface-variant font-normal">(chọn các ngày trong tuần)</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {(['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] as const).map(day => (
+                  <label key={day} className="cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="peer hidden"
+                      checked={selectedDays.includes(day)}
+                      onChange={() => {
+                        setSelectedDays(prev =>
+                          prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+                        );
+                      }}
+                    />
+                    <div className="px-4 py-2 rounded-lg border border-outline-variant text-sm font-semibold text-on-surface-variant peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all select-none">
+                      {day}
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">schedule</span>
+                <input
+                  type="time"
+                  value={sessionTime}
+                  onChange={e => setSessionTime(e.target.value)}
+                  className="bg-surface border border-outline-variant rounded-lg px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base"
+                  placeholder="Giờ bắt đầu"
+                />
+                <span className="text-sm text-on-surface-variant">Giờ bắt đầu buổi học</span>
+              </div>
+              {(selectedDays.length > 0 || sessionTime) && (
+                <p className="text-sm text-primary font-medium bg-primary/5 px-3 py-2 rounded-lg border border-primary/20">
+                  Lịch: {selectedDays.join(', ')}{sessionTime ? ` — ${sessionTime}` : ''}
+                </p>
+              )}
+            </div>
+
+            {/* Row 4: Địa chỉ — chỉ hiện khi cần */}
             {needsAddress && (
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="font-semibold text-sm text-on-surface block">Thành phố</label>

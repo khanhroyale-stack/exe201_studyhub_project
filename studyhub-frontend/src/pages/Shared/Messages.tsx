@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 interface Conversation {
   classSessionId: number;
@@ -51,7 +51,7 @@ const Messages: React.FC = () => {
 
   const fetchConversations = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/chat/conversations?userId=${userId}&role=${role}`);
+      const res = await apiFetch(`/chat/conversations?userId=${userId}&role=${role}`);
       if (res.ok) {
         const data = await res.json();
         setConversations(data);
@@ -80,7 +80,7 @@ const Messages: React.FC = () => {
 
   const fetchMessages = async (sessionId: number) => {
     try {
-      const res = await fetch(`${BASE_URL}/chat/${sessionId}`);
+      const res = await apiFetch(`/chat/${sessionId}`);
       if (res.ok) {
         const data = await res.json();
         setMessages(data);
@@ -110,7 +110,7 @@ const Messages: React.FC = () => {
         messageContent: msgText.trim()
       };
       
-      const res = await fetch(`${BASE_URL}/chat/${activeConv.classSessionId}`, {
+      const res = await apiFetch(`/chat/${activeConv.classSessionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

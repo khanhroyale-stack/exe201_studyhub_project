@@ -15,8 +15,9 @@ const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const TestPayment = lazy(() => import('../pages/TestPayment'));
 const PublicDocumentList = lazy(() => import('../pages/Documents/PublicDocumentList'));
+const AboutUs = lazy(() => import('../pages/Shared/AboutUs'));
 
-const ParentDashboard = lazy(() => import('../pages/Parent/ParentDashboard'));
+
 const PostManagement = lazy(() => import('../pages/Parent/PostManagement'));
 const CreatePost = lazy(() => import('../pages/Parent/CreatePost'));
 const ApplicantReview = lazy(() => import('../pages/Parent/ApplicantReview'));
@@ -69,13 +70,13 @@ const AppRouter: React.FC = () => {
         <Route path="register" element={<Register />} />
         <Route path="test-payment" element={<TestPayment />} />
         <Route path="documents" element={<PublicDocumentList />} />
+        <Route path="about-us" element={<AboutUs />} />
       </Route>
 
       {/* ── Parent Dashboard Routes (shared Navbar + SideNavBar + Footer via ParentLayout) ── */}
       <Route path="/parent" element={<ParentLayout />}>
-        {/* Index → Redirect to Dashboard */}
-        <Route index element={<Navigate to="/parent/dashboard" replace />} />
-        <Route path="dashboard" element={<ParentDashboard />} />
+        {/* Index → Redirect to Posts */}
+        <Route index element={<Navigate to="/parent/posts" replace />} />
         <Route path="post-management" element={<PostManagement />} />
         <Route path="posts" element={<PostManagement />} />
         <Route path="posts/:postId/applicants" element={<ApplicantReview />} />

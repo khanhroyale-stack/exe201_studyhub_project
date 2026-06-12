@@ -65,7 +65,8 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (amount == null) return '0';
     if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'tr';
     else if (amount >= 1000) return (amount / 1000).toFixed(0) + 'k';
     return amount.toString();

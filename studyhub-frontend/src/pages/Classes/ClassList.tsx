@@ -18,7 +18,7 @@ const ClassList: React.FC = () => {
     // Fetch subjects
     fetch('http://localhost:8080/api/v1/subjects')
       .then(res => res.json())
-      .then(data => setSubjects(data))
+      .then(data => setSubjects(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to fetch subjects:', err));
   }, []);
 
@@ -41,7 +41,7 @@ const ClassList: React.FC = () => {
       queryParams.append('keyword', searchKeyword);
     }
     
-    fetch(`http://localhost:8080/api/courses?${queryParams.toString()}`)
+    fetch(`http://localhost:8080/api/v1/courses?${queryParams.toString()}`)
       .then(res => res.json())
       .then(data => {
         // Sort data manually for now since backend doesn't support sortBy query param
@@ -107,7 +107,7 @@ const ClassList: React.FC = () => {
             Tất cả lớp học
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
-            Tìm kiếm lớp học phù hợp
+            Tìm kiếm yêu cầu tuyển gia sư của phụ huynh
           </h1>
           <p className="text-white/75 mb-10 text-lg max-w-xl mx-auto">
             Hàng nghìn lớp học chất lượng đang chờ bạn khám phá

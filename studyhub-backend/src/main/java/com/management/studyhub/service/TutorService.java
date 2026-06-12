@@ -134,6 +134,7 @@ public class TutorService {
         }
         if (request.getDegreeImageUrl() != null) tutor.setDegreeImageUrl(request.getDegreeImageUrl());
         if (request.getCertificates() != null) tutor.setCertificates(request.getCertificates());
+        if (request.getPrice() != null) tutor.setPrice(request.getPrice());
 
         tutorProfileRepository.save(tutor);
         return Map.of(

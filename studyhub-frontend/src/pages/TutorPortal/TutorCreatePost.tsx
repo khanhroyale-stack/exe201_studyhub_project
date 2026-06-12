@@ -20,7 +20,7 @@ const TutorCreatePost: React.FC = () => {
     apiFetch('/subjects')
       .then(res => res.json())
       .then(data => {
-        setSubjects(data);
+        setSubjects(Array.isArray(data) ? data : []);
         if (data.length > 0) {
           setFormData(prev => ({ ...prev, subjectName: data[0].name }));
         }

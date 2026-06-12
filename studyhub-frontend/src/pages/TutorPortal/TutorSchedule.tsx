@@ -49,7 +49,7 @@ const TutorSchedule: React.FC = () => {
     apiFetch(`/class-sessions/tutor/${tutorId}`)
       .then(res => res.json())
       .then(data => {
-        setClasses(Array.isArray(data) ? data.filter((c: any) => ['TRIAL', 'CONFIRMED'].includes(c.status)) : []);
+        setClasses(Array.isArray(data) ? data.filter((c: any) => ['TRIAL', 'PENDING_PAYMENT', 'CONFIRMED'].includes(c.status)) : []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -129,11 +129,11 @@ const TutorSchedule: React.FC = () => {
                       </div>
                     ) : (
                       dayClasses.map(cls => (
-                        <div key={cls.id} className="bg-primary/10 border border-primary/20 rounded-lg p-1.5">
+                        <div key={cls.id} className={`bg-primary/10 border border-primary/20 rounded-lg p-1.5 ${cls.status === 'PENDING_PAYMENT' ? 'opacity-80 border-dashed border-orange-300' : ''}`}>
                           <p className="text-[9px] font-bold text-primary truncate leading-tight">{cls.subject}</p>
                           <p className="text-[8px] text-on-surface-variant truncate leading-tight">{cls.className}</p>
-                          <span className={`text-[8px] font-bold px-1 py-0.5 rounded-full ${cls.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {cls.status === 'CONFIRMED' ? '●' : '○'}
+                          <span className={`text-[8px] font-bold px-1 py-0.5 rounded-full ${cls.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : cls.status === 'PENDING_PAYMENT' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {cls.status === 'CONFIRMED' ? '●' : cls.status === 'PENDING_PAYMENT' ? '!' : '○'}
                           </span>
                         </div>
                       ))

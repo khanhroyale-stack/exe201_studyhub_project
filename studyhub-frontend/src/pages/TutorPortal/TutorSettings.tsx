@@ -21,6 +21,7 @@ const TutorSettings: React.FC = () => {
   const [universityName, setUniversityName] = useState<string>('');
   const [major, setMajor] = useState<string>('');
   const [experienceYears, setExperienceYears] = useState<string>('Chưa có kinh nghiệm');
+  const [price, setPrice] = useState<string>('');
 
   // Thêm state cho phần Bằng cấp và Chứng chỉ
   const [degreeFile, setDegreeFile] = useState<File | null>(null);
@@ -55,6 +56,9 @@ const TutorSettings: React.FC = () => {
           }
           if (data.degreeImageUrl) {
             setDegreeFileUrl(data.degreeImageUrl);
+          }
+          if (data.price) {
+            setPrice(data.price.toString());
           }
           if (data.certificates && data.certificates.length > 0) {
             setCertificateUrls(data.certificates);
@@ -181,7 +185,8 @@ const TutorSettings: React.FC = () => {
           major,
           experienceYears,
           degreeImageUrl,
-          certificates: combinedCertificates
+          certificates: combinedCertificates,
+          price: price ? Number(price) : null
         })
       });
 
@@ -445,6 +450,10 @@ const TutorSettings: React.FC = () => {
                   <div className="space-y-2">
                     <label className="font-label-md text-label-md text-on-surface">Chuyên ngành</label>
                     <input className="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface disabled:opacity-70 disabled:bg-surface-container" placeholder="VD: Sư phạm Toán" type="text" value={major} onChange={e => setMajor(e.target.value)} disabled={isReadOnly} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label-md text-label-md text-on-surface">Học phí dự kiến (VNĐ/ca) <span className="text-error">*</span></label>
+                    <input className="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface disabled:opacity-70 disabled:bg-surface-container" placeholder="VD: 150000" type="number" value={price} onChange={e => setPrice(e.target.value)} disabled={isReadOnly} />
                   </div>
                   <div className="space-y-2">
                     <label className="font-label-md text-label-md text-on-surface">Số năm kinh nghiệm</label>

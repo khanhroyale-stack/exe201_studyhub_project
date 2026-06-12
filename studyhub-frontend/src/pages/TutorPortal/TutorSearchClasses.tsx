@@ -107,7 +107,7 @@ const TutorSearchClasses: React.FC = () => {
     <div className="animate-fade-in pb-20">
       <div className="mb-8 flex justify-between items-end animate-slide-up">
         <div>
-          <h1 className="text-3xl font-bold text-on-surface mb-2">Tìm kiếm lớp học</h1>
+          <h1 className="text-3xl font-bold text-on-surface mb-2">Tìm kiếm yêu cầu tuyển gia sư của phụ huynh</h1>
           <p className="text-base font-normal text-on-surface-variant">Khám phá các cơ hội giảng dạy phù hợp với chuyên môn của bạn.</p>
         </div>
         <div className="hidden lg:flex items-center gap-2 text-sm font-medium text-on-surface-variant">

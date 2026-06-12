@@ -50,9 +50,9 @@ const navGroups = [
       },
       {
         to: '/tutor/billing',
-        icon: 'account_balance_wallet',
-        label: 'Thu nhập',
-        sublabel: 'Thanh toán & đánh giá',
+        icon: 'payments',
+        label: 'Công nợ',
+        sublabel: 'Thanh toán phí nền tảng',
       },
     ],
   },

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../utils/api';
 
@@ -54,7 +54,7 @@ const Messages: React.FC = () => {
       const res = await apiFetch(`/chat/conversations?userId=${userId}&role=${role}`);
       if (res.ok) {
         const data = await res.json();
-        setConversations(data);
+        setConversations(Array.isArray(data) ? data : []);
         if (loadingConv) {
           if (data.length > 0) setActiveConv(data[0]);
           setLoadingConv(false);
@@ -83,7 +83,7 @@ const Messages: React.FC = () => {
       const res = await apiFetch(`/chat/${sessionId}`);
       if (res.ok) {
         const data = await res.json();
-        setMessages(data);
+        setMessages(Array.isArray(data) ? data : []);
       }
     } catch (err) {
       console.error('Error fetching messages:', err);

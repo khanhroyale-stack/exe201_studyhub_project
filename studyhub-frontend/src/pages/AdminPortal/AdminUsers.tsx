@@ -17,7 +17,7 @@ const AdminUsers: React.FC = () => {
     try {
       const response = await apiFetch('/admin/ekyc/pending');
       const data = await response.json();
-      setPendingTutors(data);
+      setPendingTutors(Array.isArray(data) ? data : []);
       setSelectedTutor((current: any) => {
         if (!current) return data.length > 0 ? data[0] : null;
         const stillExists = data.some((t: any) => t.id === current.id);

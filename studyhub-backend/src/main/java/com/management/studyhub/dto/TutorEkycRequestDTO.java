@@ -23,4 +23,5 @@ public class TutorEkycRequestDTO {
     private String experienceYears;
     private String degreeImageUrl;
     private List<String> certificates;
+    private Double price;
 }

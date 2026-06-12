@@ -14,7 +14,7 @@ const PublicDocumentList: React.FC = () => {
     try {
       setLoading(true);
       const data = await documentApi.getAllDocuments();
-      setDocuments(data);
+      setDocuments(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
       setError('Không thể tải danh sách tài liệu. Vui lòng thử lại sau.');

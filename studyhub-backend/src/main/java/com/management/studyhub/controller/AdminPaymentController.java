@@ -5,13 +5,15 @@ import com.management.studyhub.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/payment")
+@RequestMapping("/api/v1/admin/payment")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AdminPaymentController {
 
     private final PaymentService paymentService;

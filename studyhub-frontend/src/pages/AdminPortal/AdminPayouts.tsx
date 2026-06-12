@@ -22,7 +22,7 @@ const AdminPayouts: React.FC = () => {
       const response = await apiFetch('/admin/payment/completed-classes');
       if (response.ok) {
         const data = await response.json();
-        setClasses(data);
+        setClasses(Array.isArray(data) ? data : []);
       } else {
         setError('Không thể tải danh sách lớp.');
       }

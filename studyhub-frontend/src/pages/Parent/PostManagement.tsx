@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../utils/api';
@@ -74,7 +74,7 @@ const PostManagement: React.FC = () => {
   }, [userId]);
 
   const handleAcceptApplicant = async (applicantId: number) => {
-    if (!window.confirm('Bạn có chắc chắn muốn chấp nhận gia sư này? Các ứng viên khác sẽ bị từ chối tự động và bài đăng sẽ đóng.')) return;
+    // Tạm thời bỏ window.confirm vì có thể trình duyệt của user đang block dialog
     setAccepting(applicantId);
     try {
       const res = await apiFetch(`/class-sessions/accept-applicant/${applicantId}`, {
@@ -399,21 +399,22 @@ const PostManagement: React.FC = () => {
                             </div>
                           )}
 
-                          <div className="mt-auto pt-4 border-t border-outline-variant flex justify-end gap-3">
+                          <div className="mt-auto pt-4 border-t border-outline-variant flex justify-end gap-3 relative z-10">
                             <button
+                              type="button"
                               onClick={() => setSelectedTutorId(app.tutorId)}
-                              className="px-4 py-2 rounded-xl text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+                              className="px-4 py-2 rounded-xl text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <span className="material-symbols-outlined text-[18px]">visibility</span>
                               Xem chi tiết
                             </button>
                             <button
+                              type="button"
                               onClick={async () => {
-                                if (!window.confirm('Bạn chắc chắn muốn từ chối ứng viên này?')) return;
+                                // Bỏ window.confirm
                                 try {
                                   const res = await apiFetch(`/class-sessions/reject-applicant/${app.id}`, { method: 'POST' });
                                   if (!res.ok) throw new Error();
-                                  // Xóa ứng viên khỏi giao diện sau khi từ chối
                                   setPosts(prev => prev.map(p => {
                                     if (p.id !== post.id) return p;
                                     return { ...p, applicants: p.applicants.filter(a => a.id !== app.id) };
@@ -421,15 +422,16 @@ const PostManagement: React.FC = () => {
                                 } catch { alert('Lỗi khi từ chối'); }
                               }}
                               disabled={accepting !== null}
-                              className="px-6 py-2 bg-surface border border-outline-variant text-on-surface-variant rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors disabled:opacity-50 flex items-center gap-2"
+                              className="px-6 py-2 bg-surface border border-outline-variant text-on-surface-variant rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                             >
                               <span className="material-symbols-outlined text-[18px]">close</span>
                               Từ chối
                             </button>
                             <button
+                              type="button"
                               onClick={() => handleAcceptApplicant(app.id)}
                               disabled={accepting !== null}
-                              className="px-6 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                              className="px-6 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                             >
                               {accepting === app.id ? (
                                 <>

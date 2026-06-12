@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +17,9 @@ import com.management.studyhub.repository.TutorProfileRepository;
 import com.management.studyhub.entity.enums.EkycStatus;
 
 @RestController
-@RequestMapping("/api/admin/reports")
+@RequestMapping("/api/v1/admin/reports")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AdminReportController {
 
     private final CommissionRecordRepository commissionRecordRepository;

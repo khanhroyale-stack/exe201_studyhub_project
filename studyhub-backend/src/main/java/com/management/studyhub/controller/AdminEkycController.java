@@ -10,13 +10,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/ekyc")
+@RequestMapping("/api/v1/admin/ekyc")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AdminEkycController {
 
     private final TutorProfileRepository tutorProfileRepository;

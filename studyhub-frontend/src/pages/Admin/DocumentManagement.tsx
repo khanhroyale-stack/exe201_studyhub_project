@@ -21,7 +21,7 @@ const DocumentManagement: React.FC = () => {
     try {
       setLoading(true);
       const data = await documentApi.getAllDocuments();
-      setDocuments(data);
+      setDocuments(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
       alert('Lỗi khi tải danh sách tài liệu');

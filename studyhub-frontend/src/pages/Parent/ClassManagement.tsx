@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../utils/api';
@@ -27,11 +27,12 @@ type TabType = 'active' | 'completed' | 'cancelled';
 
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
-  TRIAL:       { label: 'Chờ học thử',   color: 'text-amber-700',  bgColor: 'bg-amber-100 border-amber-200',  icon: 'hourglass_empty' },
-  CONFIRMED:   { label: 'Đang học',       color: 'text-green-700',  bgColor: 'bg-green-100 border-green-200',  icon: 'check_circle' },
-  COMPLETED:   { label: 'Hoàn thành',     color: 'text-blue-700',   bgColor: 'bg-blue-100 border-blue-200',    icon: 'task_alt' },
-  CANCELLED:   { label: 'Đã hủy',         color: 'text-red-700',    bgColor: 'bg-red-100 border-red-200',      icon: 'cancel' },
-  DISBURSED:   { label: 'Đã giải ngân',   color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-200', icon: 'payments' },
+  TRIAL:           { label: 'Chờ học thử',     color: 'text-amber-700',   bgColor: 'bg-amber-100 border-amber-200',   icon: 'hourglass_empty' },
+  PENDING_PAYMENT: { label: 'Chờ thanh toán',  color: 'text-orange-700',  bgColor: 'bg-orange-100 border-orange-200', icon: 'pending_actions' },
+  CONFIRMED:       { label: 'Đang học',        color: 'text-green-700',   bgColor: 'bg-green-100 border-green-200',   icon: 'check_circle' },
+  COMPLETED:       { label: 'Hoàn thành',      color: 'text-blue-700',    bgColor: 'bg-blue-100 border-blue-200',     icon: 'task_alt' },
+  CANCELLED:       { label: 'Đã hủy',          color: 'text-red-700',     bgColor: 'bg-red-100 border-red-200',       icon: 'cancel' },
+  DISBURSED:       { label: 'Đã giải ngân',    color: 'text-purple-700',  bgColor: 'bg-purple-100 border-purple-200', icon: 'payments' },
 };
 
 const ClassManagement: React.FC = () => {
@@ -73,7 +74,7 @@ const ClassManagement: React.FC = () => {
     }
   };
 
-  const activeSessions    = sessions.filter(s => ['TRIAL', 'CONFIRMED'].includes(s.status));
+  const activeSessions    = sessions.filter(s => ['TRIAL', 'PENDING_PAYMENT', 'CONFIRMED'].includes(s.status));
   const completedSessions = sessions.filter(s => ['COMPLETED', 'DISBURSED'].includes(s.status));
   const cancelledSessions = sessions.filter(s => s.status === 'CANCELLED');
 
@@ -232,6 +233,12 @@ const ClassManagement: React.FC = () => {
                         Gia sư đã được chọn. Đang chờ sắp xếp buổi học thử.
                       </div>
                     )}
+                    {session.status === 'PENDING_PAYMENT' && (
+                      <div className="mt-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-700 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">warning</span>
+                        Đang chờ thanh toán để bắt đầu khóa học chính thức.
+                      </div>
+                    )}
                     {session.status === 'CONFIRMED' && (
                       <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px]">check_circle</span>
@@ -268,6 +275,15 @@ const ClassManagement: React.FC = () => {
                           Hủy lớp
                         </button>
                       </>
+                    )}
+                    {session.status === 'PENDING_PAYMENT' && (
+                      <Link
+                        to={`/parent/classes/${session.id}/workspace?tab=BILLING`}
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition-opacity whitespace-nowrap flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">payments</span>
+                        Tiếp tục thanh toán
+                      </Link>
                     )}
                     {session.status === 'CONFIRMED' && (
                       <button

@@ -28,7 +28,7 @@ const TutorList: React.FC = () => {
     const fetchSubjects = async () => {
       try {
         const data = await tutorApi.getSubjects();
-        setSubjects(data);
+        setSubjects(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch subjects', error);
       }

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../utils/api';
@@ -33,7 +33,7 @@ const TutorBookings: React.FC = () => {
     apiFetch(`/bookings/tutor/${tutorId}`)
       .then(res => res.json())
       .then(data => {
-        setBookings(data);
+        setBookings(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {

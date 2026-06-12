@@ -3,6 +3,7 @@ package com.management.studyhub.controller;
 import com.management.studyhub.dto.StudyMaterialDTO;
 import com.management.studyhub.service.StudyMaterialService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,17 @@ public class StudyMaterialController {
 
     private final StudyMaterialService studyMaterialService;
 
+    /** API công khai: lấy tài liệu công khai với filter & phân trang */
+    @GetMapping("/public")
+    public ResponseEntity<Page<StudyMaterialDTO>> getPublicMaterials(
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) String fileType,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        return ResponseEntity.ok(studyMaterialService.getPublicMaterials(subjectId, fileType, keyword, page, size));
+    }
+
     @GetMapping("/class/{classSessionId}")
     public ResponseEntity<List<StudyMaterialDTO>> getMaterials(@PathVariable Long classSessionId) {
         return ResponseEntity.ok(studyMaterialService.getMaterialsByClassSessionId(classSessionId));
@@ -32,6 +44,23 @@ public class StudyMaterialController {
             @RequestParam("file") MultipartFile file) {
         try {
             StudyMaterialDTO dto = studyMaterialService.uploadMaterial(classSessionId, uploaderId, title, file);
+            return ResponseEntity.ok(dto);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Lỗi xử lý file: " + e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/public")
+    public ResponseEntity<?> uploadPublicMaterial(
+            @RequestParam("uploaderId") Long uploaderId,
+            @RequestParam(value = "subjectId", required = false) Long subjectId,
+            @RequestParam("title") String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            StudyMaterialDTO dto = studyMaterialService.uploadPublicMaterial(uploaderId, subjectId, title, description, file);
             return ResponseEntity.ok(dto);
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Lỗi xử lý file: " + e.getMessage()));

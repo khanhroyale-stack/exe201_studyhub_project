@@ -9,8 +9,12 @@ public class StudyMaterialDTO {
     private Long classSessionId;
     private Long uploaderId;
     private String uploaderName;
+    private Long subjectId;
+    private String subjectName;
     private String title;
+    private String description;
     private String fileUrl;
     private String fileType;
+    private Boolean isPublic;
     private LocalDateTime uploadedAt;
 }

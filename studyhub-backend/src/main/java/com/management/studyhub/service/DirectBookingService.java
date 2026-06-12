@@ -71,6 +71,7 @@ public class DirectBookingService {
         // Tạo Lớp học (Class Session)
         ClassSession classSession = new ClassSession();
         classSession.setParent(parentRepository.findByUserId(booking.getParent().getId()).orElse(null));
+        classSession.setParentName(booking.getParent().getFullName());
         classSession.setTutorProfileId(booking.getTutor().getId());
         classSession.setTutorName(booking.getTutor().getFullName());
         classSession.setTutorAvatar(booking.getTutor().getAvatarUrl());

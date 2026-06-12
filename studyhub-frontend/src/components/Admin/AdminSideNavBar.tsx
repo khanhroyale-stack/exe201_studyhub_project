@@ -23,6 +23,12 @@ const navGroups = [
         label: 'Nội dung & Điều phối',
         sublabel: 'Duyệt bài & báo cáo',
       },
+      {
+        to: '/admin/documents',
+        icon: 'folder_open',
+        label: 'Tài liệu công khai',
+        sublabel: 'Quản lý & Tải lên PDF',
+      },
     ],
   },
   {

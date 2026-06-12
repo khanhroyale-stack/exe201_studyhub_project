@@ -1,0 +1,36 @@
+import axios from 'axios';
+
+const API_URL = 'http://localhost:8080/api/v1/public-documents';
+
+export interface PublicDocument {
+  id: number;
+  title: string;
+  fileUrl: string;
+  uploadedBy: number;
+  uploadedAt: string;
+}
+
+export const documentApi = {
+  getAllDocuments: async (): Promise<PublicDocument[]> => {
+    const response = await axios.get(API_URL);
+    return response.data;
+  },
+
+  uploadDocument: async (uploaderId: number, title: string, file: File): Promise<PublicDocument> => {
+    const formData = new FormData();
+    formData.append('uploaderId', uploaderId.toString());
+    formData.append('title', title);
+    formData.append('file', file);
+
+    const response = await axios.post(API_URL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteDocument: async (id: number): Promise<void> => {
+    await axios.delete(`${API_URL}/${id}`);
+  },
+};

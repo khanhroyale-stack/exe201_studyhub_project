@@ -53,6 +53,7 @@ const Navbar: React.FC = () => {
     { to: '/', label: 'Trang chủ', icon: 'home' },
     { to: '/classes', label: 'Lớp học', icon: 'school' },
     { to: '/tutors', label: 'Gia sư', icon: 'person_search' },
+    { to: '/documents', label: 'Tài liệu', icon: 'folder_open' },
   ];
 
   if (role === 'tutor') {

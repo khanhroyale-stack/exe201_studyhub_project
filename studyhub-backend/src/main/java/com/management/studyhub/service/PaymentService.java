@@ -24,9 +24,9 @@ public class PaymentService {
     private final com.management.studyhub.repository.CommissionRecordRepository commissionRecordRepository;
 
     // Thay bằng số tài khoản thật của StudyHub
-    private static final String BANK_BIN = "970436"; // Vietcombank
-    private static final String ACCOUNT_NUMBER = "123456789";
-    private static final String ACCOUNT_NAME = "STUDYHUB";
+    private static final String BANK_BIN = "MB"; // MB Bank
+    private static final String ACCOUNT_NUMBER = "9704229206661626271";
+    private static final String ACCOUNT_NAME = "Giang Hong Son";
 
     @Transactional
     public Map<String, String> generatePaymentQR(Long classId) {

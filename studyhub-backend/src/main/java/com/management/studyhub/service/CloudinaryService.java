@@ -37,16 +37,26 @@ public class CloudinaryService {
     public String uploadFile(MultipartFile file) throws IOException {
         String originalFilename = file.getOriginalFilename();
         String resourceType = "auto";
+        String extension = "";
+        
         if (originalFilename != null) {
             String lower = originalFilename.toLowerCase();
+            if (lower.lastIndexOf(".") != -1) {
+                extension = lower.substring(lower.lastIndexOf("."));
+            }
             if (lower.endsWith(".pdf") || lower.endsWith(".doc") || lower.endsWith(".docx") || lower.endsWith(".xls") || lower.endsWith(".xlsx")) {
                 resourceType = "raw";
             }
         }
 
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                "resource_type", resourceType
-        ));
+        Map<String, Object> options = new java.util.HashMap<>();
+        options.put("resource_type", resourceType);
+        
+        if ("raw".equals(resourceType) && !extension.isEmpty()) {
+            options.put("public_id", java.util.UUID.randomUUID().toString() + extension);
+        }
+
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), options);
         return uploadResult.get("secure_url").toString();
     }
 }

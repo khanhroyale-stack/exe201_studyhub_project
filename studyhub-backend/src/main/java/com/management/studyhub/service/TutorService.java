@@ -141,6 +141,11 @@ public class TutorService {
             tutor.setSubjects(new java.util.HashSet<>(subjectRepository.findAllById(request.getSubjectIds())));
         }
 
+        // Thông tin ngân hàng
+        if (request.getBankName() != null) tutor.setBankName(request.getBankName());
+        if (request.getBankAccountNumber() != null) tutor.setBankAccountNumber(request.getBankAccountNumber());
+        if (request.getBankAccountName() != null) tutor.setBankAccountName(request.getBankAccountName());
+
         tutorProfileRepository.save(tutor);
         return Map.of(
             "success", true, 

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface LessonLogRepository extends JpaRepository<LessonLog, Long> {
     List<LessonLog> findByClassSessionIdOrderByScheduledDateDesc(Long classSessionId);
+    long countByClassSessionId(Long classSessionId);
 }

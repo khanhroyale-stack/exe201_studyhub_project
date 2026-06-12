@@ -38,6 +38,7 @@ const ClassWorkspace: React.FC = () => {
   const [qrUrl, setQrUrl] = useState('');
   const [transactionCode, setTransactionCode] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('PENDING');
+  const [zoomQr, setZoomQr] = useState(false);
 
   useEffect(() => {
     if (!showPaymentModal || !transactionCode || paymentStatus === 'SUCCESS') return;
@@ -385,9 +386,28 @@ const ClassWorkspace: React.FC = () => {
                 Tiến độ học tập ({logs.length} buổi)
               </h3>
               {isTutor && !showLogForm && (
-                <button onClick={() => setShowLogForm(true)} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl shadow hover:bg-primary/90 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">add</span> Thêm nhật ký
-                </button>
+                <>
+                  {session.status === 'TRIAL' && logs.length >= 2 ? (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                      <span className="material-symbols-outlined text-[18px] text-amber-600">warning</span>
+                      Đã hết 2 buổi học thử. Hãy nhắc phụ huynh chốt thuê & thanh toán để tiếp tục.
+                    </div>
+                  ) : session.status === 'PENDING_PAYMENT' ? (
+                    <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                      <span className="material-symbols-outlined text-[18px] text-orange-600">warning</span>
+                      Lớp học đang chờ phụ huynh thanh toán. Không thể thêm nhật ký.
+                    </div>
+                  ) : ['COMPLETED', 'DISBURSED', 'CANCELLED'].includes(session.status) ? (
+                    <div className="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                      <span className="material-symbols-outlined text-[18px] text-slate-500">info</span>
+                      Lớp học đã hoàn tất hoặc đã hủy.
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowLogForm(true)} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl shadow hover:bg-primary/90 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[18px]">add</span> Thêm nhật ký
+                    </button>
+                  )}
+                </>
               )}
             </div>
 
@@ -542,7 +562,15 @@ const ClassWorkspace: React.FC = () => {
               {session.status === 'TRIAL' ? (
                 isParent ? (
                   <div className="space-y-4">
-                    <p className="font-medium text-on-surface">Sau khi hoàn thành học thử, hãy Xác nhận thuê gia sư và thanh toán để tiếp tục quá trình học tập chính thức.</p>
+                    {logs.length >= 2 ? (
+                      <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl text-sm max-w-lg mx-auto flex flex-col gap-2 items-center text-center shadow-sm">
+                        <span className="material-symbols-outlined text-red-500 text-3xl animate-bounce">warning</span>
+                        <p className="font-bold text-base">⚠️ Đã hoàn thành 2 buổi học thử!</p>
+                        <p className="text-xs text-red-700 font-medium">Bạn đã sử dụng hết số buổi học thử miễn phí. Vui lòng bấm <strong>Xác nhận thuê & Thanh toán</strong> dưới đây để chuyển sang lớp chính thức và tiếp tục học tập.</p>
+                      </div>
+                    ) : (
+                      <p className="font-medium text-on-surface">Sau khi hoàn thành học thử, hãy Xác nhận thuê gia sư và thanh toán để tiếp tục quá trình học tập chính thức.</p>
+                    )}
                     <button 
                       onClick={handleConfirmHire}
                       className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-sm hover:bg-primary/90 flex items-center justify-center gap-2 mx-auto"
@@ -580,61 +608,121 @@ const ClassWorkspace: React.FC = () => {
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-surface w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-outline-variant relative">
             <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
               <h3 className="text-xl font-bold text-on-surface">Thanh toán & Chốt thuê</h3>
-              <button onClick={() => setShowPaymentModal(false)} className="text-on-surface-variant hover:text-error transition-colors">
+              <button 
+                onClick={() => { setShowPaymentModal(false); setZoomQr(false); }} 
+                className="text-on-surface-variant hover:text-error transition-colors w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center"
+              >
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             
             <div className="p-8 flex flex-col items-center">
               {paymentStatus === 'SUCCESS' ? (
-                <div className="text-center space-y-4 py-8">
-                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="material-symbols-outlined text-4xl">check_circle</span>
+                <div className="text-center space-y-4 py-8 relative w-full animate-scale-up">
+                  {/* Confetti particles */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute text-2xl animate-bounce" style={{ top: '10%', left: '10%', animationDelay: '0s' }}>🎉</div>
+                    <div className="absolute text-2xl animate-bounce" style={{ top: '20%', right: '15%', animationDelay: '0.2s' }}>✨</div>
+                    <div className="absolute text-2xl animate-bounce" style={{ top: '40%', left: '25%', animationDelay: '0.4s' }}>🎈</div>
+                    <div className="absolute text-2xl animate-bounce" style={{ top: '15%', right: '35%', animationDelay: '0.1s' }}>🎉</div>
+                    <div className="absolute text-2xl animate-bounce" style={{ top: '50%', right: '20%', animationDelay: '0.5s' }}>✨</div>
                   </div>
-                  <h4 className="text-2xl font-black text-on-surface">Thanh toán thành công!</h4>
-                  <p className="text-on-surface-variant">Cảm ơn bạn đã lựa chọn gia sư của StudyHub. Lớp học đã được chuyển sang trạng thái Chính thức.</p>
+
+                  <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-green-500/20 animate-pulse">
+                    <span className="material-symbols-outlined text-5xl">done_all</span>
+                  </div>
+                  <h4 className="text-2xl font-black text-green-700">Thanh toán thành công!</h4>
+                  <p className="text-on-surface-variant text-sm px-4">
+                    Cảm ơn bạn đã hoàn tất học phí. Lớp học đã được chuyển sang trạng thái <strong>Chính thức</strong>. Chúc bạn có những giờ học bổ ích cùng gia sư!
+                  </p>
                   <button 
-                    onClick={() => setShowPaymentModal(false)}
-                    className="mt-6 px-8 py-3 bg-primary text-white rounded-xl font-bold shadow hover:bg-primary/90 w-full"
+                    onClick={() => { setShowPaymentModal(false); setZoomQr(false); }}
+                    className="mt-6 px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg transition-all w-full flex items-center justify-center gap-2"
                   >
-                    Đóng cửa sổ
+                    <span className="material-symbols-outlined">class</span>
+                    Bắt đầu học ngay
                   </button>
                 </div>
               ) : (
                 <>
                   <div className="text-center mb-6">
-                    <p className="text-on-surface-variant text-sm mb-1">Quét mã VietQR bằng App ngân hàng để thanh toán</p>
-                    <p className="text-primary font-black text-2xl">{session.price?.toLocaleString('vi-VN')}đ</p>
+                    <p className="text-on-surface-variant text-sm mb-1 flex items-center justify-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-primary">info</span>
+                      Quét mã VietQR bằng App ngân hàng để thanh toán
+                    </p>
+                    <p className="text-primary font-black text-3xl mt-1">{(session.price || 0).toLocaleString('vi-VN')}đ</p>
                   </div>
                   
-                  <div className="bg-white p-4 rounded-2xl shadow-inner border border-outline-variant mb-6 relative">
-                    <img src={qrUrl} alt="VietQR" className="w-64 h-64 object-contain" />
-                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-center pointer-events-none rounded-2xl opacity-0 transition-opacity"></div>
+                  <div className="bg-white p-4 rounded-2xl shadow-inner border border-outline-variant mb-4 relative group">
+                    <img src={qrUrl} alt="VietQR" className="w-60 h-60 object-contain transition-transform duration-300 group-hover:scale-105" />
+                    
+                    <button 
+                      onClick={() => setZoomQr(true)}
+                      className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow"
+                      title="Phóng to QR"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">zoom_in</span>
+                    </button>
                   </div>
+
+                  <button 
+                    onClick={() => setZoomQr(true)}
+                    className="mb-6 text-xs text-primary font-bold hover:underline flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">fullscreen</span>
+                    Xem mã QR phóng lớn
+                  </button>
                   
-                  <div className="w-full bg-surface-container-lowest p-4 rounded-xl border border-outline-variant space-y-2 text-sm text-left mb-6">
-                    <div className="flex justify-between">
+                  <div className="w-full bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant space-y-2 text-sm text-left mb-6 shadow-sm">
+                    <div className="flex justify-between items-center py-1 border-b border-outline-variant/30">
                       <span className="text-on-surface-variant font-medium">Nội dung chuyển khoản:</span>
-                      <span className="font-bold text-on-surface select-all">{transactionCode}</span>
+                      <span className="font-bold text-on-surface select-all font-mono bg-surface-container px-2 py-0.5 rounded text-xs">{transactionCode}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center py-1">
                       <span className="text-on-surface-variant font-medium">Trạng thái:</span>
-                      <span className="font-bold text-amber-600 flex items-center gap-2">
-                        <span className="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></span>
-                        Đang chờ thanh toán...
+                      <span className="font-bold text-amber-600 flex items-center gap-1.5">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                        </span>
+                        Đang chờ quét mã...
                       </span>
                     </div>
                   </div>
                   
-                  <p className="text-xs text-center text-on-surface-variant/70">
-                    Hệ thống đang liên tục kiểm tra tài khoản (Polling).<br/>Cửa sổ này sẽ tự động chuyển sang Thành công khi nhận được tiền.
-                  </p>
+                  <div className="flex items-center gap-2 text-xs text-center text-on-surface-variant/70 bg-surface-container-low px-4 py-2 rounded-xl border border-outline-variant/40 w-full justify-center">
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span>Hệ thống đang tự động kiểm tra giao dịch liên tục...</span>
+                  </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded QR Modal */}
+      {zoomQr && showPaymentModal && paymentStatus !== 'SUCCESS' && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur p-4 animate-fade-in">
+          <div className="relative max-w-lg w-full bg-white rounded-3xl p-8 flex flex-col items-center shadow-2xl">
+            <button 
+              onClick={() => setZoomQr(false)}
+              className="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-800 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <h3 className="text-lg font-bold text-slate-800 mb-2">Mã QR Thanh Toán</h3>
+            <p className="text-xs text-slate-500 mb-6 text-center">Phóng lớn để quét dễ hơn trên các thiết bị khác hoặc khi ở xa</p>
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg mb-6">
+              <img src={qrUrl} alt="VietQR Expanded" className="w-[360px] h-[360px] object-contain" />
+            </div>
+            <div className="bg-slate-50 border border-slate-200 px-6 py-3 rounded-xl w-full text-center">
+              <p className="text-xs text-slate-500">Nội dung chuyển khoản</p>
+              <p className="text-lg font-black text-slate-800 font-mono mt-0.5 select-all">{transactionCode}</p>
             </div>
           </div>
         </div>

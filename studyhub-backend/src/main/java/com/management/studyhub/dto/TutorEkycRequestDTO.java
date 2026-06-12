@@ -25,4 +25,10 @@ public class TutorEkycRequestDTO {
     private List<String> certificates;
     private String introduction;
     private List<Integer> subjectIds;
+
+    // Ngân hàng
+    private String bankName;
+    private String bankAccountNumber;
+    private String bankAccountName;
 }
+

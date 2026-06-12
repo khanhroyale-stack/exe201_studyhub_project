@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping({"/api/payment", "/api/v1/payment"})
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -55,4 +55,21 @@ public class PaymentController {
         
         return ResponseEntity.ok(Map.of("success", true));
     }
+
+    /**
+     * CHỈ DÙNG CHO TEST/ĐỒ ÁN - Mô phỏng thanh toán thành công
+     * Gọi API này để test luồng thanh toán mà không cần chuyển khoản thật
+     * 
+     * POST /api/payment/simulate?transactionCode=SH12345678
+     */
+    @PostMapping("/simulate")
+    public ResponseEntity<?> simulatePayment(@RequestParam String transactionCode) {
+        try {
+            Map<String, Object> result = paymentService.simulatePaymentSuccess(transactionCode);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }
+
